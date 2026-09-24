@@ -1,0 +1,31 @@
+{
+  "dataset_id": "D1",
+  "collection": "M2TMNXSLV",
+  "version": "5.12.4",
+  "source_type": "model_reanalysis",
+  "variable": "T2M",
+  "units": "K (convert to °C for display)",
+  "spatial_support": "global 0.5° latitude × 0.625° longitude grid",
+  "temporal_support": "monthly mean",
+  "coverage_start": "1980-01-01",
+  "coverage_end": null,
+  "quality_policy": {
+    "fill_values": ["preserve source fill value"],
+    "mask_description": "Validate source fill and coordinate metadata; no MODIS-style retrieval QA exists for T2M.",
+    "qa_fields": []
+  },
+  "retrieval": {
+    "provider": "NASA GMAO / GES DISC",
+    "access_url": "https://cmr.earthdata.nasa.gov/search/collections.json",
+    "retrieved_at": "REPLACE_AT_INGEST",
+    "granules": 0,
+    "checksums": []
+  },
+  "provenance": {
+    "documentation_urls": ["https://doi.org/10.5067/AP1B0BA5PD2K", "https://disc.gsfc.nasa.gov/datasets/M2TMNXSLV_5.12.4/summary"],
+    "doi": "10.5067/AP1B0BA5PD2K",
+    "software_version": "REPLACE_WITH_ADAPTER_VERSION",
+    "manifest_hash": null
+  }
+}
+

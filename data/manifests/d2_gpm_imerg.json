@@ -1,0 +1,31 @@
+{
+  "dataset_id": "D2",
+  "collection": "GPM_3IMERGM",
+  "version": "07",
+  "source_type": "mission_product",
+  "variable": "precipitationCal",
+  "units": "mm/hour in source; annual accumulation in mm/year for trend",
+  "spatial_support": "global 0.1° geographic grid",
+  "temporal_support": "monthly mean rate; convert with exact calendar-month hours",
+  "coverage_start": "2000-06-01",
+  "coverage_end": null,
+  "quality_policy": {
+    "fill_values": ["preserve source fill value"],
+    "mask_description": "Use valid source values and preserve release-specific uncertainty/quality fields before aggregation.",
+    "qa_fields": ["release-specific quality/uncertainty fields"]
+  },
+  "retrieval": {
+    "provider": "NASA GPM / GES DISC",
+    "access_url": "https://cmr.earthdata.nasa.gov/search/collections.json",
+    "retrieved_at": "REPLACE_AT_INGEST",
+    "granules": 0,
+    "checksums": []
+  },
+  "provenance": {
+    "documentation_urls": ["https://doi.org/10.5067/GPM/IMERG/3B-MONTH/07", "https://gpm.nasa.gov/data/imerg"],
+    "doi": "10.5067/GPM/IMERG/3B-MONTH/07",
+    "software_version": "REPLACE_WITH_ADAPTER_VERSION",
+    "manifest_hash": null
+  }
+}
+

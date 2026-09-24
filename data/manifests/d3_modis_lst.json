@@ -1,0 +1,31 @@
+{
+  "dataset_id": "D3",
+  "collection": "MOD11A2",
+  "version": "061",
+  "source_type": "mission_product",
+  "variable": "LST_Day_1km / LST_Night_1km",
+  "units": "packed K with documented scale factor 0.02",
+  "spatial_support": "nominal 1 km MODIS sinusoidal tiles",
+  "temporal_support": "8-day composite",
+  "coverage_start": "2000-02-01",
+  "coverage_end": null,
+  "quality_policy": {
+    "fill_values": ["collection-specific reserved values"],
+    "mask_description": "Decode QC_Day/QC_Night and retain strict-mask configuration in the manifest.",
+    "qa_fields": ["QC_Day", "QC_Night"]
+  },
+  "retrieval": {
+    "provider": "NASA LP DAAC",
+    "access_url": "https://cmr.earthdata.nasa.gov/search/collections.json",
+    "retrieved_at": "REPLACE_AT_INGEST",
+    "granules": 0,
+    "checksums": []
+  },
+  "provenance": {
+    "documentation_urls": ["https://doi.org/10.5067/MODIS/MOD11A2.061", "https://ladsweb.modaps.eosdis.nasa.gov/filespec/MODIS/61/MOD11A2"],
+    "doi": "10.5067/MODIS/MOD11A2.061",
+    "software_version": "REPLACE_WITH_ADAPTER_VERSION",
+    "manifest_hash": null
+  }
+}
+

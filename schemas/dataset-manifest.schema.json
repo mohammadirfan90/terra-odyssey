@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://terra-odyssey.local/schemas/dataset-manifest.schema.json",
+  "title": "Terra Odyssey dataset manifest",
+  "type": "object",
+  "required": ["dataset_id", "collection", "version", "source_type", "variable", "units", "spatial_support", "temporal_support", "quality_policy", "retrieval", "provenance"],
+  "properties": {
+    "dataset_id": {"type": "string", "pattern": "^D[0-9]+$"},
+    "collection": {"type": "string"},
+    "version": {"type": "string"},
+    "source_type": {"enum": ["mission_product", "model_reanalysis", "benchmark"]},
+    "variable": {"type": "string"},
+    "units": {"type": "string"},
+    "spatial_support": {"type": "string"},
+    "temporal_support": {"type": "string"},
+    "coverage_start": {"type": "string", "format": "date"},
+    "coverage_end": {"type": ["string", "null"], "format": "date"},
+    "quality_policy": {
+      "type": "object",
+      "required": ["fill_values", "mask_description"],
+      "properties": {
+        "fill_values": {"type": "array", "items": {}},
+        "mask_description": {"type": "string"},
+        "qa_fields": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "retrieval": {
+      "type": "object",
+      "required": ["provider", "access_url", "retrieved_at"],
+      "properties": {
+        "provider": {"type": "string"},
+        "access_url": {"type": "string", "format": "uri"},
+        "retrieved_at": {"type": "string", "format": "date-time"},
+        "granules": {"type": "integer", "minimum": 0},
+        "checksums": {"type": "array", "items": {"type": "string"}}
+      },
+      "additionalProperties": false
+    },
+    "provenance": {
+      "type": "object",
+      "required": ["documentation_urls", "software_version"],
+      "properties": {
+        "documentation_urls": {"type": "array", "items": {"type": "string", "format": "uri"}},
+        "doi": {"type": ["string", "null"]},
+        "software_version": {"type": "string"},
+        "manifest_hash": {"type": ["string", "null"]}
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}
+
