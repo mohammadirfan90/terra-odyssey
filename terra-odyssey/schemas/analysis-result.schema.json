@@ -14,7 +14,15 @@
         "dataset_id": {"type": "string"},
         "variable": {"type": "string"},
         "units": {"type": "string"},
-        "period": {"type": "object", "required": ["start", "end"], "properties": {"start": {"type": "string", "format": "date"}, "end": {"type": "string", "format": "date"}}, "additionalProperties": false},
+        "period": {
+          "type": "object",
+          "required": ["start", "end"],
+          "properties": {
+            "start": {"type": "string", "format": "date"},
+            "end": {"type": "string", "format": "date"}
+          },
+          "additionalProperties": false
+        },
         "geometry": {"type": "object"},
         "temporal_aggregation": {"type": "string"},
         "spatial_aggregation": {"type": "string"}
@@ -24,27 +32,82 @@
     "effect": {
       "type": "object",
       "required": ["estimate", "unit_per_decade", "fitted_change"],
-      "properties": {"estimate": {"type": "number"}, "unit_per_decade": {"type": "string"}, "fitted_change": {"type": "number"}}
+      "properties": {
+        "estimate": {"type": "number"},
+        "unit_per_decade": {"type": "string"},
+        "fitted_change": {"type": "number"},
+        "contrast_orientation": {"type": ["string", "null"]},
+        "region_a_estimate": {"type": ["number", "null"]},
+        "region_b_estimate": {"type": ["number", "null"]}
+      }
     },
     "uncertainty": {
       "type": "object",
       "required": ["lower", "upper", "level", "method"],
-      "properties": {"lower": {"type": "number"}, "upper": {"type": "number"}, "level": {"type": "number", "minimum": 0, "maximum": 1}, "method": {"type": "string"}}
+      "properties": {
+        "lower": {"type": "number"},
+        "upper": {"type": "number"},
+        "level": {"type": "number", "minimum": 0, "maximum": 1},
+        "method": {"type": "string"}
+      }
     },
     "coverage": {
       "type": "object",
       "required": ["valid_periods", "expected_periods", "valid_fraction"],
-      "properties": {"valid_periods": {"type": "integer", "minimum": 0}, "expected_periods": {"type": "integer", "minimum": 0}, "valid_fraction": {"type": "number", "minimum": 0, "maximum": 1}, "missing_periods": {"type": "array", "items": {"type": "string"}}}
+      "properties": {
+        "valid_periods": {"type": "integer", "minimum": 0},
+        "expected_periods": {"type": "integer", "minimum": 0},
+        "valid_fraction": {"type": "number", "minimum": 0, "maximum": 1},
+        "missing_periods": {"type": "array", "items": {"type": "string"}},
+        "spatial_coverage": {
+          "type": "object",
+          "properties": {
+            "requested_geometry_supported_fraction": {"type": "number", "minimum": 0, "maximum": 1},
+            "valid_data_area_fraction": {"type": "number", "minimum": 0, "maximum": 1},
+            "coverage_threshold": {"type": "number", "minimum": 0, "maximum": 1},
+            "boundary_method": {"type": "string"}
+          }
+        }
+      }
     },
     "method": {
       "type": "object",
       "required": ["estimator", "dependence_treatment", "test_family", "selection_status"],
-      "properties": {"estimator": {"type": "string"}, "dependence_treatment": {"type": "string"}, "test_family": {"type": "string"}, "selection_status": {"enum": ["predefined", "exploratory_map_selected", "not_applicable"]}, "p_value": {"type": ["number", "null"], "minimum": 0, "maximum": 1}, "diagnostics": {"type": "object"}}
+      "properties": {
+        "estimator": {"type": "string"},
+        "dependence_treatment": {"type": "string"},
+        "test_family": {"type": "string"},
+        "selection_status": {"enum": ["predefined", "exploratory_map_selected", "not_applicable"]},
+        "p_value": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
+        "raw_p_value": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
+        "adjusted_p_value": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
+        "decision_p_value": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
+        "multiplicity_method": {"type": ["string", "null"]},
+        "fdr_level": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
+        "family_id": {"type": ["string", "null"]},
+        "family_size": {"type": ["integer", "null"], "minimum": 1},
+        "hypothesis_id": {"type": ["string", "null"]},
+        "diagnostics": {"type": "object"}
+      }
     },
-    "provenance": {"type": "object", "required": ["manifest_hash", "source_release", "configuration_hash"], "properties": {"manifest_hash": {"type": "string"}, "source_release": {"type": "string"}, "configuration_hash": {"type": "string"}}},
+    "provenance": {
+      "type": "object",
+      "required": ["manifest_hash", "source_release", "configuration_hash"],
+      "properties": {
+        "manifest_hash": {"type": "string"},
+        "source_release": {"type": "string"},
+        "configuration_hash": {"type": "string"}
+      }
+    },
     "caveats": {"type": "array", "items": {"type": "string"}},
-    "interpretation": {"type": "object", "properties": {"level": {"enum": ["observed_trend", "association", "spatial_contrast", "plausible_mechanism", "causal_evidence"]}, "text": {"type": "string"}}, "additionalProperties": false}
+    "interpretation": {
+      "type": "object",
+      "properties": {
+        "level": {"enum": ["observed_trend", "association", "spatial_contrast", "plausible_mechanism", "causal_evidence"]},
+        "text": {"type": "string"}
+      },
+      "additionalProperties": false
+    }
   },
   "additionalProperties": false
 }
-
