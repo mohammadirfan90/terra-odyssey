@@ -1,0 +1,32 @@
+{
+  "package": "terra-odyssey-ai-context",
+  "active_challenge": "Be An Earth System Trend Detective!",
+  "product": "Terra Odyssey",
+  "default_context": [
+    "AGENTS.md",
+    "README.md",
+    "docs/CONTEXT_GUIDE.md",
+    "docs/PRODUCT_BRIEF.md",
+    "docs/SCIENTIFIC_RULES.md"
+  ],
+  "task_bundles": {
+    "frontend": ["docs/UX_SPEC.md", "prompts/google-stitch/DESIGN_SYSTEM.md", "schemas/analysis-result.schema.json"],
+    "data_adapter": ["docs/DATA_CATALOG.md", "schemas/dataset-manifest.schema.json", "data/manifests/d1_merra2.json"],
+    "analysis": ["docs/SCIENTIFIC_RULES.md", "docs/VALIDATION_PLAN.md", "schemas/analysis-result.schema.json"],
+    "api": ["docs/API_CONTRACT.md", "schemas/investigation-record.schema.json", "schemas/analysis-result.schema.json"],
+    "release_review": ["docs/VALIDATION_PLAN.md", "docs/SCIENTIFIC_RULES.md", "docs/DECISION_HISTORY.md"]
+  },
+  "optional_deep_context": [
+    "docs/PRODUCT_SPEC_FULL.md",
+    "references/Trend_Detective_Scientific_Project_Blueprint.docx",
+    "references/Pasted markdown.md"
+  ],
+  "never_attach_by_default": [
+    "raw NASA archives",
+    "credentials and .env files",
+    "node_modules and build output",
+    "all screenshots at once",
+    "all research documents for a small task"
+  ]
+}
+

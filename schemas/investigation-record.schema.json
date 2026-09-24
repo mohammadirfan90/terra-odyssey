@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://terra-odyssey.local/schemas/investigation-record.schema.json",
+  "title": "Terra Odyssey reproducible investigation record",
+  "type": "object",
+  "required": ["investigation_id", "created_at", "request", "resolved_configuration", "source_manifests", "results", "software"],
+  "properties": {
+    "investigation_id": {"type": "string"},
+    "created_at": {"type": "string", "format": "date-time"},
+    "request": {"type": "object"},
+    "resolved_configuration": {"type": "object"},
+    "source_manifests": {"type": "array", "items": {"type": "string"}},
+    "results": {"type": "array", "items": {"$ref": "analysis-result.schema.json"}},
+    "software": {"type": "object", "required": ["version", "environment"], "properties": {"version": {"type": "string"}, "environment": {"type": "object"}, "git_commit": {"type": ["string", "null"]}}},
+    "selection_history": {"type": "array", "items": {"type": "object"}},
+    "citations": {"type": "array", "items": {"type": "string", "format": "uri"}}
+  },
+  "additionalProperties": false
+}
+
