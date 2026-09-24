@@ -8,22 +8,22 @@ updated: 2026-09-25T01:23:00Z
 
 **Milestone:** v0.1.0-mvp
 **Phase:** 4 - API & Investigation Orchestration
-**Task:** Discussion complete (`.gsd/DECISIONS.md` updated)
-**Status:** Ready for planning (`/plan 4`)
+**Task:** Planning complete (3 plans across 3 waves)
+**Status:** Ready for execution (`/execute 4`)
 
 ## Last Action
 
-Completed Phase 4 discussion and documented architectural decisions in `.gsd/DECISIONS.md`:
-- Authoritative durable SQLite job store + bounded local queue + single scientific worker (`ProcessPoolExecutor(max_workers=1)`).
-- Clear separation of operational `job_status`, execution `stage`, and scientific `result_status`.
-- Compressed structured-grid map JSON contract (`EPSG:4326`, explicit dimensions/bands, nulls for missing values, frozen FDR family).
-- Explicit execution modes (`auto`, `live`, `cached_only`, `demo_sample`) with RFC 9457 HTTP 503 Problem Details when data is unavailable.
-- Frozen `.zip` export bundle containing typed `investigation_record.json`, derived series CSVs, map grid, manifests, methods, reports, and SHA-256 checksums.
-- Pre-requisite schema extensions planned for `schemas/investigation-record.schema.json`.
+Completed Phase 4 research and planning:
+- Created `.gsd/phases/4/RESEARCH.md`.
+- Formulated 3 atomic execution plans across 3 waves:
+  - **Plan 4.1 (Wave 1)**: Schemas, Catalog, and Request Validation (`investigation-record.schema.json`, `schemas.py`, `catalog.py`, `errors.py`, `test_api_catalog.py`).
+  - **Plan 4.2 (Wave 2)**: Durable SQLite Job Store, Bounded Worker & Stepper (`store.py`, `stepper.py`, `worker.py`, `test_job_orchestration.py`).
+  - **Plan 4.3 (Wave 3)**: Map Grid Delivery, Evidence Endpoints & Frozen Export Bundler (`investigations.py`, `exporter.py`, `test_api_investigations.py`).
 
 ## Next Steps
 
-1. `/plan 4` — Generate Phase 4 research and execution plans (API schemas, SQLite job engine & worker, endpoints, export bundler).
+1. `/execute 4` — Run Phase 4 plans in wave sequence.
+2. Package updated codebase archive with `pwsh .\scripts\package-codebase.ps1`.
 
 ## Active Decisions
 
