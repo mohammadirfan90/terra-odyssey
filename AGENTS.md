@@ -59,8 +59,8 @@ limitations.
 
 ## Task routing
 
-- UI work: read `docs/UX_SPEC.md`, `prompts/google-stitch/DESIGN_SYSTEM.md`, and
-  the relevant result schema. Preserve evidence hierarchy and accessibility.
+- UI work: read `docs/UX_SPEC.md` and the relevant result schema.
+  Preserve evidence hierarchy and accessibility.
 - Data work: read `docs/DATA_CATALOG.md`, the selected manifest, and the
   adapter contract in `docs/PRODUCT_BRIEF.md`.
 - Statistics work: read `docs/SCIENTIFIC_RULES.md` and

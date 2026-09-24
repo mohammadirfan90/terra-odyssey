@@ -38,8 +38,7 @@ terra-odyssey/
 │   ├── DECISION_HISTORY.md            # resolved research/report conflict
 │   └── REFERENCES.md
 ├── prompts/
-│   ├── ai-coding/                     # reusable build/review prompts
-│   └── google-stitch/                 # UI generation and handoff prompts
+│   └── ai-coding/                     # reusable build/review prompts
 ├── schemas/                           # machine-readable contracts
 ├── data/manifests/                    # versioned metadata, not raw NASA data
 ├── src/
@@ -62,7 +61,7 @@ attribution, parcel-level farm advice, crop yield, or local soil fertility.
 
 - **Always:** `AGENTS.md`, `docs/CONTEXT_GUIDE.md`, `docs/PRODUCT_BRIEF.md`,
   `docs/SCIENTIFIC_RULES.md`, and the active task prompt.
-- **Frontend/UI:** `docs/UX_SPEC.md`, `prompts/google-stitch/DESIGN_SYSTEM.md`,
+- **Frontend/UI:** `docs/UX_SPEC.md`,
   the relevant schema, and the relevant feature section in the product brief.
 - **Data/analysis:** `docs/DATA_CATALOG.md`, `docs/SCIENTIFIC_RULES.md`,
   `schemas/dataset-manifest.schema.json`, and the selected dataset manifest.
