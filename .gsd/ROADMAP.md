@@ -6,12 +6,12 @@ updated: 2026-09-24T23:20:00Z
 
 # Roadmap: Terra Odyssey
 
-> **Current Phase:** 1 - Foundation & Data Ingestion
+> **Current Phase:** 2 - Scientific Trend Engine & Estimators
 > **Status:** planning
 
 ## Must-Haves (from SPEC)
 
-- [ ] MERRA-2 T2M (D1) and GPM IMERG Final (D2) ingestion adapters with quality masks
+- [x] MERRA-2 T2M (D1) and GPM IMERG Final (D2) ingestion adapters with quality masks
 - [ ] Gridded temporal cube normalization and spatial aggregation engine
 - [ ] OLS trend estimator with Newey-West HAC standard error diagnostics
 - [ ] Paired regional contrast estimator with multiple-testing control
@@ -23,19 +23,19 @@ updated: 2026-09-24T23:20:00Z
 ## Phases
 
 ### Phase 1: Foundation & Data Ingestion
-**Status:** 🔄 In Progress
+**Status:** ✅ Complete
 **Objective:** Ingestion adapters, sample granule validation, fill-masking, and manifest generation for D1 (MERRA-2 T2M) and D2 (GPM IMERG Final).
 **Requirements:** REQ-DATA-01, REQ-DATA-02
 
 **Plans:**
 - [x] Plan 1.1: Dataset manifest schemas and source contracts definition
-- [ ] Plan 1.2: D1 MERRA-2 adapter with time-weighting and unit conversion (K to °C)
-- [ ] Plan 1.3: D2 GPM IMERG adapter with monthly accumulation and QA filtering
+- [x] Plan 1.2: D1 MERRA-2 adapter with time-weighting and unit conversion (K to °C)
+- [x] Plan 1.3: D2 GPM IMERG adapter with monthly accumulation and QA filtering
 
 ---
 
 ### Phase 2: Scientific Trend Engine & Estimators
-**Status:** ⬜ Not Started
+**Status:** 🔄 Ready for Planning
 **Objective:** Core analytical engine computing slopes, Newey-West HAC standard errors, block bootstrapping, and calendar completeness.
 **Depends on:** Phase 1
 
@@ -86,7 +86,7 @@ updated: 2026-09-24T23:20:00Z
 
 | Phase | Status | Plans | Complete |
 |-------|--------|-------|----------|
-| 1 | 🔄 | 1/3 | 33% |
+| 1 | ✅ | 3/3 | 100% |
 | 2 | ⬜ | 0/3 | 0% |
 | 3 | ⬜ | 0/3 | 0% |
 | 4 | ⬜ | 0/3 | 0% |
@@ -94,4 +94,4 @@ updated: 2026-09-24T23:20:00Z
 
 ---
 
-*Last updated: 2026-09-24T23:20:00Z*
+*Last updated: 2026-09-25T00:25:00Z*
