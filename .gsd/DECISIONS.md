@@ -79,3 +79,47 @@
     }
   }
   ```
+
+---
+
+## Phase 3: Regional Contrast & Evidence Engine
+
+**Date:** 2026-09-25
+
+### 1. Spatial Aggregation & Area Weighting
+- **Geometry Engine:** `shapely` for polygon/multipolygon topology, holes, coordinate validation, and intersection geometry; `pyproj.Geod` for ellipsoidal geodesic area computations in $m^2$. Do not use `matplotlib.path.Path` in production.
+- **Exact Cell-Bounds Area Weighting:**
+  $$A_{ij} \propto \Delta\lambda [\sin(\phi_{\text{north}}) - \sin(\phi_{\text{south}})]$$
+  $$w_{ij} = A_{ij} f_{ij}, \quad f_{ij} = \frac{A(\text{cell}_{ij} \cap \text{region})}{A(\text{cell}_{ij})}$$
+  $$\bar{Y}_t = \frac{\sum_{i,j} Y_{i,j,t} \cdot w_{ij} \cdot M_{i,j,t}}{\sum_{i,j} w_{ij} \cdot M_{i,j,t}}$$
+  where $M_{i,j,t} \in \{0, 1\}$ is valid observation mask.
+- **Area-Based Coverage:**
+  $$C_t = \frac{\sum_{i,j} w_{ij} \cdot M_{i,j,t}}{\sum_{i,j} w_{ij}}$$
+  (Never use raw cell count percentage).
+- **Threshold Policy:**
+  - MERRA-2 T2M: 100% area coverage within eligible regional footprint for inferential monthly values.
+  - GPM IMERG: $\ge 90\%$ area coverage as initial inferential threshold. 80% to <90% exposed only as a descriptive diagnostic. Any product with $<80\%$ area coverage is masked to `NaN`.
+  - Validate sensitivity at 80%, 90%, 95%, and 100%.
+- **Spatial Edge Cases:**
+  - Standardize longitudes ($0\dots 360$ vs $-180\dots 180$) and antimeridian-crossing polygons.
+  - Report `requested_geometry_supported_fraction` and `valid_data_area_fraction` to prevent silent boundary clipping.
+
+### 2. Paired Regional Contrast Estimator
+- **Formulation:** Synchronous direct difference time series $D_t = Y_{A,t} - Y_{B,t}$.
+  - Estimated with verified Phase 2 OLS + Newey-West HAC ($L=2$, Bartlett kernel, small-sample correction, Student-$t$).
+  - Evaluates $\beta_D = \beta_A - \beta_B$, directly incorporating cross-regional covariance, shared climate modes, and difference serial correlation.
+  - Same dataset, variable, units, temporal aggregation, and calendar years required.
+  - At least 20 consecutive common complete years required.
+- **Evidence Qualification Logic:**
+  - `if either region is ineligible`: `ineligible`
+  - `elif signs are not opposite`: `inconclusive / signs_not_opposite`
+  - `elif predefined and raw contrast p >= 0.05`: `inconclusive / contrast_not_supported`
+  - `elif exploratory and adjusted contrast p >= 0.05`: `inconclusive / contrast_not_supported_after_multiplicity`
+  - `else`: `supported / opposite_trend_pair`
+- **Reported Statistics:** $\hat{\beta}_A$, $\hat{\beta}_B$, $\hat{\beta}_A - \hat{\beta}_B$, HAC standard error, 95% HAC CI, raw contrast p-value, adjusted contrast p-value, and fitted regional difference over the interval.
+
+### 3. Multiple Testing & Exploratory Map Correction
+- **Mandatory Disclosure:** Pairs discovered after visual or map search must be labeled `"selection_status": "exploratory_map_selected"`.
+- **Primary FDR Procedure:** Benjamini-Yekutieli (`fdr_by`, $q=0.05$) to control FDR under arbitrary spatial dependency.
+- **Sensitivity Diagnostic:** Benjamini-Hochberg (`fdr_bh`, $q=0.05$) reported as sensitivity diagnostic.
+- **Family Definition:** The test family must freeze dataset, variable, period, grid domain, quality policies, HAC config, candidate hypotheses, and FDR level before viewing results. Multiplicity must cover actual contrast hypotheses searched ($M = \frac{N(N-1)}{2}$ for $N$ candidate regions), not just individual grid cells.

@@ -6,8 +6,8 @@ updated: 2026-09-24T23:20:00Z
 
 # Roadmap: Terra Odyssey
 
-> **Current Phase:** 2 - Scientific Trend Engine & Estimators
-> **Status:** planning
+> **Current Phase:** 3 - Regional Contrast & Evidence Engine
+> **Status:** ready for planning
 
 ## Must-Haves (from SPEC)
 
