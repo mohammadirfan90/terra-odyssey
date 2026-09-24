@@ -20,11 +20,8 @@ short. Other agents can use `README.md` plus the explicit task bundle.
 
 Attach or make available:
 
-- `AGENTS.md`
-- `README.md`
-- `docs/CONTEXT_GUIDE.md`
-- `docs/PRODUCT_BRIEF.md`
-- `docs/SCIENTIFIC_RULES.md`
+- `AGENTS.md` (unified mission, science non-negotiables, and GSD execution protocol)
+- `.gsd/STATE.md` (active session position, current plan, and next steps)
 - the exact task statement and “done when” checks
 
 ### Tier 1 — attach by workstream
@@ -43,6 +40,7 @@ Attach or make available:
 
 Use only when a decision cannot be answered by Tier 0/1:
 
+- `references/PRODUCT_SPEC_FULL.md`
 - `references/Trend_Detective_Scientific_Project_Blueprint.docx`
 - `references/Pasted markdown.md`
 - `references/UPLOADED_SOURCE_FILES.md`

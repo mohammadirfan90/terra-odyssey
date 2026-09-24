@@ -54,7 +54,7 @@ These rules integrate with the GSD workflows:
 
 ## Gemini-Specific Tips
 
-For Gemini-specific enhancements, see [adapters/GEMINI.md](../adapters/GEMINI.md).
+For Gemini-specific enhancements, see [.gsd/adapters/GEMINI.md](../.gsd/adapters/GEMINI.md).
 
 Key recommendations:
 - **Flash** for quick iterations and simple edits
