@@ -125,4 +125,4 @@ Choose models based on task needs, not methodology requirements.
 ---
 
 *See PROJECT_RULES.md for canonical rules.*
-*See docs/runbook.md for operational procedures.*
+*See .gsd/docs/runbook.md for operational procedures.*

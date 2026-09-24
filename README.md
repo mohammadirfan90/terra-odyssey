@@ -35,8 +35,13 @@ terra-odyssey/
 │   ├── IMPLEMENTATION_TREE.md         # proposed source layout
 │   ├── DECISION_HISTORY.md            # resolved research/report conflict
 │   └── REFERENCES.md
-├── prompts/
-│   └── ai-coding/                     # reusable build/review prompts
+├── .gsd/                             # Get Shit Done (GSD) engine & operational state
+│   ├── STATE.md                      # current position, active phase, next steps
+│   ├── ROADMAP.md                    # phased implementation milestones
+│   ├── SPEC.md                       # master architectural specification
+│   ├── STACK.md                      # pinned technical choices
+│   ├── docs/                         # GSD runbook, token optimization, model guide
+│   └── adapters/                     # AI assistant persona adapters
 ├── schemas/                           # machine-readable contracts
 ├── data/manifests/                    # versioned metadata, not raw NASA data
 ├── src/
@@ -44,7 +49,8 @@ terra-odyssey/
 │   ├── backend/                       # API, jobs, analysis orchestration
 │   └── data/                          # adapters, normalization, manifests
 ├── tests/                             # unit, numerical, contract, e2e tests
-└── references/                        # optional long source documents
+├── scripts/                           # validation, search, and context utilities
+└── references/                        # offline long source documents (never auto-loaded)
 ```
 
 ## Scientific boundary

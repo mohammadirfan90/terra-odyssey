@@ -85,3 +85,18 @@ two schemas/manifests, and the task itself. If the agent asks for more context,
 add the smallest file that answers its question. Never solve uncertainty by
 attaching every PDF, DOCX, image, and raw data file.
 
+## Automated Context Stringing
+
+Use the included helper to inspect or output the exact chained context files for any task:
+
+```powershell
+# Inspect the chained context string and token budget
+pwsh .\scripts\get-context.ps1 data
+pwsh .\scripts\get-context.ps1 frontend
+pwsh .\scripts\get-context.ps1 api
+
+# Bash equivalent
+./scripts/get-context.sh data
+```
+
+

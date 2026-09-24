@@ -12,9 +12,9 @@
 | `IMPLEMENTATION_TREE.md` | Creating the repository or moving files | Proposed source layout |
 | `DECISION_HISTORY.md` | Challenge selection or scope disputes | Resolved recommendation conflict |
 | `REFERENCES.md` | Verifying a claim or adding a dataset | Primary sources and checked links |
-| `runbook.md` | Day-to-day GSD operation and troubleshooting | GSD operational runbook |
-| `model-selection-playbook.md` | Deciding model tiers for planning vs coding | GSD model selection playbook |
-| `token-optimization-guide.md` | Minimizing token usage and context degradation | GSD token optimization guide |
+| `../.gsd/docs/runbook.md` | Day-to-day GSD operation and troubleshooting | GSD operational runbook |
+| `../.gsd/docs/model-selection-playbook.md` | Deciding model tiers for planning vs coding | GSD model selection playbook |
+| `../.gsd/docs/token-optimization-guide.md` | Minimizing token usage and context degradation | GSD token optimization guide |
 
 The long `references/Trend_Detective_Scientific_Project_Blueprint.docx` is the
 expanded research authority. It is intentionally not the default context for a
