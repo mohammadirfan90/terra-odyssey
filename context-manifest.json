@@ -5,6 +5,8 @@
   "default_context": [
     "AGENTS.md",
     "README.md",
+    "PROJECT_RULES.md",
+    ".gsd/STATE.md",
     "docs/CONTEXT_GUIDE.md",
     "docs/PRODUCT_BRIEF.md",
     "docs/SCIENTIFIC_RULES.md"
