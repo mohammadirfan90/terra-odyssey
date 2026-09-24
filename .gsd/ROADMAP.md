@@ -47,14 +47,14 @@ updated: 2026-09-24T23:20:00Z
 ---
 
 ### Phase 3: Regional Contrast & Evidence Engine
-**Status:** 🔄 Ready for Planning
+**Status:** 📋 Ready for Execution
 **Objective:** Paired regional contrast estimator, false discovery rate (FDR) control across spatial fields, and qualified evidence status determination.
 **Depends on:** Phase 2
 
 **Plans:**
 - [ ] Plan 3.1: Area-weighted regional time-series extraction for polygons and bounding boxes
 - [ ] Plan 3.2: Paired difference slope estimation and contrast hypothesis testing
-- [ ] Plan 3.3: Multiple-testing adjustment (Benjamini-Hochberg) for gridded trend maps
+- [ ] Plan 3.3: Multiple-testing adjustment (Benjamini-Yekutieli & Benjamini-Hochberg) for gridded trend maps
 
 ---
 

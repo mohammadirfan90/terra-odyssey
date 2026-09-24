@@ -1,5 +1,5 @@
 ---
-updated: 2026-09-25T00:57:00Z
+updated: 2026-09-25T01:23:00Z
 ---
 
 # Project State: Terra Odyssey
@@ -7,22 +7,22 @@ updated: 2026-09-25T00:57:00Z
 ## Current Position
 
 **Milestone:** v0.1.0-mvp
-**Phase:** 2 - Scientific Trend Engine & Estimators (completed)
-**Task:** All Phase 2 plans executed and verified
-**Status:** verified
+**Phase:** 3 - Regional Contrast & Evidence Engine
+**Task:** Planning complete (3 plans across 3 waves)
+**Status:** Ready for execution
 
 ## Last Action
 
-Executed Phase 2 across all 3 plans:
-- **Plan 2.1**: Day-weighted annual temperature means, precipitation accumulation sums, seasonal boundaries (DJF/MAM/JJA/SON), strict 12/12 calendar-month completeness, and consecutive-span validation.
-- **Plan 2.2**: Centered float64 OLS with explicit Newey-West HAC covariance (Bartlett kernel, lag 2, small-sample correction, Student-$t$ reference distribution), lag 1/3/5 sensitivities, SciPy Theil-Sen point-estimate diagnostic, and independent pure-NumPy numerical test oracle verifying statsmodels to $< 10^{-10}$ relative tolerance.
-- **Plan 2.3**: Endpoint interval sensitivity engine evaluating 5 predefined windows with strict $\ge 20$ year filtering and conditional caveat reporting.
+Completed Phase 3 planning following interactive discussion with the user (`.gsd/DECISIONS.md`). Generated `RESEARCH.md` and 3 atomic execution plans:
+- **Plan 3.1 (Wave 1)**: Area-Weighted Spatial Aggregation Engine (`spatial_aggregation.py`, `test_spatial_aggregation.py`)
+- **Plan 3.2 (Wave 2)**: Paired Regional Difference Contrast Estimator (`paired_contrast.py`, `test_paired_contrast.py`)
+- **Plan 3.3 (Wave 3)**: Multiple-Testing Control & Evidence Adjudication (`multiplicity.py`, `test_multiplicity.py`)
 
-Full test suite: 48/48 tests passing in 1.95s. Phase 2 verified as `PASS` in `.gsd/phases/2/VERIFICATION.md`.
+Pre-requisites resolved: installed `shapely` and `pyproj`, created `pyproject.toml`, extended `schemas/analysis-result.schema.json`, and decoupled trend estimation from evidence adjudication.
 
 ## Next Steps
 
-1. `/discuss-phase 3` or `/plan 3` — Plan Phase 3: Regional Contrast & Evidence Engine (area-weighted regional spatial aggregation, paired difference slope estimation, and Benjamini-Hochberg FDR control).
+1. `/execute 3` — Execute Phase 3 plans in wave order.
 2. Package updated codebase archive with `pwsh .\scripts\package-codebase.ps1`.
 
 ## Active Decisions
@@ -31,12 +31,13 @@ Decisions made that affect current work:
 
 | Decision | Choice | Made | Affects |
 |----------|--------|------|---------|
-| Core Scope | D1 MERRA-2 + D2 GPM IMERG | 2026-09-24 | Phase 1 & 2 |
-| Production Estimator | statsmodels OLS + Newey-West HAC (Bartlett lag 2, Student-t) | 2026-09-25 | Phase 2 |
+| Core Scope | D1 MERRA-2 + D2 GPM IMERG | 2026-09-24 | Phase 1, 2, 3 |
+| Production Estimator | statsmodels OLS + Newey-West HAC (Bartlett lag 2, Student-t) | 2026-09-25 | Phase 2 & 3 |
 | Numerical Test Oracle | Independent NumPy HAC in `tests/numerical/` | 2026-09-25 | Phase 2 |
-| Completeness Policy | Strict 12/12 valid months, min 20-year span | 2026-09-25 | Phase 2 |
-| Robustness Diagnostic | SciPy Theil-Sen point-estimate comparison | 2026-09-25 | Phase 2 |
-| Interval Sensitivity | 5 predefined windows (full, start+3, start+5, end-3, end-5) | 2026-09-25 | Phase 2 |
+| Geometry Engine | Shapely + pyproj.Geod with exact cell-bound areas | 2026-09-25 | Phase 3 |
+| Spatial Coverage Policy | 100% MERRA-2, 90% GPM IMERG (area-weighted) | 2026-09-25 | Phase 3 |
+| Contrast Method | Synchronous direct difference $D_t = Y_{A,t} - Y_{B,t}$ | 2026-09-25 | Phase 3 |
+| Multiple Testing | Benjamini-Yekutieli (`fdr_by`) primary; BH sensitivity | 2026-09-25 | Phase 3 |
 | Methodology | GSD (SPEC -> PLAN -> EXECUTE -> VERIFY -> COMMIT) | 2026-09-24 | All phases |
 
 ## Blockers
@@ -45,8 +46,8 @@ None.
 
 ## Concerns
 
-- When extracting polygon time series in Phase 3, cosine-latitude area weighting must be applied across spatial grids before temporal aggregation.
+- Ensure point-in-polygon cell intersection handles multipolygons and antimeridian-crossing geometries seamlessly without memory bloat.
 
 ---
 
-*Last updated: 2026-09-25T00:57:00Z*
+*Last updated: 2026-09-25T01:23:00Z*
