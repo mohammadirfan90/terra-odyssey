@@ -41,26 +41,26 @@ The system is divided into three core tiers:
 ## Components
 
 ### 1. Data Layer
-- **Location:** `src/data/`
+- **Location:** `terra-odyssey/src/data/`
 - **Purpose:** Adapter interface resolving NASA CMR collections, decoding netCDF4/HDF5 granules, applying fill-value masks, and emitting `DatasetManifest` objects.
 - **Pattern:** Adapter pattern with immutable raw file caching and normalized NetCDF/Zarr cubes.
 
 ### 2. Backend & Analysis Engine
-- **Location:** `src/backend/`
+- **Location:** `terra-odyssey/src/backend/`
 - **Purpose:** Request validation, investigation execution queue, statistical trend calculation (OLS + Newey-West HAC standard errors), regional contrast tests, and result serialization.
 - **Pattern:** Domain-driven service with typed Pydantic contracts and pure numerical calculation kernels.
 
 ### 3. Frontend Workspace
-- **Location:** `src/frontend/`
+- **Location:** `terra-odyssey/src/frontend/`
 - **Purpose:** Interactive UI consuming typed API responses. Renders diverging slope maps, uncertainty layers, synchronized time-series charts, and export flows.
 - **Pattern:** State-driven component hierarchy obeying `docs/UX_SPEC.md`.
 
 ## Data Flow
 
 1. **User configures investigation:** Variable (e.g. T2M), date range (1981–2025), and region(s).
-2. **API validates request:** Verifies availability, temporal completeness, and spatial validity against `schemas/dataset-manifest.schema.json`.
+2. **API validates request:** Verifies availability, temporal completeness, and spatial validity against `terra-odyssey/schemas/dataset-manifest.schema.json`.
 3. **Analysis execution:** Ingests normalized data cube, masks fill values, aggregates spatially, computes trend slope and HAC uncertainty, and computes paired regional contrast if 2 regions selected.
-4. **Result delivered:** Emits `schemas/analysis-result.schema.json` and creates exportable `schemas/investigation-record.schema.json`.
+4. **Result delivered:** Emits `terra-odyssey/schemas/analysis-result.schema.json` and creates exportable `terra-odyssey/schemas/investigation-record.schema.json`.
 
 ---
 

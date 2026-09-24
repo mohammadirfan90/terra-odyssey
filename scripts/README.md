@@ -15,5 +15,6 @@ credentials or a script that silently downloads an unpinned “latest” product
 - `search_repo.ps1` / `search_repo.sh`: Search-first repo query utility.
 - `setup_search.ps1` / `setup_search.sh`: Verifies search tool availability (ripgrep/grep/git grep).
 - `get-context.ps1` / `get-context.sh`: Resolves and chains lean, task-specific context strings from `context-manifest.json`.
+- `package-codebase.ps1` / `package-codebase.sh`: Archives the `terra-odyssey/` application directory into `terra-odyssey.zip` on the repository root.
 
 
