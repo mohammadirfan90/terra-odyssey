@@ -14,4 +14,6 @@ credentials or a script that silently downloads an unpinned “latest” product
 - `validate-templates.ps1` / `validate-templates.sh`: Validates `.gsd/templates/`.
 - `search_repo.ps1` / `search_repo.sh`: Search-first repo query utility.
 - `setup_search.ps1` / `setup_search.sh`: Verifies search tool availability (ripgrep/grep/git grep).
+- `get-context.ps1` / `get-context.sh`: Resolves and chains lean, task-specific context strings from `context-manifest.json`.
+
 

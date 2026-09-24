@@ -150,7 +150,7 @@ At the end of each wave or significant work block, create a state snapshot:
 
 **Adapter Pattern:**
 ```
-adapters/
+.gsd/adapters/
 ├── CLAUDE.md    # Optional Claude enhancements
 ├── GEMINI.md    # Optional Gemini enhancements
 └── GPT_OSS.md   # Optional GPT/OSS enhancements
@@ -210,8 +210,7 @@ reported as done, the worktree is discarded, and the change is gone.
 ## Repository Structure
 
 ```
-PROJECT_RULES.md          # ← This file (canonical rules)
-GSD-STYLE.md              # Style and conventions
+PROJECT_RULES.md          # ← This file (canonical GSD rules)
 
 .agent/
 └── workflows/            # Slash commands (/plan, /execute, etc.)
@@ -225,12 +224,14 @@ GSD-STYLE.md              # Style and conventions
 ├── SPEC.md               # Requirements (must be FINALIZED)
 ├── ROADMAP.md            # Phases and progress
 ├── STATE.md              # Session memory
+├── STYLE.md              # Style and conventions
+├── model_capabilities.yaml # Model capability profiles
+├── adapters/             # Optional model-specific enhancements
 ├── templates/            # Document templates
 └── examples/             # Usage examples
 
-adapters/                 # Optional model-specific enhancements
-docs/                     # Operational documentation
-scripts/                  # Utility scripts
+docs/                     # Operational & domain documentation
+scripts/                  # Utility & validation scripts
 ```
 
 ---

@@ -11,12 +11,10 @@ silently changing the challenge, or turning correlation into causation.
 
 ## Start here
 
-1. Read `AGENTS.md`.
-2. Read `docs/CONTEXT_GUIDE.md` and select only the task-relevant files.
-3. Read `docs/PRODUCT_BRIEF.md` for the product boundary.
-4. Read `docs/SCIENTIFIC_RULES.md` before changing analysis code.
-5. Read the relevant schema and task prompt before editing code.
-6. Run the checks named in `AGENTS.md` before calling work complete.
+1. Read `AGENTS.md` for mission rules, non-negotiable science constraints, and the GSD protocol.
+2. Read `.gsd/STATE.md` to see the current milestone, active phase, and immediate next steps.
+3. Select only task-relevant files using `context-manifest.json`.
+4. Run validation checks before marking any task complete.
 
 ## Recommended implementation tree
 
@@ -37,8 +35,13 @@ terra-odyssey/
 │   ├── IMPLEMENTATION_TREE.md         # proposed source layout
 │   ├── DECISION_HISTORY.md            # resolved research/report conflict
 │   └── REFERENCES.md
-├── prompts/
-│   └── ai-coding/                     # reusable build/review prompts
+├── .gsd/                             # Get Shit Done (GSD) engine & operational state
+│   ├── STATE.md                      # current position, active phase, next steps
+│   ├── ROADMAP.md                    # phased implementation milestones
+│   ├── SPEC.md                       # master architectural specification
+│   ├── STACK.md                      # pinned technical choices
+│   ├── docs/                         # GSD runbook, token optimization, model guide
+│   └── adapters/                     # AI assistant persona adapters
 ├── schemas/                           # machine-readable contracts
 ├── data/manifests/                    # versioned metadata, not raw NASA data
 ├── src/
@@ -46,7 +49,8 @@ terra-odyssey/
 │   ├── backend/                       # API, jobs, analysis orchestration
 │   └── data/                          # adapters, normalization, manifests
 ├── tests/                             # unit, numerical, contract, e2e tests
-└── references/                        # optional long source documents
+├── scripts/                           # validation, search, and context utilities
+└── references/                        # offline long source documents (never auto-loaded)
 ```
 
 ## Scientific boundary
@@ -59,16 +63,11 @@ attribution, parcel-level farm advice, crop yield, or local soil fertility.
 
 ## Context tiers
 
-- **Always:** `AGENTS.md`, `docs/CONTEXT_GUIDE.md`, `docs/PRODUCT_BRIEF.md`,
-  `docs/SCIENTIFIC_RULES.md`, and the active task prompt.
-- **Frontend/UI:** `docs/UX_SPEC.md`,
-  the relevant schema, and the relevant feature section in the product brief.
-- **Data/analysis:** `docs/DATA_CATALOG.md`, `docs/SCIENTIFIC_RULES.md`,
-  `schemas/dataset-manifest.schema.json`, and the selected dataset manifest.
-- **Backend/API:** `docs/API_CONTRACT.md`, the investigation/result schemas,
-  and the relevant validation section.
-- **Optional:** the long blueprint DOCX and the original prompt in
-  `references/`; do not attach them to every small coding task.
+- **Default (Always):** `AGENTS.md` and `.gsd/STATE.md`.
+- **Frontend/UI:** `docs/UX_SPEC.md` and `schemas/analysis-result.schema.json`.
+- **Data/analysis:** `docs/DATA_CATALOG.md`, `docs/SCIENTIFIC_RULES.md`, and `schemas/dataset-manifest.schema.json`.
+- **Backend/API:** `docs/API_CONTRACT.md` and `schemas/investigation-record.schema.json`.
+- **Never attach by default:** `references/`, raw data archives, `.env` files, or large documents.
 
 ## What is deliberately absent
 

@@ -9,13 +9,12 @@ and whether the evidence supports a statistical trend.
 
 ## Before coding
 
-- Read `docs/CONTEXT_GUIDE.md` and attach only the files required for the task.
-- Read `docs/SCIENTIFIC_RULES.md` before changing a dataset adapter, estimator,
-  aggregation rule, significance label, or evidence visualization.
-- Do not replace the active challenge with another challenge. See
-  `docs/DECISION_HISTORY.md` for the research-report conflict.
-- If a requirement is ambiguous, state the assumption in the plan and keep it
-  reversible. Never invent a NASA endpoint, field, coverage date, or result.
+- Read `.gsd/STATE.md` to restore current project position and active plan.
+- Use the **search-first discipline**: grep/ripgrep before loading files; never read whole archives.
+- Read only the specific task-bundle files required for your work (see Task Routing below).
+- Never read `references/` during ordinary coding tasks (it is reserved for deep manual research).
+- Read `docs/SCIENTIFIC_RULES.md` before changing any data adapter, estimator, mask, or statistic.
+- If a requirement is ambiguous, state the assumption in the plan and keep it reversible. Never invent NASA data or endpoints.
 
 ## Non-negotiable science rules
 

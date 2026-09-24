@@ -20,11 +20,8 @@ short. Other agents can use `README.md` plus the explicit task bundle.
 
 Attach or make available:
 
-- `AGENTS.md`
-- `README.md`
-- `docs/CONTEXT_GUIDE.md`
-- `docs/PRODUCT_BRIEF.md`
-- `docs/SCIENTIFIC_RULES.md`
+- `AGENTS.md` (unified mission, science non-negotiables, and GSD execution protocol)
+- `.gsd/STATE.md` (active session position, current plan, and next steps)
 - the exact task statement and “done when” checks
 
 ### Tier 1 — attach by workstream
@@ -43,6 +40,7 @@ Attach or make available:
 
 Use only when a decision cannot be answered by Tier 0/1:
 
+- `references/PRODUCT_SPEC_FULL.md`
 - `references/Trend_Detective_Scientific_Project_Blueprint.docx`
 - `references/Pasted markdown.md`
 - `references/UPLOADED_SOURCE_FILES.md`
@@ -86,4 +84,19 @@ task, target 5–8 files: the durable rules, one relevant domain document, one o
 two schemas/manifests, and the task itself. If the agent asks for more context,
 add the smallest file that answers its question. Never solve uncertainty by
 attaching every PDF, DOCX, image, and raw data file.
+
+## Automated Context Stringing
+
+Use the included helper to inspect or output the exact chained context files for any task:
+
+```powershell
+# Inspect the chained context string and token budget
+pwsh .\scripts\get-context.ps1 data
+pwsh .\scripts\get-context.ps1 frontend
+pwsh .\scripts\get-context.ps1 api
+
+# Bash equivalent
+./scripts/get-context.sh data
+```
+
 
