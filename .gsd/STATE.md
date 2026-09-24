@@ -8,22 +8,22 @@ updated: 2026-09-25T01:23:00Z
 
 **Milestone:** v0.1.0-mvp
 **Phase:** 3 - Regional Contrast & Evidence Engine
-**Task:** Planning complete (3 plans across 3 waves)
-**Status:** Ready for execution
+**Task:** Execution and Verification complete (63/63 tests passing)
+**Status:** Phase 3 complete; ready for Phase 4
 
 ## Last Action
 
-Completed Phase 3 planning following interactive discussion with the user (`.gsd/DECISIONS.md`). Generated `RESEARCH.md` and 3 atomic execution plans:
-- **Plan 3.1 (Wave 1)**: Area-Weighted Spatial Aggregation Engine (`spatial_aggregation.py`, `test_spatial_aggregation.py`)
-- **Plan 3.2 (Wave 2)**: Paired Regional Difference Contrast Estimator (`paired_contrast.py`, `test_paired_contrast.py`)
-- **Plan 3.3 (Wave 3)**: Multiple-Testing Control & Evidence Adjudication (`multiplicity.py`, `test_multiplicity.py`)
-
-Pre-requisites resolved: installed `shapely` and `pyproj`, created `pyproject.toml`, extended `schemas/analysis-result.schema.json`, and decoupled trend estimation from evidence adjudication.
+Executed Phase 3 plans across 3 waves and verified full test suite:
+- **Plan 3.1**: Area-Weighted Spatial Aggregation Engine (`spatial_aggregation.py`, `test_spatial_aggregation.py`) with exact cell-bound spherical areas, Shapely fractional polygon overlap, and MERRA-2/GPM coverage enforcement.
+- **Plan 3.2**: Paired Regional Difference Contrast Estimator (`paired_contrast.py`, `test_paired_contrast.py`) fitting $D_t = Y_{A,t} - Y_{B,t}$ with OLS + Newey-West HAC, verifying algebraic linearity, and enforcing the strict opposite-trend qualification hierarchy.
+- **Plan 3.3**: Multiple-Testing Control & Evidence Adjudication (`multiplicity.py`, `test_multiplicity.py`) wrapping Benjamini-Yekutieli (`fdr_by`) as conservative primary under spatial dependence, BH sensitivity, and mandatory `exploratory_map_selected` disclosure.
+- Verified: Full test suite passing (63/63 tests in 2.76s). Phase 3 `VERIFICATION.md` verdict: PASS.
 
 ## Next Steps
 
-1. `/execute 3` — Execute Phase 3 plans in wave order.
-2. Package updated codebase archive with `pwsh .\scripts\package-codebase.ps1`.
+1. Repackage codebase archive `terra-odyssey.zip`.
+2. Commit, push branch `feat/phase-3-execution`, create PR, and merge to `main`.
+3. Proceed to Phase 4: `/discuss-phase 4` or `/plan 4` (API & Investigation Orchestration).
 
 ## Active Decisions
 
