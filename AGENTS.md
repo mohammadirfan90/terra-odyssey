@@ -49,6 +49,12 @@ and whether the evidence supports a statistical trend.
 - Do not use mock scientific values in the real-data demo. Synthetic fixtures
   are allowed only when clearly labeled and used for algorithm tests.
 
+## Development workflow (Get Shit Done)
+
+- Follow the GSD methodology in `PROJECT_RULES.md`: `SPEC → PLAN → EXECUTE → VERIFY → COMMIT`.
+- Check `.gsd/STATE.md` at session start; keep it updated after each completed task.
+- Enforce the search-first discipline and capture empirical proof (test outputs, command logs) before completion.
+
 ## Definition of done
 
 Before reporting completion, run the relevant tests, type checks, lint/format

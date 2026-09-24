@@ -1,0 +1,97 @@
+---
+milestone: v0.1.0-mvp
+version: 0.1.0
+updated: 2026-09-24T23:20:00Z
+---
+
+# Roadmap: Terra Odyssey
+
+> **Current Phase:** 1 - Foundation & Data Ingestion
+> **Status:** planning
+
+## Must-Haves (from SPEC)
+
+- [ ] MERRA-2 T2M (D1) and GPM IMERG Final (D2) ingestion adapters with quality masks
+- [ ] Gridded temporal cube normalization and spatial aggregation engine
+- [ ] OLS trend estimator with Newey-West HAC standard error diagnostics
+- [ ] Paired regional contrast estimator with multiple-testing control
+- [ ] InvestigationRecord schema serialization and JSON/CSV export
+- [ ] Accessible web investigation workspace with map and linked time series
+
+---
+
+## Phases
+
+### Phase 1: Foundation & Data Ingestion
+**Status:** 🔄 In Progress
+**Objective:** Ingestion adapters, sample granule validation, fill-masking, and manifest generation for D1 (MERRA-2 T2M) and D2 (GPM IMERG Final).
+**Requirements:** REQ-DATA-01, REQ-DATA-02
+
+**Plans:**
+- [x] Plan 1.1: Dataset manifest schemas and source contracts definition
+- [ ] Plan 1.2: D1 MERRA-2 adapter with time-weighting and unit conversion (K to °C)
+- [ ] Plan 1.3: D2 GPM IMERG adapter with monthly accumulation and QA filtering
+
+---
+
+### Phase 2: Scientific Trend Engine & Estimators
+**Status:** ⬜ Not Started
+**Objective:** Core analytical engine computing slopes, Newey-West HAC standard errors, block bootstrapping, and calendar completeness.
+**Depends on:** Phase 1
+
+**Plans:**
+- [ ] Plan 2.1: Annual and seasonal aggregation with missingness thresholds
+- [ ] Plan 2.2: OLS trend estimator with Newey-West HAC lag selection and numerical reference test
+- [ ] Plan 2.3: Interval sensitivity analysis across starting/ending years
+
+---
+
+### Phase 3: Regional Contrast & Evidence Engine
+**Status:** ⬜ Not Started
+**Objective:** Paired regional contrast estimator, false discovery rate (FDR) control across spatial fields, and qualified evidence status determination.
+**Depends on:** Phase 2
+
+**Plans:**
+- [ ] Plan 3.1: Area-weighted regional time-series extraction for polygons and bounding boxes
+- [ ] Plan 3.2: Paired difference slope estimation and contrast hypothesis testing
+- [ ] Plan 3.3: Multiple-testing adjustment (Benjamini-Hochberg) for gridded trend maps
+
+---
+
+### Phase 4: API & Investigation Orchestration
+**Status:** ⬜ Not Started
+**Objective:** FastAPI backend serving catalog metadata, asynchronous investigation jobs, cached gridded fields, and InvestigationRecord exports.
+**Depends on:** Phase 3
+
+**Plans:**
+- [ ] Plan 4.1: Catalog and investigation creation API endpoints
+- [ ] Plan 4.2: Investigation execution worker and job state stepper
+- [ ] Plan 4.3: JSON, CSV, and summary report export bundling
+
+---
+
+### Phase 5: Interactive Web Workspace
+**Status:** ⬜ Not Started
+**Objective:** Responsive frontend with linked trend map, dual regional time-series charts, evidence panels, and accessible diagnostics drawer.
+**Depends on:** Phase 4
+
+**Plans:**
+- [ ] Plan 5.1: Question builder and variable selection catalog
+- [ ] Plan 5.2: Diverging trend map with uncertainty hatching and polygon selector
+- [ ] Plan 5.3: Linked time-series panel, paired contrast cards, and methods drawer
+
+---
+
+## Progress Summary
+
+| Phase | Status | Plans | Complete |
+|-------|--------|-------|----------|
+| 1 | 🔄 | 1/3 | 33% |
+| 2 | ⬜ | 0/3 | 0% |
+| 3 | ⬜ | 0/3 | 0% |
+| 4 | ⬜ | 0/3 | 0% |
+| 5 | ⬜ | 0/3 | 0% |
+
+---
+
+*Last updated: 2026-09-24T23:20:00Z*
