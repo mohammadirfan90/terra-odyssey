@@ -7,23 +7,23 @@ updated: 2026-09-25T01:23:00Z
 ## Current Position
 
 **Milestone:** v0.1.0-mvp
-**Phase:** 3 - Regional Contrast & Evidence Engine
-**Task:** Execution and Verification complete (63/63 tests passing)
-**Status:** Phase 3 complete; ready for Phase 4
+**Phase:** 4 - API & Investigation Orchestration
+**Task:** Discussion complete (`.gsd/DECISIONS.md` updated)
+**Status:** Ready for planning (`/plan 4`)
 
 ## Last Action
 
-Executed Phase 3 plans across 3 waves and verified full test suite:
-- **Plan 3.1**: Area-Weighted Spatial Aggregation Engine (`spatial_aggregation.py`, `test_spatial_aggregation.py`) with exact cell-bound spherical areas, Shapely fractional polygon overlap, and MERRA-2/GPM coverage enforcement.
-- **Plan 3.2**: Paired Regional Difference Contrast Estimator (`paired_contrast.py`, `test_paired_contrast.py`) fitting $D_t = Y_{A,t} - Y_{B,t}$ with OLS + Newey-West HAC, verifying algebraic linearity, and enforcing the strict opposite-trend qualification hierarchy.
-- **Plan 3.3**: Multiple-Testing Control & Evidence Adjudication (`multiplicity.py`, `test_multiplicity.py`) wrapping Benjamini-Yekutieli (`fdr_by`) as conservative primary under spatial dependence, BH sensitivity, and mandatory `exploratory_map_selected` disclosure.
-- Verified: Full test suite passing (63/63 tests in 2.76s). Phase 3 `VERIFICATION.md` verdict: PASS.
+Completed Phase 4 discussion and documented architectural decisions in `.gsd/DECISIONS.md`:
+- Authoritative durable SQLite job store + bounded local queue + single scientific worker (`ProcessPoolExecutor(max_workers=1)`).
+- Clear separation of operational `job_status`, execution `stage`, and scientific `result_status`.
+- Compressed structured-grid map JSON contract (`EPSG:4326`, explicit dimensions/bands, nulls for missing values, frozen FDR family).
+- Explicit execution modes (`auto`, `live`, `cached_only`, `demo_sample`) with RFC 9457 HTTP 503 Problem Details when data is unavailable.
+- Frozen `.zip` export bundle containing typed `investigation_record.json`, derived series CSVs, map grid, manifests, methods, reports, and SHA-256 checksums.
+- Pre-requisite schema extensions planned for `schemas/investigation-record.schema.json`.
 
 ## Next Steps
 
-1. Repackage codebase archive `terra-odyssey.zip`.
-2. Commit, push branch `feat/phase-3-execution`, create PR, and merge to `main`.
-3. Proceed to Phase 4: `/discuss-phase 4` or `/plan 4` (API & Investigation Orchestration).
+1. `/plan 4` — Generate Phase 4 research and execution plans (API schemas, SQLite job engine & worker, endpoints, export bundler).
 
 ## Active Decisions
 

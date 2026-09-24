@@ -123,3 +123,99 @@
 - **Primary FDR Procedure:** Benjamini-Yekutieli (`fdr_by`, $q=0.05$) to control FDR under arbitrary spatial dependency.
 - **Sensitivity Diagnostic:** Benjamini-Hochberg (`fdr_bh`, $q=0.05$) reported as sensitivity diagnostic.
 - **Family Definition:** The test family must freeze dataset, variable, period, grid domain, quality policies, HAC config, candidate hypotheses, and FDR level before viewing results. Multiplicity must cover actual contrast hypotheses searched ($M = \frac{N(N-1)}{2}$ for $N$ candidate regions), not just individual grid cells.
+
+---
+
+## Phase 4: API & Investigation Orchestration
+
+**Date:** 2026-09-25
+
+### 1. Job Execution Architecture & State Separation
+- **Durable Authority:** SQLite database (`jobs.db`) is the sole authoritative job store. In-memory structures serve solely as caches.
+- **Concurrency & Resource Protection:**
+  - Bounded `asyncio.Queue` prevents unbounded job submission.
+  - Dedicated scientific execution via `ProcessPoolExecutor(max_workers=1)`.
+  - Scientific worker receives only file paths, job IDs, and configuration hashes over IPC (never heavy xarray or NetCDF objects).
+  - Single Uvicorn application worker for the Space Apps MVP.
+- **FastAPI Lifespan Management:** Lifespan context manager starts the background queue worker, scans SQLite to recover or mark interrupted jobs upon restart (`interrupted_on_restart`), and drains resources cleanly on shutdown.
+- **Three-Tier Status Separation:**
+  - `job_status`: `"submitted" | "running" | "succeeded" | "failed" | "cancel_requested" | "cancelled"`
+  - `stage`: `"validating" | "acquiring" | "normalizing" | "aggregating" | "analyzing" | "publishing"`
+  - `result_status`: `"supported" | "inconclusive" | "ineligible"`
+  - An investigation yielding an inconclusive statistical contrast or insufficient scientific coverage executes successfully as an operational job:
+    `{"job_status": "succeeded", "result_status": "inconclusive"}` or `{"job_status": "succeeded", "result_status": "ineligible"}`.
+- **Operational Guarantees:**
+  - `POST /api/investigations` returns HTTP 202 Accepted with job location and configuration hash.
+  - Idempotency via `Idempotency-Key` or configuration hash to reject duplicate concurrent/historical runs.
+  - Cooperative cancellation checked between pipeline stages.
+  - Atomic publication: write to temporary path $\to$ compute SHA-256 $\to$ atomic rename.
+  - Zero credential exposure in database state, API responses, logs, or exports.
+
+### 2. Map Data Delivery Contract
+- **Payload Format:** Reject raw/full-resolution GeoJSON for global grids. Return compressed structured-grid JSON:
+  ```json
+  {
+    "grid": {
+      "crs": "EPSG:4326",
+      "width": 180,
+      "height": 90,
+      "longitude": [],
+      "latitude": [],
+      "order": "latitude_longitude"
+    },
+    "bands": {
+      "slope_per_decade": [],
+      "raw_p_value": [],
+      "adjusted_p_value": [],
+      "coverage_fraction": [],
+      "evidence_code": []
+    },
+    "legend": {
+      "units": "degC/decade",
+      "center": 0,
+      "minimum": -1.2,
+      "maximum": 1.2,
+      "fdr_method": "fdr_by",
+      "fdr_level": 0.05
+    },
+    "provenance": {}
+  }
+  ```
+- **Map Endpoint:** `GET /api/investigations/{id}/map?bbox=minLon,minLat,maxLon,maxLat&max_cells=10000` with HTTP gzip/brotli compression.
+- **Grid Constraints:**
+  - Enforce `max_cells` ceiling.
+  - Masked values serialised as JSON `null` (never invalid `NaN`).
+  - Never average $p$-values when downsampling grid cells.
+  - Frozen FDR test family must never recompute during viewport pan or zoom.
+  - GeoJSON reserved strictly for Region A/B boundaries, bounding boxes, and observation footprints.
+
+### 3. Offline NASA Data & Execution Modes
+- **Policy:** Verified cache first; zero silent substitution of synthetic fixtures or sample granules.
+- **Explicit Modes:**
+  - `"auto"`: Use complete verified cache if present; otherwise attempt live NASA Earthdata acquisition.
+  - `"live"`: Enforce live acquisition from NASA DAAC; fail if credentials or network are missing.
+  - `"cached_only"`: Use only checksum-verified local granules; fail if cache is incomplete.
+  - `"demo_sample"`: Explicitly run the bounded demonstration dataset on its true temporal and spatial footprint.
+- **Typed Error Semantics:** Missing data or network/credential absence returns RFC 9457 `application/problem+json` with HTTP 503 (`code: "earthdata_unavailable"`).
+- **Provenance Separation:** Transport mode separated from scientific release:
+  `{"source_release": "5.12.4", "data_mode": "cached_verified", "cache_hit": true, "granule_checksums": [...]}`.
+- **Fixture Separation:** Real sample NASA granules reside in `terra-odyssey/data/samples/`; synthetic testing fixtures reside strictly in `terra-odyssey/tests/fixtures/`.
+
+### 4. Investigation Export Bundling
+- **Structure:** `terra-odyssey-investigation-{id}.zip`:
+  - `investigation_record.json` (strictly conforming to `schemas/investigation-record.schema.json`)
+  - `resolved_configuration.json`
+  - `results/` (`analysis_results.json`, `region_time_series.csv`, `paired_difference.csv`, `map_grid.json.gz`)
+  - `manifests/` (`dataset_manifest.json`, `source_granules.json`)
+  - `methods/` (`methods.md`)
+  - `report/` (`summary_report.md`)
+  - `software/` (`environment.json`, `version.json`)
+  - `README.md`
+  - `checksums.sha256`
+- **Supported Formats:** `?format=zip`, `?format=json`, `?format=timeseries_csv`.
+- **Integrity Rules:** Freeze export upon `publishing` stage; generate reports deterministically from typed data; hash every included file; exclude secrets and absolute local paths.
+
+### 5. Schema Pre-requisites
+- Extend `schemas/investigation-record.schema.json` prior to implementation with typed properties:
+  `schema_version`, `job`, `data_mode`, `artifact_index`, `record_hash`, `published_at`, `source_manifest_objects`, `resolved_configuration_hash`, and `map_family_id`.
+
