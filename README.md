@@ -19,22 +19,21 @@ silently changing the challenge, or turning correlation into causation.
 ## Recommended implementation tree
 
 ```text
-terra-odyssey/
+/
+├── terra-odyssey/                    # Core application codebase
+│   ├── src/
+│   │   ├── frontend/                 # map, charts, investigation workflow
+│   │   ├── backend/                  # API, jobs, analysis orchestration
+│   │   └── data/                     # adapters, normalization, manifests
+│   ├── tests/                        # unit, numerical, contract, e2e tests
+│   ├── schemas/                      # machine-readable JSON contracts
+│   ├── data/manifests/               # versioned metadata, not raw NASA data
+│   └── README.md                     # codebase architecture guide
+├── terra-odyssey.zip                 # Root codebase archive (auto-updated on every change)
 ├── AGENTS.md                         # durable instructions for coding agents
 ├── CLAUDE.md                         # Claude Code bridge to AGENTS.md
-├── README.md
-├── docs/
-│   ├── index.md
-│   ├── CONTEXT_GUIDE.md              # what to attach for each task
-│   ├── PRODUCT_BRIEF.md              # compact product and scope authority
-│   ├── SCIENTIFIC_RULES.md            # non-negotiable inference rules
-│   ├── DATA_CATALOG.md                # dataset choices and access contracts
-│   ├── UX_SPEC.md                     # user journey and evidence UI
-│   ├── API_CONTRACT.md                # backend jobs and result contracts
-│   ├── VALIDATION_PLAN.md             # scientific and software acceptance
-│   ├── IMPLEMENTATION_TREE.md         # proposed source layout
-│   ├── DECISION_HISTORY.md            # resolved research/report conflict
-│   └── REFERENCES.md
+├── README.md                         # workspace entrypoint
+├── docs/                             # scientific rules, catalog, specs
 ├── .gsd/                             # Get Shit Done (GSD) engine & operational state
 │   ├── STATE.md                      # current position, active phase, next steps
 │   ├── ROADMAP.md                    # phased implementation milestones
@@ -42,15 +41,8 @@ terra-odyssey/
 │   ├── STACK.md                      # pinned technical choices
 │   ├── docs/                         # GSD runbook, token optimization, model guide
 │   └── adapters/                     # AI assistant persona adapters
-├── schemas/                           # machine-readable contracts
-├── data/manifests/                    # versioned metadata, not raw NASA data
-├── src/
-│   ├── frontend/                      # map, charts, investigation workflow
-│   ├── backend/                       # API, jobs, analysis orchestration
-│   └── data/                          # adapters, normalization, manifests
-├── tests/                             # unit, numerical, contract, e2e tests
-├── scripts/                           # validation, search, and context utilities
-└── references/                        # offline long source documents (never auto-loaded)
+├── scripts/                          # packaging, validation, search, context tools
+└── references/                       # offline long source documents (never auto-loaded)
 ```
 
 ## Scientific boundary
@@ -61,12 +53,20 @@ MODIS vegetation are later regional extensions. The application reports
 descriptive trends, uncertainty, and comparisons. It does not claim causal
 attribution, parcel-level farm advice, crop yield, or local soil fertility.
 
+## Packaging & Codebase Distribution
+
+The actual application codebase in `/terra-odyssey` is packaged as a standalone root zip file:
+- `pwsh .\scripts\package-codebase.ps1` (or `./scripts/package-codebase.sh`)
+- Generates `terra-odyssey.zip` on the repository root.
+- Re-run automatically on every codebase update so the zip is always fresh and ready to use.
+
 ## Context tiers
 
 - **Default (Always):** `AGENTS.md` and `.gsd/STATE.md`.
-- **Frontend/UI:** `docs/UX_SPEC.md` and `schemas/analysis-result.schema.json`.
-- **Data/analysis:** `docs/DATA_CATALOG.md`, `docs/SCIENTIFIC_RULES.md`, and `schemas/dataset-manifest.schema.json`.
-- **Backend/API:** `docs/API_CONTRACT.md` and `schemas/investigation-record.schema.json`.
+- **Frontend/UI:** `docs/UX_SPEC.md` and `terra-odyssey/schemas/analysis-result.schema.json`.
+- **Data/analysis:** `docs/DATA_CATALOG.md`, `docs/SCIENTIFIC_RULES.md`, and `terra-odyssey/schemas/dataset-manifest.schema.json`.
+- **Backend/API:** `docs/API_CONTRACT.md` and `terra-odyssey/schemas/investigation-record.schema.json`.
+- **Never attach by default:** `references/`, raw data archives, `.env` files, or large documents.
 - **Never attach by default:** `references/`, raw data archives, `.env` files, or large documents.
 
 ## What is deliberately absent

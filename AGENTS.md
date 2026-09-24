@@ -37,6 +37,8 @@ and whether the evidence supports a statistical trend.
 ## Engineering rules
 
 - Prefer small typed modules with explicit inputs and outputs.
+- Keep the application codebase organized inside `terra-odyssey/`.
+- After every codebase update, run `pwsh .\scripts\package-codebase.ps1` to update `terra-odyssey.zip` on the root.
 - Keep raw files immutable; write normalized cubes and manifests separately.
 - Every analysis job receives a versioned configuration and returns an
   `InvestigationRecord`-compatible result.

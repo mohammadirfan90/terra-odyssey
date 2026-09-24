@@ -17,9 +17,10 @@ Installed and adapted Get Shit Done (GSD) framework for Terra Odyssey in Google 
 
 ## Next Steps
 
-1. Implement D1 MERRA-2 adapter in `src/data/adapters/d1_merra2.py` with CMR collection lookup, coordinate parsing, and unit conversion (K to °C).
-2. Implement D2 GPM IMERG adapter in `src/data/adapters/d2_gpm_imerg.py` with monthly accumulation and QA filtering.
-3. Write unit and smoke tests for both adapters validating against `schemas/dataset-manifest.schema.json`.
+1. Implement D1 MERRA-2 adapter in `terra-odyssey/src/data/adapters/d1_merra2.py` with CMR collection lookup, coordinate parsing, and unit conversion (K to °C).
+2. Implement D2 GPM IMERG adapter in `terra-odyssey/src/data/adapters/d2_gpm_imerg.py` with monthly accumulation and QA filtering.
+3. Write unit and smoke tests for both adapters validating against `terra-odyssey/schemas/dataset-manifest.schema.json`.
+4. Run `pwsh .\scripts\package-codebase.ps1` to update `terra-odyssey.zip` on the root after every codebase modification.
 
 ## Active Decisions
 

@@ -15,20 +15,20 @@
 ### Backend & Scientific Analysis
 | Package | System | Purpose |
 |---------|--------|---------|
-| FastAPI | `src/backend/api` | Fast, async REST API for investigations and catalog queries |
-| Pydantic v2 | `src/backend/domain` | Validation and serialization against JSON schemas |
-| NumPy & SciPy | `src/backend/analysis` | Numerical calculations, matrix operations, statistical tests |
-| Statsmodels | `src/backend/analysis` | OLS regression and Newey-West HAC covariance estimators |
-| xarray & netCDF4 | `src/data` | Multi-dimensional gridded NASA Earth observation arrays |
-| httpx | `src/data/adapters` | Async NASA CMR queries and sample granule retrieval |
+| FastAPI | `terra-odyssey/src/backend/api` | Fast, async REST API for investigations and catalog queries |
+| Pydantic v2 | `terra-odyssey/src/backend/domain` | Validation and serialization against JSON schemas |
+| NumPy & SciPy | `terra-odyssey/src/backend/analysis` | Numerical calculations, matrix operations, statistical tests |
+| Statsmodels | `terra-odyssey/src/backend/analysis` | OLS regression and Newey-West HAC covariance estimators |
+| xarray & netCDF4 | `terra-odyssey/src/data` | Multi-dimensional gridded NASA Earth observation arrays |
+| httpx | `terra-odyssey/src/data/adapters` | Async NASA CMR queries and sample granule retrieval |
 
 ### Frontend & Visualization
 | Package | System | Purpose |
 |---------|--------|---------|
-| React 18+ & TypeScript | `src/frontend` | Accessible UI components and typed investigation workflow |
-| Vite | `src/frontend` | Fast module bundler and development server |
-| MapLibre GL / Leaflet | `src/frontend/components/map` | Gridded spatial map, diverging trend tiles, polygon selection |
-| Chart.js / Plotly | `src/frontend/components/chart` | Synchronized regional time-series and confidence interval bands |
+| React 18+ & TypeScript | `terra-odyssey/src/frontend` | Accessible UI components and typed investigation workflow |
+| Vite | `terra-odyssey/src/frontend` | Fast module bundler and development server |
+| MapLibre GL / Leaflet | `terra-odyssey/src/frontend/components/map` | Gridded spatial map, diverging trend tiles, polygon selection |
+| Chart.js / Plotly | `terra-odyssey/src/frontend/components/chart` | Synchronized regional time-series and confidence interval bands |
 
 ## Quality & Verification Tools
 

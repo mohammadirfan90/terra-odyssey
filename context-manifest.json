@@ -7,10 +7,10 @@
     ".gsd/STATE.md"
   ],
   "task_bundles": {
-    "frontend": ["docs/UX_SPEC.md", "schemas/analysis-result.schema.json"],
-    "data_adapter": ["docs/DATA_CATALOG.md", "schemas/dataset-manifest.schema.json", "data/manifests/d1_merra2.json"],
-    "analysis": ["docs/SCIENTIFIC_RULES.md", "docs/VALIDATION_PLAN.md", "schemas/analysis-result.schema.json"],
-    "api": ["docs/API_CONTRACT.md", "schemas/investigation-record.schema.json", "schemas/analysis-result.schema.json"],
+    "frontend": ["docs/UX_SPEC.md", "terra-odyssey/schemas/analysis-result.schema.json"],
+    "data_adapter": ["docs/DATA_CATALOG.md", "terra-odyssey/schemas/dataset-manifest.schema.json", "terra-odyssey/data/manifests/d1_merra2.json"],
+    "analysis": ["docs/SCIENTIFIC_RULES.md", "docs/VALIDATION_PLAN.md", "terra-odyssey/schemas/analysis-result.schema.json"],
+    "api": ["docs/API_CONTRACT.md", "terra-odyssey/schemas/investigation-record.schema.json", "terra-odyssey/schemas/analysis-result.schema.json"],
     "release_review": ["docs/VALIDATION_PLAN.md", "docs/SCIENTIFIC_RULES.md", "docs/DECISION_HISTORY.md"]
   },
   "optional_deep_context": [
