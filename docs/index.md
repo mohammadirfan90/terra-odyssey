@@ -6,7 +6,7 @@
 | `PRODUCT_BRIEF.md` | Product, scope, feature, or architecture work | Current product boundary |
 | `SCIENTIFIC_RULES.md` | Any data or statistics change | Non-negotiable inference behavior |
 | `DATA_CATALOG.md` | Dataset, adapter, access, or metadata work | Dataset decisions and limitations |
-| `UX_SPEC.md` | Frontend, visualization, or Stitch work | User journey and evidence hierarchy |
+| `UX_SPEC.md` | Frontend, UI, and visualization work | User journey and evidence hierarchy |
 | `API_CONTRACT.md` | Backend, jobs, or frontend data fetching | Request/result contracts |
 | `VALIDATION_PLAN.md` | Tests, review, or release | Acceptance evidence |
 | `IMPLEMENTATION_TREE.md` | Creating the repository or moving files | Proposed source layout |

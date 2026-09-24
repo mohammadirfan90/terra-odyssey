@@ -31,7 +31,7 @@ Attach or make available:
 
 | Workstream | Add these files |
 |---|---|
-| UI screen | `docs/UX_SPEC.md`, `prompts/google-stitch/DESIGN_SYSTEM.md`, relevant schema, screenshot or Stitch export for the screen |
+| UI screen | `docs/UX_SPEC.md`, relevant schema, screenshot or UI export for the screen |
 | Chart/map | `docs/UX_SPEC.md`, `docs/SCIENTIFIC_RULES.md`, `schemas/analysis-result.schema.json` |
 | NASA adapter | `docs/DATA_CATALOG.md`, selected `data/manifests/*.json`, `schemas/dataset-manifest.schema.json`, source documentation link |
 | Trend estimator | `docs/SCIENTIFIC_RULES.md`, `docs/VALIDATION_PLAN.md`, `schemas/analysis-result.schema.json`, numerical reference fixture |

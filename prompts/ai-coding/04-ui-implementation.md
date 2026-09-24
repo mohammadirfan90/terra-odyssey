@@ -1,7 +1,7 @@
 # UI implementation prompt
 
-Read `docs/UX_SPEC.md`, `docs/SCIENTIFIC_RULES.md`,
-`prompts/google-stitch/DESIGN_SYSTEM.md`, and the relevant result schema.
+Read `docs/UX_SPEC.md`, `docs/SCIENTIFIC_RULES.md`, and the relevant result
+schema.
 
 Build the requested screen with real typed result data. Preserve the linked map
 and time-series interaction, units, coverage, uncertainty, valid counts,

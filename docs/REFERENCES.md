@@ -29,9 +29,4 @@
 - OpenAI Codex `AGENTS.md`: https://developers.openai.com/codex/agent-configuration/agents-md
 - OpenAI Codex best practices: https://developers.openai.com/codex/learn/best-practices
 - Claude Code memory and `CLAUDE.md`: https://code.claude.com/docs/en/memory
-- Google Stitch introduction: https://developers.googleblog.com/stitch-a-new-way-to-design-uis/
-- Google Stitch: https://stitch.withgoogle.com/
-- Stitch prompting guide: https://stitch.withgoogle.com/docs/learn/prompting/
-- Google Labs Stitch skills repository:
-  https://github.com/google-labs-code/stitch-skills
 
