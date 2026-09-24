@@ -1,5 +1,5 @@
 ---
-updated: 2026-09-24T23:20:00Z
+updated: 2026-09-25T00:46:00Z
 ---
 
 # Project State: Terra Odyssey
@@ -7,18 +7,21 @@ updated: 2026-09-24T23:20:00Z
 ## Current Position
 
 **Milestone:** v0.1.0-mvp
-**Phase:** 1 - Foundation & Data Ingestion (completed)
-**Task:** All Phase 1 plans executed and verified
-**Status:** verified
+**Phase:** 2 - Scientific Trend Engine & Estimators
+**Task:** Planning complete (3 plans across 3 waves)
+**Status:** Ready for execution
 
 ## Last Action
 
-Executed Plan 1.2 (`Merra2Adapter`) and Plan 1.3 (`GpmImergAdapter`) with complete CMR query support, netCDF-4 decoding, fill masking, unit conversions, and synthetic test suites. All 19 unit tests passed in 0.32s. Phase 1 verified as PASS in `.gsd/phases/1/VERIFICATION.md`.
+Completed Phase 2 planning following detailed architectural discussion with the user (`.gsd/DECISIONS.md`). Generated `RESEARCH.md` and 3 atomic execution plans:
+- **Plan 2.1 (Wave 1)**: Temporal Aggregation & Missingness Validator (`aggregation.py`)
+- **Plan 2.2 (Wave 2)**: OLS + Newey-West HAC Estimator & Numerical Test Oracle (`trend_estimator.py`, `test_hac_oracle.py`)
+- **Plan 2.3 (Wave 3)**: Interval Sensitivity Analysis Engine (`interval_sensitivity.py`)
 
 ## Next Steps
 
-1. `/plan 2` — Plan Phase 2: Scientific Trend Engine & Estimators (annual/seasonal aggregation, OLS + Newey-West HAC covariance estimator, interval sensitivity analysis).
-2. Package fresh codebase archive with `pwsh .\scripts\package-codebase.ps1`.
+1. `/execute 2` — Run Phase 2 execution plans in wave order.
+2. Package updated codebase archive with `pwsh .\scripts\package-codebase.ps1`.
 
 ## Active Decisions
 
@@ -27,23 +30,21 @@ Decisions made that affect current work:
 | Decision | Choice | Made | Affects |
 |----------|--------|------|---------|
 | Core Scope | D1 MERRA-2 + D2 GPM IMERG | 2026-09-24 | Phase 1 & 2 |
-| Statistical Method | OLS + Newey-West HAC | 2026-09-24 | Phase 2 |
-| Contrast Method | Paired Difference Slope | 2026-09-24 | Phase 3 |
+| Production Estimator | statsmodels OLS + Newey-West HAC (Bartlett lag 2, Student-t) | 2026-09-25 | Phase 2 |
+| Numerical Test Oracle | Independent NumPy HAC in `tests/numerical/` | 2026-09-25 | Phase 2 |
+| Completeness Policy | Strict 12/12 valid months, min 20-year span | 2026-09-25 | Phase 2 |
+| Robustness Diagnostic | SciPy Theil-Sen point-estimate comparison | 2026-09-25 | Phase 2 |
+| Interval Sensitivity | 5 predefined windows (full, start+3, start+5, end-3, end-5) | 2026-09-25 | Phase 2 |
 | Methodology | GSD (SPEC -> PLAN -> EXECUTE -> VERIFY -> COMMIT) | 2026-09-24 | All phases |
 
 ## Blockers
 
-None. Repository structure, schemas, manifests, and GSD workflows are in place.
+None.
 
 ## Concerns
 
-- Need to ensure NASA CMR or sample granule acquisition handles unauthenticated / token-less requests cleanly during local development and testing.
-- Must ensure block bootstrap and Newey-West calculations have reference numerical baselines to prevent silent estimation bugs.
-
-## Session Context
-
-All work is organized via feature branches and Pull Requests. PR #1 initialized the project; PR #2 removed Stitch prompts. Current branch is `feat/gsd-integration` adding the GSD framework and project memory.
+- Ensure statsmodels OLS degrees of freedom ($df = n-2$) and Student-$t$ distribution test critical values align precisely between statsmodels and the pure-NumPy test oracle.
 
 ---
 
-*Last updated: 2026-09-24T23:20:00Z*
+*Last updated: 2026-09-25T00:46:00Z*
