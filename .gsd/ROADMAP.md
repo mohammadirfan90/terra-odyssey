@@ -6,7 +6,7 @@ updated: 2026-09-24T23:20:00Z
 
 # Roadmap: Terra Odyssey
 
-> **Current Phase:** 3 - Regional Contrast & Evidence Engine
+> **Current Phase:** 4 - API & Investigation Orchestration
 > **Status:** ready for planning
 
 ## Must-Haves (from SPEC)
@@ -14,7 +14,7 @@ updated: 2026-09-24T23:20:00Z
 - [x] MERRA-2 T2M (D1) and GPM IMERG Final (D2) ingestion adapters with quality masks
 - [x] Gridded temporal cube normalization and spatial aggregation engine
 - [x] OLS trend estimator with Newey-West HAC standard error diagnostics
-- [ ] Paired regional contrast estimator with multiple-testing control
+- [x] Paired regional contrast estimator with multiple-testing control
 - [ ] InvestigationRecord schema serialization and JSON/CSV export
 - [ ] Accessible web investigation workspace with map and linked time series
 
@@ -47,19 +47,19 @@ updated: 2026-09-24T23:20:00Z
 ---
 
 ### Phase 3: Regional Contrast & Evidence Engine
-**Status:** 📋 Ready for Execution
+**Status:** ✅ Complete
 **Objective:** Paired regional contrast estimator, false discovery rate (FDR) control across spatial fields, and qualified evidence status determination.
 **Depends on:** Phase 2
 
 **Plans:**
-- [ ] Plan 3.1: Area-weighted regional time-series extraction for polygons and bounding boxes
-- [ ] Plan 3.2: Paired difference slope estimation and contrast hypothesis testing
-- [ ] Plan 3.3: Multiple-testing adjustment (Benjamini-Yekutieli & Benjamini-Hochberg) for gridded trend maps
+- [x] Plan 3.1: Area-weighted regional time-series extraction for polygons and bounding boxes
+- [x] Plan 3.2: Paired difference slope estimation and contrast hypothesis testing
+- [x] Plan 3.3: Multiple-testing adjustment (Benjamini-Yekutieli & Benjamini-Hochberg) for gridded trend maps
 
 ---
 
 ### Phase 4: API & Investigation Orchestration
-**Status:** ⬜ Not Started
+**Status:** 📋 Ready for Planning
 **Objective:** FastAPI backend serving catalog metadata, asynchronous investigation jobs, cached gridded fields, and InvestigationRecord exports.
 **Depends on:** Phase 3
 
@@ -87,11 +87,11 @@ updated: 2026-09-24T23:20:00Z
 | Phase | Status | Plans | Complete |
 |-------|--------|-------|----------|
 | 1 | ✅ | 3/3 | 100% |
-| 2 | ⬜ | 0/3 | 0% |
-| 3 | ⬜ | 0/3 | 0% |
+| 2 | ✅ | 3/3 | 100% |
+| 3 | ✅ | 3/3 | 100% |
 | 4 | ⬜ | 0/3 | 0% |
 | 5 | ⬜ | 0/3 | 0% |
 
 ---
 
-*Last updated: 2026-09-25T00:25:00Z*
+*Last updated: 2026-09-25T01:36:00Z*
