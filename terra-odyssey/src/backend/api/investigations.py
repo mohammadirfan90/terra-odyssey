@@ -20,6 +20,7 @@ from src.backend.schemas import (
     InvestigationRequest,
     JobStatusResponse,
 )
+from src.backend.exporter import build_export_bundle
 from src.backend.store import JobStore
 from src.backend.worker import enqueue_job
 
@@ -245,3 +246,48 @@ async def get_investigation_map(
     }
 
     return JSONResponse(content=result)
+
+
+@router.get("/{job_id}/export")
+async def get_investigation_export(
+    job_id: str,
+    format: str = Query("zip", pattern="^(zip|json|timeseries_csv)$", description="Export bundle format"),
+) -> Response:
+    """Download frozen investigation record bundle as ZIP, root JSON, or CSV."""
+    store = JobStore()
+    job = store.get_job(job_id)
+    if not job:
+        raise InvestigationNotFoundError(f"Investigation job '{job_id}' not found.")
+
+    if job["job_status"] != "succeeded":
+        raise InvestigationConflictError(
+            f"Investigation '{job_id}' is not yet complete (status={job['job_status']}).",
+        )
+
+    art_dir = Path(job["artifacts_dir"])
+
+    if format == "json":
+        rec_file = art_dir / "investigation_record.json"
+        if not rec_file.is_file():
+            raise InvestigationNotFoundError("Investigation record artifact not found.")
+        with open(rec_file, "r", encoding="utf-8") as f:
+            return JSONResponse(content=json.load(f))
+
+    elif format == "timeseries_csv":
+        csv_file = art_dir / "region_time_series.csv"
+        if not csv_file.is_file():
+            raise InvestigationNotFoundError("Time series CSV artifact not found.")
+        return Response(
+            content=csv_file.read_bytes(),
+            media_type="text/csv",
+            headers={"Content-Disposition": f"attachment; filename=region_time_series_{job_id}.csv"},
+        )
+
+    else:  # zip
+        zip_bytes = build_export_bundle(job_id, art_dir)
+        return Response(
+            content=zip_bytes,
+            media_type="application/zip",
+            headers={"Content-Disposition": f"attachment; filename=terra-odyssey-investigation-{job_id}.zip"},
+        )
+
