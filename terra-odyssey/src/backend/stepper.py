@@ -23,26 +23,26 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
-from src.analysis.aggregation import (
+from ..analysis.aggregation import (
     aggregate_annual_precipitation,
     aggregate_annual_temperature,
     aggregate_seasonal,
     validate_consecutive_series,
 )
-from src.analysis.multiplicity import adjudicate_contrast_family, adjust_pvalues
-from src.analysis.paired_contrast import estimate_paired_contrast
-from src.analysis.spatial_aggregation import (
+from ..analysis.multiplicity import adjudicate_contrast_family, adjust_pvalues
+from ..analysis.paired_contrast import estimate_paired_contrast
+from ..analysis.spatial_aggregation import (
     aggregate_spatial_mean,
     compute_polygon_weights,
 )
-from src.analysis.trend_estimator import estimate_linear_trend, fit_ols_hac_trend
-from src.backend.errors import (
+from ..analysis.trend_estimator import estimate_linear_trend, fit_ols_hac_trend
+from .errors import (
     DataUnavailableError,
     InvalidGeometryError,
     ScientificallyIneligibleError,
     TerraOdysseyError,
 )
-from src.backend.store import JobStore
+from .store import JobStore
 
 logger = logging.getLogger("terra_odyssey.backend.stepper")
 
