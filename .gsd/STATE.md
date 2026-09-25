@@ -8,23 +8,22 @@ updated: 2026-09-25T03:58:00Z
 
 **Milestone:** v0.1.0-mvp
 **Phase:** 5 - Interactive Web Workspace
-**Task:** Plan 5.2 Complete (2/3 plans complete), Plan 5.3 Ready for Execution
-**Status:** In Progress (67%)
+**Task:** All Phase 5 Plans Complete (3/3 plans complete)
+**Status:** ✅ Complete (100%)
 
 ## Last Action
 
-Executed Plan 5.2 (Wave 2):
-- Integrated MapLibre GL JS with Mapcn architecture, dynamic client import (`ssr: false`), and `ProjectionToggle.tsx` enabling seamless 2D Mercator <-> 3D Globe transitions without re-fetching or recomputing evidence.
-- Implemented `color-scale.ts` with zero-centred diverging scales (`RdBu`, `BrBG`, `PuOr`, `"vik"` with strictly zero Viridis) and frozen symmetric domain $[-\max|\beta|, +\max|\beta|]$.
-- Performed CanvasSource/Globe validation spike in `grid-to-canvas.ts` with robust GeoJSON polygon fill layer fallback.
-- Added Benjamini-Yekutieli FDR discovery stippling layer (`adjusted_p_value < 0.05` and `evidence_code == "supported"`) and invalid cell hatching mask.
-- Built mathematical `cell-index.ts` and `CellInspector.tsx` displaying exact coordinates, physical slope $\pm$ SE, 95% HAC CI, raw & BY-adjusted $p$-values, and valid coverage without spatial interpolation.
-- Built `RegionDrawControls.tsx` with drag-box drawing, persistent "A" and "B" centroid badges, and `selection-history.ts` for exploratory search tracking and honest disclosure.
-- Verified Next.js static export build (`npm run build` in 5.4s) and 63/63 pytest unit tests passing.
+Executed Plan 5.3 (Wave 3) & Verified Phase 5:
+- Implemented `d3-time-series.ts`, `CoverageBars.tsx`, and `LinkedTimeSeriesChart.tsx` (D3 + SVG dual regional series $Y_A(t)$ and $Y_B(t)$, synchronous difference $D_t$, zero reference line, fitted linear trends, decoupled year crosshair hover, and valid annual coverage bars).
+- Built `ContrastCard.tsx`, `MethodsInspector.tsx`, `ExportButton.tsx`, and `EvidenceDrawer.tsx` with semantic adjudication badges (`supported`, `inconclusive`, `ineligible`), scalar HAC slope CIs, and 1-click artifact downloads.
+- Cleared the Phase 4 Scientific Integration Gate in `stepper.py` with real OLS+HAC decimated grid fits, Benjamini-Yekutieli FDR multiple testing, validated temporal aggregation (day/month/leap-year weighting), and explicit demonstration mode disclosure.
+- Mounted Next.js static build in FastAPI `app.py`, enabling single-port unified deployment (`GET /` serves Next.js SPA; `/api` endpoints and RFC 9457 handlers preserved).
+- Packaged clean codebase archive: `terra-odyssey.zip` (95 files, 165.4 KB).
+- Verified: all 63 unit and integration tests passing (`pytest terra-odyssey/tests/unit/ -v`), Next.js static export compiled in 3.6s without errors.
 
 ## Next Steps
 
-1. Execute Plan 5.3 (Wave 3): Linked time-series panel (D3 SVG), paired contrast cards, diagnostics drawer, Phase 4 scientific integration gate clearing, and static export mounting.
+1. Milestone v0.1.0-mvp complete! All 5 roadmap phases verified and operational. Run `/audit-milestone` or prepare final showcase demonstration.
 
 
 
