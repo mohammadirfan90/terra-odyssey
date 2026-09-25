@@ -59,12 +59,12 @@ updated: 2026-09-24T23:20:00Z
 ---
 
 ### Phase 4: API & Investigation Orchestration
-**Status:** 📋 Ready for Planning
+**Status:** 🔄 In Progress
 **Objective:** FastAPI backend serving catalog metadata, asynchronous investigation jobs, cached gridded fields, and InvestigationRecord exports.
 **Depends on:** Phase 3
 
 **Plans:**
-- [ ] Plan 4.1: Catalog and investigation creation API endpoints
+- [x] Plan 4.1: Catalog and investigation creation API endpoints
 - [ ] Plan 4.2: Investigation execution worker and job state stepper
 - [ ] Plan 4.3: JSON, CSV, and summary report export bundling
 
@@ -89,7 +89,7 @@ updated: 2026-09-24T23:20:00Z
 | 1 | ✅ | 3/3 | 100% |
 | 2 | ✅ | 3/3 | 100% |
 | 3 | ✅ | 3/3 | 100% |
-| 4 | ⬜ | 0/3 | 0% |
+| 4 | 🔄 | 1/3 | 33% |
 | 5 | ⬜ | 0/3 | 0% |
 
 ---

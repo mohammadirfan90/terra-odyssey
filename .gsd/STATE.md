@@ -1,5 +1,5 @@
 ---
-updated: 2026-09-25T01:23:00Z
+updated: 2026-09-25T02:07:00Z
 ---
 
 # Project State: Terra Odyssey
@@ -8,21 +8,22 @@ updated: 2026-09-25T01:23:00Z
 
 **Milestone:** v0.1.0-mvp
 **Phase:** 4 - API & Investigation Orchestration
-**Task:** Planning complete (3 plans across 3 waves)
-**Status:** Ready for execution (`/execute 4`)
+**Task:** Plan 4.1 Complete, Plan 4.2 Ready for Execution
+**Status:** In Progress (1/3 plans complete)
 
 ## Last Action
 
-Completed Phase 4 research and planning:
-- Created `.gsd/phases/4/RESEARCH.md`.
-- Formulated 3 atomic execution plans across 3 waves:
-  - **Plan 4.1 (Wave 1)**: Schemas, Catalog, and Request Validation (`investigation-record.schema.json`, `schemas.py`, `catalog.py`, `errors.py`, `test_api_catalog.py`).
-  - **Plan 4.2 (Wave 2)**: Durable SQLite Job Store, Bounded Worker & Stepper (`store.py`, `stepper.py`, `worker.py`, `test_job_orchestration.py`).
-  - **Plan 4.3 (Wave 3)**: Map Grid Delivery, Evidence Endpoints & Frozen Export Bundler (`investigations.py`, `exporter.py`, `test_api_investigations.py`).
+Executed Plan 4.1 (Wave 1):
+- Extended `schemas/investigation-record.schema.json` with formal types for job status, stage, data mode, and artifact indexing. Verified against Draft 2020-12.
+- Created Pydantic v2 schemas in `terra-odyssey/src/backend/schemas.py`.
+- Implemented RFC 9457 Problem Details error models and exception handlers in `terra-odyssey/src/backend/errors.py`.
+- Built catalog and capability endpoints in `terra-odyssey/src/backend/api/catalog.py` and FastAPI app in `terra-odyssey/src/backend/app.py`.
+- Wrote and passed comprehensive unit tests in `terra-odyssey/tests/unit/test_api_catalog.py` (53/53 tests passing across repository).
+- Packaged clean codebase archive to `terra-odyssey.zip`.
 
 ## Next Steps
 
-1. `/execute 4` — Run Phase 4 plans in wave sequence.
+1. Execute Plan 4.2 (Wave 2): Durable SQLite Job Store, Bounded Worker & Stepper (`store.py`, `stepper.py`, `worker.py`, `test_job_orchestration.py`).
 2. Package updated codebase archive with `pwsh .\scripts\package-codebase.ps1`.
 
 ## Active Decisions
