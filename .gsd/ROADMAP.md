@@ -77,7 +77,7 @@ updated: 2026-09-24T23:20:00Z
 
 **Plans:**
 - [x] Plan 5.1: Question builder and variable selection catalog
-- [ ] Plan 5.2: Diverging trend map with uncertainty hatching and polygon selector
+- [x] Plan 5.2: Diverging trend map with uncertainty hatching and polygon selector
 - [ ] Plan 5.3: Linked time-series panel, paired contrast cards, and methods drawer
 
 ---
@@ -90,10 +90,10 @@ updated: 2026-09-24T23:20:00Z
 | 2 | ✅ | 3/3 | 100% |
 | 3 | ✅ | 3/3 | 100% |
 | 4 | ✅ | 3/3 | 100% |
-| 5 | 🔄 | 1/3 | 33% |
+| 5 | 🔄 | 2/3 | 67% |
 
 
 ---
 
-*Last updated: 2026-09-25T03:07:00Z*
+*Last updated: 2026-09-25T04:10:00Z*
 

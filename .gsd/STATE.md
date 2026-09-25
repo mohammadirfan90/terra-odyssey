@@ -8,22 +8,23 @@ updated: 2026-09-25T03:58:00Z
 
 **Milestone:** v0.1.0-mvp
 **Phase:** 5 - Interactive Web Workspace
-**Task:** Plan 5.1 Complete (1/3 plans complete), Plan 5.2 Ready for Execution
-**Status:** In Progress (33%)
+**Task:** Plan 5.2 Complete (2/3 plans complete), Plan 5.3 Ready for Execution
+**Status:** In Progress (67%)
 
 ## Last Action
 
-Executed Plan 5.1 (Wave 1):
-- Scaffolded Next.js 15 App Router in `terra-odyssey/src/frontend` with React 19, TypeScript, Tailwind CSS v4, Lucide icons, and static export configuration (`output: 'export'`).
-- Established scientific instrument-panel design system in `globals.css` and built shadcn/ui primitives (`Button`, `Card`, `Badge`, `Tabs`, `Drawer`, `RangeSlider`, `Select`, `cn`).
-- Extended backend `StructuredGridMapResponse` in `schemas.py` and `stepper.py` to freeze all 9 required diagnostic bands (`slope_per_decade`, `slope_se_per_decade`, `ci_lower_per_decade`, `ci_upper_per_decade`, `raw_p_value`, `adjusted_p_value`, `coverage_fraction`, `eligibility_code`, `evidence_code`) with transparent HTTP `Content-Encoding: gzip` transport.
-- Built `DatasetCatalog.tsx`, `PeriodSelector.tsx` (enforcing $\ge 20$ years span constraint), `PresetSelector.tsx`, `QuestionBuilder.tsx`, and `page.tsx` with TanStack Query API hooks and offline developer fixtures.
-- Verified Next.js static build (`npm run build` in 2.4s) and all 63 unit and integration tests passing (`pytest terra-odyssey/tests/unit/`).
-- Updated `scripts/package-codebase.ps1` to exclude `node_modules`, `.next`, and `out`, creating clean archive `terra-odyssey.zip` (79 clean files, 137.9 KB).
+Executed Plan 5.2 (Wave 2):
+- Integrated MapLibre GL JS with Mapcn architecture, dynamic client import (`ssr: false`), and `ProjectionToggle.tsx` enabling seamless 2D Mercator <-> 3D Globe transitions without re-fetching or recomputing evidence.
+- Implemented `color-scale.ts` with zero-centred diverging scales (`RdBu`, `BrBG`, `PuOr`, `"vik"` with strictly zero Viridis) and frozen symmetric domain $[-\max|\beta|, +\max|\beta|]$.
+- Performed CanvasSource/Globe validation spike in `grid-to-canvas.ts` with robust GeoJSON polygon fill layer fallback.
+- Added Benjamini-Yekutieli FDR discovery stippling layer (`adjusted_p_value < 0.05` and `evidence_code == "supported"`) and invalid cell hatching mask.
+- Built mathematical `cell-index.ts` and `CellInspector.tsx` displaying exact coordinates, physical slope $\pm$ SE, 95% HAC CI, raw & BY-adjusted $p$-values, and valid coverage without spatial interpolation.
+- Built `RegionDrawControls.tsx` with drag-box drawing, persistent "A" and "B" centroid badges, and `selection-history.ts` for exploratory search tracking and honest disclosure.
+- Verified Next.js static export build (`npm run build` in 5.4s) and 63/63 pytest unit tests passing.
 
 ## Next Steps
 
-1. Execute Plan 5.2 (Wave 2): Mapcn & MapLibre Trend Map, CanvasSource/Globe Validation Spike, FDR Pattern Layer & Terra Draw Selector.
+1. Execute Plan 5.3 (Wave 3): Linked time-series panel (D3 SVG), paired contrast cards, diagnostics drawer, Phase 4 scientific integration gate clearing, and static export mounting.
 
 
 
