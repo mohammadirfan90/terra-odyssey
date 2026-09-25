@@ -1,5 +1,5 @@
 ---
-updated: 2026-09-25T03:08:00Z
+updated: 2026-09-25T03:58:00Z
 ---
 
 # Project State: Terra Odyssey
@@ -7,23 +7,24 @@ updated: 2026-09-25T03:08:00Z
 ## Current Position
 
 **Milestone:** v0.1.0-mvp
-**Phase:** 4 - API & Investigation Orchestration
-**Task:** Phase 4 Complete (3/3 plans verified), Ready for Phase 5 (Interactive Web Workspace)
-**Status:** Phase 4 Complete (100%)
+**Phase:** 5 - Interactive Web Workspace
+**Task:** Plan 5.1 Complete (1/3 plans complete), Plan 5.2 Ready for Execution
+**Status:** In Progress (33%)
 
 ## Last Action
 
-Completed Phase 4 (Plan 4.3):
-- Implemented investigation API endpoints (`/api/investigations`, polling, `/series`, `/map`, `/evidence`, `/export`) in `terra-odyssey/src/backend/api/investigations.py`.
-- Implemented compressed structured-grid map streaming with decimation and cell capping.
-- Implemented reproducible, frozen investigation export bundler (`terra-odyssey/src/backend/exporter.py`) with offline Draft 2020-12 schema validation against `schemas/investigation-record.schema.json`.
-- Validated all 63 unit and integration tests passing (`pytest terra-odyssey/tests/unit/ -v`).
-- Packaged clean codebase archive to `terra-odyssey.zip` (55 clean files, 93.7 KB).
-- Produced Phase 4 verification report in `.gsd/phases/4/VERIFICATION.md`.
+Executed Plan 5.1 (Wave 1):
+- Scaffolded Next.js 15 App Router in `terra-odyssey/src/frontend` with React 19, TypeScript, Tailwind CSS v4, Lucide icons, and static export configuration (`output: 'export'`).
+- Established scientific instrument-panel design system in `globals.css` and built shadcn/ui primitives (`Button`, `Card`, `Badge`, `Tabs`, `Drawer`, `RangeSlider`, `Select`, `cn`).
+- Extended backend `StructuredGridMapResponse` in `schemas.py` and `stepper.py` to freeze all 9 required diagnostic bands (`slope_per_decade`, `slope_se_per_decade`, `ci_lower_per_decade`, `ci_upper_per_decade`, `raw_p_value`, `adjusted_p_value`, `coverage_fraction`, `eligibility_code`, `evidence_code`) with transparent HTTP `Content-Encoding: gzip` transport.
+- Built `DatasetCatalog.tsx`, `PeriodSelector.tsx` (enforcing $\ge 20$ years span constraint), `PresetSelector.tsx`, `QuestionBuilder.tsx`, and `page.tsx` with TanStack Query API hooks and offline developer fixtures.
+- Verified Next.js static build (`npm run build` in 2.4s) and all 63 unit and integration tests passing (`pytest terra-odyssey/tests/unit/`).
+- Updated `scripts/package-codebase.ps1` to exclude `node_modules`, `.next`, and `out`, creating clean archive `terra-odyssey.zip` (79 clean files, 137.9 KB).
 
 ## Next Steps
 
-1. Initiate Phase 5: Interactive Web Workspace (Plan 5.1: Question builder and variable selection catalog).
+1. Execute Plan 5.2 (Wave 2): Mapcn & MapLibre Trend Map, CanvasSource/Globe Validation Spike, FDR Pattern Layer & Terra Draw Selector.
+
 
 
 ## Active Decisions

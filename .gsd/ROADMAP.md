@@ -71,12 +71,12 @@ updated: 2026-09-24T23:20:00Z
 ---
 
 ### Phase 5: Interactive Web Workspace
-**Status:** ⬜ Not Started
+**Status:** 🔄 In Progress
 **Objective:** Responsive frontend with linked trend map, dual regional time-series charts, evidence panels, and accessible diagnostics drawer.
 **Depends on:** Phase 4
 
 **Plans:**
-- [ ] Plan 5.1: Question builder and variable selection catalog
+- [x] Plan 5.1: Question builder and variable selection catalog
 - [ ] Plan 5.2: Diverging trend map with uncertainty hatching and polygon selector
 - [ ] Plan 5.3: Linked time-series panel, paired contrast cards, and methods drawer
 
@@ -90,7 +90,8 @@ updated: 2026-09-24T23:20:00Z
 | 2 | ✅ | 3/3 | 100% |
 | 3 | ✅ | 3/3 | 100% |
 | 4 | ✅ | 3/3 | 100% |
-| 5 | ⬜ | 0/3 | 0% |
+| 5 | 🔄 | 1/3 | 33% |
+
 
 ---
 
