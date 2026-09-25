@@ -108,9 +108,9 @@ def modified_mann_kendall_test(
 
     # 1. Compute Mann-Kendall S statistic
     # S = sum_{i < j} sgn(x_j - x_i)
-    diff = x[:, np.newaxis] - x[np.newaxis, :]
+    diff = x[np.newaxis, :] - x[:, np.newaxis]
     sgn = np.sign(diff)
-    # Extract strictly upper triangle
+    # Extract strictly upper triangle (j > i)
     s_stat = float(np.sum(np.triu(sgn, k=1)))
 
     # 2. Compute theoretical variance under independence V0(S) with tie adjustment
