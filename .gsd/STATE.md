@@ -1,5 +1,5 @@
 ---
-updated: 2026-09-25T02:40:00Z
+updated: 2026-09-25T03:08:00Z
 ---
 
 # Project State: Terra Odyssey
@@ -8,23 +8,23 @@ updated: 2026-09-25T02:40:00Z
 
 **Milestone:** v0.1.0-mvp
 **Phase:** 4 - API & Investigation Orchestration
-**Task:** Plan 4.2 Complete, Plan 4.3 Ready for Execution
-**Status:** In Progress (2/3 plans complete)
+**Task:** Phase 4 Complete (3/3 plans verified), Ready for Phase 5 (Interactive Web Workspace)
+**Status:** Phase 4 Complete (100%)
 
 ## Last Action
 
-Executed Plan 4.2 (Wave 2):
-- Implemented authoritative SQLite job store in `terra-odyssey/src/backend/store.py` with WAL mode, state progression, and startup crash recovery.
-- Implemented 6-stage scientific pipeline stepper in `terra-odyssey/src/backend/stepper.py` with cooperative cancellation and orthogonal job/result status separation.
-- Built bounded worker queue and execution loop in `terra-odyssey/src/backend/worker.py`.
-- Configured FastAPI `lifespan` handler in `terra-odyssey/src/backend/app.py`.
-- Wrote and passed comprehensive unit and integration tests in `terra-odyssey/tests/unit/test_job_orchestration.py` (59/59 tests passing across repository).
-- Re-packaged clean codebase archive to `terra-odyssey.zip` (84 KB).
+Completed Phase 4 (Plan 4.3):
+- Implemented investigation API endpoints (`/api/investigations`, polling, `/series`, `/map`, `/evidence`, `/export`) in `terra-odyssey/src/backend/api/investigations.py`.
+- Implemented compressed structured-grid map streaming with decimation and cell capping.
+- Implemented reproducible, frozen investigation export bundler (`terra-odyssey/src/backend/exporter.py`) with offline Draft 2020-12 schema validation against `schemas/investigation-record.schema.json`.
+- Validated all 63 unit and integration tests passing (`pytest terra-odyssey/tests/unit/ -v`).
+- Packaged clean codebase archive to `terra-odyssey.zip` (55 clean files, 93.7 KB).
+- Produced Phase 4 verification report in `.gsd/phases/4/VERIFICATION.md`.
 
 ## Next Steps
 
-1. Execute Plan 4.3 (Wave 3): Map Grid Delivery, Evidence Endpoints & Frozen Export Bundler (`investigations.py`, `exporter.py`, `test_api_investigations.py`).
-2. Package updated codebase archive with `pwsh .\scripts\package-codebase.ps1`.
+1. Initiate Phase 5: Interactive Web Workspace (Plan 5.1: Question builder and variable selection catalog).
+
 
 ## Active Decisions
 
