@@ -7,6 +7,10 @@ from .aggregation import (
     get_partial_year_diagnostic,
     validate_consecutive_series,
 )
+from .block_bootstrap import (
+    BlockBootstrapResult,
+    moving_block_bootstrap_trend,
+)
 from .interval_sensitivity import (
     attach_interval_sensitivity_to_result,
     compute_interval_sensitivity,
@@ -54,4 +58,6 @@ __all__ = [
     "modified_mann_kendall_test",
     "MannKendallResult",
     "compute_sens_slope",
+    "moving_block_bootstrap_trend",
+    "BlockBootstrapResult",
 ]
