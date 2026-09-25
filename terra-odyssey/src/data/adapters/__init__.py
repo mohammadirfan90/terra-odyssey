@@ -8,5 +8,6 @@ unit conversion, and citation provenance.
 from .d1_merra2 import Merra2Adapter
 from .d2_gpm_imerg import GpmImergAdapter
 from .d3_modis_lst import ModisLstAdapter
+from .d4_modis_ndvi import ModisNdviAdapter
 
-__all__ = ["Merra2Adapter", "GpmImergAdapter", "ModisLstAdapter"]
+__all__ = ["Merra2Adapter", "GpmImergAdapter", "ModisLstAdapter", "ModisNdviAdapter"]
