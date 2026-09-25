@@ -7,7 +7,7 @@ import pytest
 from src.backend.errors import InvalidGeometryError
 from src.backend.stepper import run_pipeline
 from src.backend.store import JobStore
-from src.backend.worker import enqueue_job, get_queue
+from src.backend.worker import enqueue_job, get_queue, reset_queue
 
 
 def test_job_store_lifecycle(tmp_path):
@@ -216,6 +216,7 @@ def test_orthogonal_status_separation(tmp_path):
 @pytest.mark.asyncio
 async def test_bounded_queue_worker(tmp_path):
     """Test enqueuing into the bounded worker queue."""
+    reset_queue()
     db_file = tmp_path / "test_queue.db"
     store = JobStore(db_file)
     req = {

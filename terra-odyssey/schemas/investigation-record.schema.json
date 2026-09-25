@@ -80,8 +80,8 @@
           },
           "additionalProperties": false
         },
-        "region_a": {"type": "object"},
-        "region_b": {"type": ["object", "null"]},
+        "region_a": {"type": ["object", "array"]},
+        "region_b": {"type": ["object", "array", "null"]},
         "temporal_aggregation": {"type": "string"},
         "spatial_aggregation": {"type": "string"},
         "execution_mode": {"type": "string", "enum": ["auto", "live", "cached_only", "demo_sample"]},

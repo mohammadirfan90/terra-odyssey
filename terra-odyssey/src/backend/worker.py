@@ -25,6 +25,13 @@ def get_queue(maxsize: int = 10) -> asyncio.Queue:
     return _job_queue
 
 
+def reset_queue(maxsize: int = 10) -> asyncio.Queue:
+    """Reset the worker queue (useful for test isolation and clean restart)."""
+    global _job_queue
+    _job_queue = asyncio.Queue(maxsize=maxsize)
+    return _job_queue
+
+
 def get_executor(use_threads: bool = False) -> Executor:
     global _executor
     if _executor is None:
@@ -97,7 +104,7 @@ def start_worker_task() -> asyncio.Task:
 
 async def stop_worker_task() -> None:
     """Stop worker task and shut down executor."""
-    global _worker_task, _executor
+    global _worker_task, _executor, _job_queue
     if _worker_task and not _worker_task.done():
         _worker_task.cancel()
         try:
@@ -109,3 +116,5 @@ async def stop_worker_task() -> None:
     if _executor:
         _executor.shutdown(wait=False, cancel_futures=True)
         _executor = None
+
+    _job_queue = None

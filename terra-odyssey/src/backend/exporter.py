@@ -44,10 +44,10 @@ def _compute_sha256_bytes(data: bytes) -> str:
 
 def generate_methods_md(dataset_id: str, variable: str) -> str:
     """Generate deterministic scientific methodology markdown."""
-    return f"""# Scientific Methodology: Terra Odyssey Investigation
+    return """# Scientific Methodology: Terra Odyssey Investigation
 
 ## 1. Linear Trend Estimation & HAC Uncertainty
-- **Estimator**: Ordinary Least Squares (OLS) with centered temporal coordinates: $x = t - \\bar{{t}}$.
+- **Estimator**: Ordinary Least Squares (OLS) with centered temporal coordinates: $x = t - \\bar{t}$.
 - **Covariance Treatment**: Newey-West Heteroskedasticity and Autocorrelation Consistent (HAC) robust covariance.
   - Kernel: Bartlett.
   - Autoregressive lag: $L = 2$ (explicit parameter, no unconstrained automatic bandwidth).
@@ -57,21 +57,21 @@ def generate_methods_md(dataset_id: str, variable: str) -> str:
 
 ## 2. Spatial Aggregation & Geodesic Weighting
 - **Cell Surface Area**: Computed on WGS84 ellipsoid accounting for poleward meridional convergence:
-  $$A_{{ij}} \\propto \\Delta\\lambda \\cdot |\\sin(\\phi_{{north}}) - \\sin(\\phi_{{south}})|$$
+  $$A_{ij} \\propto \\Delta\\lambda \\cdot |\\sin(\\phi_{north}) - \\sin(\\phi_{south})|$$
 - **Boundary Cells**: Fractional polygon overlap evaluated using planar geodesic polygon intersection:
-  $$w_{{ij}} = A_{{ij}} \\cdot \\frac{{\\text{{Area}}(\\text{{cell}}_{{ij}} \\cap \\text{{Region}})}}{{\\text{{Area}}(\\text{{cell}}_{{ij}})}}$$
+  $$w_{ij} = A_{ij} \\cdot \\frac{\\text{Area}(\\text{cell}_{ij} \\cap \\text{Region})}{\\text{Area}(\\text{cell}_{ij})}$$
 - **Area-Weighted Regional Mean**:
-  $$\\bar{{Y}}_t = \\frac{{\\sum_{{i,j}} Y_{{ij,t}} \\cdot w_{{ij}} \\cdot M_{{ij,t}}}}{{\\sum_{{i,j}} w_{{ij}} \\cdot M_{{ij,t}}}}$$
+  $$\\bar{Y}_t = \\frac{\\sum_{i,j} Y_{ij,t} \\cdot w_{ij} \\cdot M_{ij,t}}{\\sum_{i,j} w_{ij} \\cdot M_{ij,t}}$$
 - **Coverage Policy**: Minimum 100% valid cell area for MERRA-2; minimum 90% for GPM IMERG.
 
 ## 3. Paired Regional Contrast
-- Synchronous direct difference series: $D_t = Y_{{A,t}} - Y_{{B,t}}$.
+- Synchronous direct difference series: $D_t = Y_{A,t} - Y_{B,t}$.
 - Tested via HAC OLS to account for cross-regional spatial covariance and temporal persistence.
-- Linearity equivalence: $\\hat{{\\beta}}_D = \\hat{{\\beta}}_A - \\hat{{\\beta}}_B$.
+- Linearity equivalence: $\\hat{\\beta}_D = \\hat{\\beta}_A - \\hat{\\beta}_B$.
 
 ## 4. Multiplicity Control
 - Exploratory spatial search utilizes the Benjamini-Yekutieli (BY, 2001) step-up procedure under arbitrary dependence:
-  $$p_{(k)} \\le \\frac{{k}}{{m \\sum_{{i=1}}^m (1/i)}} \\cdot q$$
+  $$p_{(k)} \\le \\frac{k}{m \\sum_{i=1}^m (1/i)} \\cdot q$$
 - Sensitivity comparison provided against standard Benjamini-Hochberg (BH, 1995).
 
 ## 5. Non-Attribution Disclosure
@@ -143,6 +143,33 @@ def generate_summary_report_md(record: Dict[str, Any]) -> str:
 """
 
 
+def get_schema_validator() -> Optional[jsonschema.Draft202012Validator]:
+    """Build a Draft202012Validator with local resolution for referenced schemas."""
+    schema_path = _find_schema_path()
+    if not schema_path.is_file():
+        return None
+    try:
+        with open(schema_path, "r", encoding="utf-8") as sf:
+            schema_data = json.load(sf)
+
+        analysis_schema_path = schema_path.parent / "analysis-result.schema.json"
+        if analysis_schema_path.is_file():
+            from referencing import Registry, Resource
+            with open(analysis_schema_path, "r", encoding="utf-8") as af:
+                analysis_data = json.load(af)
+            res = Resource.from_contents(analysis_data)
+            registry = (
+                Registry()
+                .with_resource("analysis-result.schema.json", res)
+                .with_resource("https://terra-odyssey.local/schemas/analysis-result.schema.json", res)
+            )
+            return jsonschema.Draft202012Validator(schema_data, registry=registry)
+        return jsonschema.Draft202012Validator(schema_data)
+    except Exception as e:
+        logger.warning("Could not construct schema validator: %s", e)
+        return None
+
+
 def build_export_bundle(
     job_id: str,
     artifacts_dir: Union[str, Path],
@@ -157,12 +184,9 @@ def build_export_bundle(
     with open(rec_file, "r", encoding="utf-8") as f:
         record_data = json.load(f)
 
-    # Validate against official JSON schema
-    schema_path = _find_schema_path()
-    if schema_path.is_file():
-        with open(schema_path, "r", encoding="utf-8") as sf:
-            schema_data = json.load(sf)
-        validator = jsonschema.Draft202012Validator(schema_data)
+    # Validate against official JSON schema with local reference resolution
+    validator = get_schema_validator()
+    if validator is not None:
         errors = list(validator.iter_errors(record_data))
         if errors:
             err_msg = "; ".join(f"{e.json_path}: {e.message}" for e in errors[:5])
