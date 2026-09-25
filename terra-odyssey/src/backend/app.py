@@ -2,11 +2,40 @@
 
 from __future__ import annotations
 
+import logging
+from contextlib import asynccontextmanager
+from typing import AsyncGenerator
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from src.backend.api.catalog import router as catalog_router
 from src.backend.errors import register_error_handlers
+from src.backend.store import JobStore
+from src.backend.worker import start_worker_task, stop_worker_task
+
+logger = logging.getLogger("terra_odyssey.backend.app")
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+    """Manage application startup and shutdown lifecycles."""
+    logger.info("Initializing Terra Odyssey application lifespan")
+    # Initialize SQLite store and recover any interrupted jobs from previous run
+    store = JobStore()
+    recovered = store.recover_interrupted_jobs()
+    if recovered > 0:
+        logger.warning("Recovered %d interrupted job(s) from previous server execution", recovered)
+
+    # Launch bounded queue worker task
+    worker_task = start_worker_task()
+    logger.info("Job queue worker task started: %s", worker_task)
+
+    try:
+        yield
+    finally:
+        logger.info("Shutting down Terra Odyssey application lifespan")
+        await stop_worker_task()
+        logger.info("Job queue worker shut down cleanly")
 
 
 def create_app() -> FastAPI:
@@ -17,6 +46,7 @@ def create_app() -> FastAPI:
         description="NASA Earth System Trend Detective API and Reproducible Investigation Orchestrator",
         docs_url="/docs",
         redoc_url="/redoc",
+        lifespan=lifespan,
     )
 
     # Enable CORS for local web dev and dashboard
