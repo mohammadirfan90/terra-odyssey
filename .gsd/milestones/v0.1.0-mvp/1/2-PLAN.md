@@ -15,15 +15,15 @@ Implement the data ingestion, quality filtering, and accumulation adapter for NA
 - `.gsd/ARCHITECTURE.md`
 - `.gsd/phases/1/RESEARCH.md`
 - `docs/SCIENTIFIC_RULES.md`
-- `terra-odyssey/data/manifests/d2_gpm_imerg.json`
-- `terra-odyssey/schemas/dataset-manifest.schema.json`
+- `terra-odyssey/backend/data/manifests/d2_gpm_imerg.json`
+- `terra-odyssey/backend/schemas/dataset-manifest.schema.json`
 
 ## Tasks
 
 <task type="auto">
   <name>Implement GpmImergAdapter Ingestion Class</name>
   <files>
-    terra-odyssey/src/data/adapters/d2_gpm_imerg.py
+    terra-odyssey/backend/src/data/adapters/d2_gpm_imerg.py
   </files>
   <action>
     Create the `GpmImergAdapter` class implementing the standard 7-step adapter lifecycle:
@@ -41,7 +41,7 @@ Implement the data ingestion, quality filtering, and accumulation adapter for NA
     USE: Calendar-aware calculation via Python's standard `calendar` module.
   </action>
   <verify>
-    python -c "from terra_odyssey.src.data.adapters.d2_gpm_imerg import GpmImergAdapter; a = GpmImergAdapter(); print(a.cite()['doi'])"
+    python -c "from data.adapters.d2_gpm_imerg import GpmImergAdapter; a = GpmImergAdapter(); print(a.cite()['doi'])"
   </verify>
   <done>
     GpmImergAdapter imports cleanly, handles calendar-hour calculations, and emits complete mission metadata.
@@ -51,8 +51,8 @@ Implement the data ingestion, quality filtering, and accumulation adapter for NA
 <task type="auto">
   <name>Create Synthetic GPM Fixture and Unit Tests</name>
   <files>
-    terra-odyssey/tests/fixtures/synthetic_gpm.py
-    terra-odyssey/tests/unit/test_d2_gpm_imerg.py
+    terra-odyssey/backend/tests/fixtures/synthetic_gpm.py
+    terra-odyssey/backend/tests/unit/test_d2_gpm_imerg.py
   </files>
   <action>
     1. Create `synthetic_gpm.py` building a labeled synthetic xarray dataset simulating 0.1° gridded monthly precipitation rates (e.g. 0.05 mm/hr to 5.0 mm/hr) and intentional missing/fill values (-9999.9).
@@ -63,10 +63,10 @@ Implement the data ingestion, quality filtering, and accumulation adapter for NA
          - February non-leap (28 days = 672 hrs): 1.0 mm/hr -> 672.0 mm
          - February leap year (29 days = 696 hrs): 1.0 mm/hr -> 696.0 mm
        - Fill-value masking: asserts -9999.9 is masked to NaN.
-       - Coordinate validation and metadata conformance to `terra-odyssey/schemas/dataset-manifest.schema.json`.
+       - Coordinate validation and metadata conformance to `terra-odyssey/backend/schemas/dataset-manifest.schema.json`.
   </action>
   <verify>
-    pytest terra-odyssey/tests/unit/test_d2_gpm_imerg.py -v
+    pytest terra-odyssey/backend/tests/unit/test_d2_gpm_imerg.py -v
   </verify>
   <done>
     All unit test cases pass, verifying leap-year handling, rate-to-accumulation multiplication, and fill-value elimination.

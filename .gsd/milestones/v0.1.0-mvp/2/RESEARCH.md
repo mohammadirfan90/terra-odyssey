@@ -81,7 +81,7 @@ Phase 2 builds the core analytical trend engine for Terra Odyssey, transforming 
 ---
 
 ## 5. Numerical Test Oracle
-- Independent NumPy implementation in `terra-odyssey/tests/numerical/test_hac_oracle.py`:
+- Independent NumPy implementation in `terra-odyssey/backend/tests/numerical/test_hac_oracle.py`:
   - Explicitly computes residual vector $e = y - X\beta$.
   - Autocovariance matrices $\hat{\Gamma}_l = \frac{1}{n} \sum_{t=l+1}^n e_t e_{t-l} x_t x_{t-l}^T$.
   - Bartlett weights $w_l = 1 - \frac{l}{L+1}$.

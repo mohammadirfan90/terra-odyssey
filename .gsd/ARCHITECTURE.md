@@ -1,77 +1,91 @@
 # Architecture: Terra Odyssey
 
-> Updated after Milestone `v0.1.0-mvp` completion on 2026-09-25
+> Updated for the standalone frontend/backend split on 2026-09-25
 
 ## Overview
 
-Terra Odyssey is structured as a decoupled, reproducible scientific investigation application.
-The application operates as a unified single-port deployment where FastAPI serves both the static Next.js Single Page Application at `GET /` and the RESTful API endpoints at `/api/*`.
+Terra Odyssey consists of two independently operated applications. The Next.js frontend communicates with the FastAPI backend over HTTP/JSON. FastAPI serves API routes only and has no dependency on frontend build output.
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────────┐
-│            FRONTEND (Next.js 15 App Router + TypeScript)        │
-│  - Presentation: Tailwind CSS v4 + shadcn/ui Component System   │
-│  - Map System: MapLibre GL JS (WebGL) + Mapcn UI Presentation   │
-│  - Spatial Selection: Terra Draw for Region A & Region B Boxes   │
-│  - Trend Visuals: Zero-Centred Diverging Scale (RdBu/BrBG)      │
-│  - Scientific Charts: D3 + SVG Linked Time Series (Y_A, Y_B, D_t)│
-│  - State Management: TanStack Query (@tanstack/react-query)     │
+│          FRONTEND — terra-odyssey/frontend                     │
+│  Next.js 16 App Router · React 19 · TypeScript                 │
+│  MapLibre/Mapcn maps · D3 charts · TanStack Query              │
+│  NEXT_PUBLIC_API_URL → backend /api                            │
 └───────────────────────────────┬─────────────────────────────────┘
-                                │ HTTP / JSON API
+                                │ HTTP / JSON
                                 ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│               BACKEND (Python FastAPI Web Service)              │
-│  - Single-Port Static Mount: Serves Next.js export at GET /     │
-│  - /api/catalog & /api/capabilities: NASA dataset metadata      │
-│  - /api/investigations: Async lifecycle, SQLite WAL JobStore    │
-│  - Error Handling: RFC 9457 Problem Details structured errors   │
-│  - Pipeline Stepper: 6-stage scientific execution worker        │
-│  - Export Bundler: Reproducible ZIP with draft-2020-12 records  │
+│          BACKEND — terra-odyssey/backend                       │
+│  FastAPI API · Pydantic contracts · SQLite WAL job state       │
+│  pipeline worker · reproducible investigation exports          │
 └───────────────────────────────┬─────────────────────────────────┘
-                                │ Typed Execution
+                                │ typed execution
                                 ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                 STATISTICAL & SPATIAL ENGINE                    │
-│  - OLS + Newey-West HAC (Bartlett lag 2, Student-t df=n-2)      │
-│  - Hamed & Rao (1998) Autocorrelation-Corrected Mann-Kendall    │
-│  - Stationary Moving Block Bootstrap (Künsch 1989)              │
-│  - Paired Direct Contrast: D_t = Y_{A,t} - Y_{B,t}              │
-│  - Spatial Aggregation: Exact Geodesic Integration (Shapely)    │
-│  - Multiplicity: Benjamini-Yekutieli (BY) & Benjamini-Hochberg  │
+│  ANALYSIS + DATA ADAPTERS — backend/src                        │
+│  OLS/HAC · sensitivity methods · paired contrasts · FDR        │
+│  geodesic aggregation · MERRA-2/GPM/MODIS adapters             │
 └───────────────────────────────┬─────────────────────────────────┘
-                                │ Normalized Data Adapters
+                                │ backend-owned files
                                 ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                   DATA ADAPTERS & INGESTION                     │
-│  - D1: MERRA-2 T2M (M2TMNXSLV v5.12.4, Kelvin -> Celsius)       │
-│  - D2: GPM IMERG Final (GPM_3IMERGM v07, Rate -> Accumulation)  │
-│  - D3: MODIS Land Surface Temperature (MOD11A2.061 8-Day)       │
-│  - Quality Masks, Calendar Completeness (12/12), Coordinate QA  │
+│  backend/data + backend/schemas                                │
+│  manifests · samples · jobs.db · investigations · JSON schemas │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-## Core Modules
+## Components
 
-### 1. Data Ingestion & Normalization (`src/data/`)
-- Adapters for MERRA-2, GPM IMERG, and MODIS LST.
-- Temporal aggregation enforcing strict 12/12 calendar-month completeness and leap-year weighting.
-- Spatial aggregation with exact spherical cell-bounds area weighting via Shapely and `pyproj.Geod`.
+### Frontend
 
-### 2. Analytical & Statistical Engine (`src/analysis/`)
-- Centered coordinate OLS with Newey-West HAC covariance.
-- Hamed & Rao modified Mann-Kendall with detrended rank autocorrelation variance correction.
-- Moving block bootstrap for non-parametric empirical confidence intervals.
-- Synchronous direct difference paired regional contrast estimator.
-- Benjamini-Yekutieli FDR multiple testing correction for spatial grid maps.
+- **Location:** `terra-odyssey/frontend/`
+- **Purpose:** Question building, map and chart rendering, evidence inspection, and exports.
+- **Integration:** Uses the typed client in `lib/api/` and the public `NEXT_PUBLIC_API_URL` setting.
+- **Output:** Static build artifacts remain in `frontend/out/` and are not served by FastAPI.
 
-### 3. Backend Service & Orchestration (`src/backend/`)
-- SQLite database (`jobs.db`) with WAL mode and startup recovery.
-- Bounded async queue worker with cooperative cancellation.
-- Structured RFC 9457 error handlers.
-- Deterministic export bundler compiling signed ZIP archives.
+### Backend API and orchestration
 
-### 4. Interactive Web Workspace (`src/frontend/`)
-- Next.js App Router statically compiled to `out/` and mounted in FastAPI.
-- MapLibre GL JS engine rendering zero-centred diverging scales without Viridis for signed trends.
-- Terra Draw polygon and rectangle selection for Regions A and B with persistent centroid labels.
-- D3 + SVG linked regional series, synchronous differences, and valid annual coverage bars.
+- **Location:** `terra-odyssey/backend/src/backend/`
+- **Purpose:** API routing, validation, job lifecycle, persistence, artifact publication, and export bundles.
+- **Entrypoint:** `backend.app:app` with `--app-dir src`.
+- **Filesystem boundary:** `backend.paths` resolves all owned paths from the backend installation, independent of process working directory.
+
+### Statistical engine
+
+- **Location:** `terra-odyssey/backend/src/analysis/`
+- **Purpose:** Temporal/spatial aggregation, OLS with Newey-West HAC uncertainty, sensitivity checks, paired regional contrasts, and multiplicity control.
+- **Boundary:** Statistical semantics and scientific labels are unchanged by the application split.
+
+### Data adapters
+
+- **Location:** `terra-odyssey/backend/src/data/adapters/`
+- **Purpose:** Product-specific discovery, decoding, quality masks, units, and metadata for MERRA-2, GPM IMERG, and MODIS products.
+
+### Persistent data and schemas
+
+- **Location:** `terra-odyssey/backend/data/` and `terra-odyssey/backend/schemas/`
+- **Purpose:** Versioned manifests, optional samples, SQLite state, preserved investigation artifacts, and Draft 2020-12 contracts.
+
+## Data flow
+
+1. The frontend submits a typed investigation request to the configured `/api` base.
+2. FastAPI validates and records the job in `backend/data/jobs.db`.
+3. The worker loads backend-owned manifests or samples and runs the analysis pipeline.
+4. Results are published under `backend/data/investigations/<job-id>/`.
+5. The frontend polls status and requests series, map, evidence, or export resources.
+
+## Integration points
+
+| External service | Type | Purpose |
+|---|---|---|
+| NASA CMR / Earthdata | API and data download | Versioned product discovery and optional live acquisition |
+| OpenFreeMap | Vector map service | Token-free basemap styles and tiles |
+| Frontend ↔ backend | HTTP/JSON | Typed investigation and catalog API |
+
+## Conventions and debt
+
+- Python uses a conventional `backend/src` package layout and backend-local tests/configuration.
+- Frontend and backend dependencies are installed independently.
+- Private environment files, dependency directories, and generated caches are excluded from the distributable archive.
+- Live NASA acquisition still depends on locally supplied Earthdata credentials and upstream service availability.

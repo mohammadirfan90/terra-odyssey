@@ -1,12 +1,12 @@
 # Plan 2.3 Summary: Interval Sensitivity Analysis Engine
 
 ## Implementation Summary
-- **Module**: `terra-odyssey/src/analysis/interval_sensitivity.py`
+- **Module**: `terra-odyssey/backend/src/analysis/interval_sensitivity.py`
   - Evaluates trend stability across 5 predefined start/end windows: `full`, `start_plus_3`, `start_plus_5`, `end_minus_3`, `end_minus_5`.
   - Filters out any window with $< 20$ consecutive complete annual observations, preventing underpowered or hiatus-distorted spans from corrupting analysis.
   - Computes summary diagnostics: `slope_range_per_decade`, `sign_agreement`, and `classification_shifts` between supported and inconclusive.
   - Helper `attach_interval_sensitivity_to_result` enriches `AnalysisResult` and appends an explicit scientific caveat when classification shifts occur.
-  - Fully integrated into `terra-odyssey/src/analysis/__init__.py`.
+  - Fully integrated into `terra-odyssey/backend/src/analysis/__init__.py`.
 
 ## Verification Evidence
 - 3/3 tests passing in `tests/unit/test_interval_sensitivity.py`:

@@ -20,6 +20,6 @@ Brief summary of changes made in this pull request.
 
 ## Verification
 
-- [ ] `pytest terra-odyssey/tests/ -v` passes cleanly.
-- [ ] `npm run build` in `src/frontend` passes cleanly (if frontend modified).
+- [ ] `python -m pytest` in `terra-odyssey/backend` passes cleanly.
+- [ ] `npm run typecheck` and `npm run build` in `terra-odyssey/frontend` pass cleanly (if frontend modified).
 - [ ] Codebase archive refreshed via `pwsh .\scripts\package-codebase.ps1`.

@@ -4,12 +4,12 @@ on:
   push:
     branches: [main]
     paths:
-      - 'terra-odyssey/src/frontend/**'
+      - 'terra-odyssey/frontend/**'
       - '.github/workflows/frontend-ci.yml'
   pull_request:
     branches: [main]
     paths:
-      - 'terra-odyssey/src/frontend/**'
+      - 'terra-odyssey/frontend/**'
       - '.github/workflows/frontend-ci.yml'
 
 jobs:
@@ -19,7 +19,7 @@ jobs:
 
     defaults:
       run:
-        working-directory: terra-odyssey/src/frontend
+        working-directory: terra-odyssey/frontend
 
     steps:
       - name: Checkout repository
@@ -30,13 +30,13 @@ jobs:
         with:
           node-version: 20
           cache: 'npm'
-          cache-dependency-path: terra-odyssey/src/frontend/package-lock.json
+          cache-dependency-path: terra-odyssey/frontend/package-lock.json
 
       - name: Install dependencies
         run: npm ci
 
       - name: Type check (TypeScript)
-        run: npx tsc --noEmit
+        run: npm run typecheck
 
       - name: Build Next.js static export
         run: npm run build

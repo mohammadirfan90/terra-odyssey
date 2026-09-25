@@ -1,7 +1,7 @@
 # Plan 3.1 Summary: Area-Weighted Spatial Aggregation Engine
 
 ## Implementation Summary
-- **Module**: `terra-odyssey/src/analysis/spatial_aggregation.py`
+- **Module**: `terra-odyssey/backend/src/analysis/spatial_aggregation.py`
   - `compute_cell_bounds_and_areas`: Exact cell boundaries $[\phi_s, \phi_n]$ and spherical/ellipsoidal area integration $A_{ij} = R^2 \Delta\lambda |\sin(\phi_n) - \sin(\phi_s)|$ in $m^2$.
   - `compute_polygon_weights`: Fractional polygon intersection overlap $f_{ij} = \frac{\text{Area}(\text{cell}_{ij} \cap P)}{\text{Area}(\text{cell}_{ij})}$ via `shapely` with topology validation, antimeridian split handling, and bounding-box spatial acceleration. Computes `requested_geometry_supported_fraction`.
   - `aggregate_spatial_mean`: Evaluates area-based coverage $C_t = \frac{\sum w_{ij} M_{ij,t}}{\sum w_{ij}}$ and computes area-weighted regional mean $\bar{Y}_t = \frac{\sum Y_{ij,t} w_{ij} M_{ij,t}}{\sum w_{ij} M_{ij,t}}$.

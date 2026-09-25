@@ -16,16 +16,16 @@ Implement the paired regional difference contrast estimator using the synchronou
 - `.gsd/phases/3/RESEARCH.md`
 - `docs/SCIENTIFIC_RULES.md`
 - `docs/VALIDATION_PLAN.md`
-- `terra-odyssey/schemas/analysis-result.schema.json`
-- `terra-odyssey/src/analysis/trend_estimator.py`
+- `terra-odyssey/backend/schemas/analysis-result.schema.json`
+- `terra-odyssey/backend/src/analysis/trend_estimator.py`
 
 ## Tasks
 
 <task type="auto">
   <name>Implement Paired Regional Contrast Estimator</name>
-  <files>terra-odyssey/src/analysis/paired_contrast.py</files>
+  <files>terra-odyssey/backend/src/analysis/paired_contrast.py</files>
   <action>
-    Create `terra-odyssey/src/analysis/paired_contrast.py` with:
+    Create `terra-odyssey/backend/src/analysis/paired_contrast.py` with:
     1. Function `estimate_paired_contrast(years_a: np.ndarray, values_a: np.ndarray, years_b: np.ndarray, values_b: np.ndarray, dataset_id: str, variable: str, units: str, unit_per_decade: str, geometry_a: dict, geometry_b: dict, selection_status: str = "predefined", test_family: str = "single_predefined_test", confidence_level: float = 0.95, adjusted_p_value: Optional[float] = None, multiplicity_method: Optional[str] = None, fdr_level: Optional[float] = None, family_id: Optional[str] = None, family_size: Optional[int] = None, hypothesis_id: Optional[str] = None) -> dict`:
        - Calendar alignment: joins `(years_a, values_a)` and `(years_b, values_b)` on common calendar years.
        - Continuity validation: checks that common valid years form an unbroken sequence $\ge 20$ years (refuses to collapse time).
@@ -47,15 +47,15 @@ Implement the paired regional difference contrast estimator using the synchronou
          - `effect.region_b_estimate`: $\hat{\beta}_B \times 10$
          - `interpretation.level`: `"spatial_contrast"`
   </action>
-  <verify>python -c "from src.analysis.paired_contrast import estimate_paired_contrast; print('Paired contrast estimator importable')"</verify>
+  <verify>python -c "from analysis.paired_contrast import estimate_paired_contrast; print('Paired contrast estimator importable')"</verify>
   <done>Paired contrast estimator aligns series by calendar year, fits difference OLS+HAC, enforces opposite-trend hierarchy, and serializes to analysis-result schema.</done>
 </task>
 
 <task type="auto">
   <name>Create Unit Tests for Paired Regional Contrast</name>
-  <files>terra-odyssey/tests/unit/test_paired_contrast.py</files>
+  <files>terra-odyssey/backend/tests/unit/test_paired_contrast.py</files>
   <action>
-    Create comprehensive unit tests in `terra-odyssey/tests/unit/test_paired_contrast.py`:
+    Create comprehensive unit tests in `terra-odyssey/backend/tests/unit/test_paired_contrast.py`:
     1. `test_opposite_trend_pair_supported`: Synthesizes Region A ($+0.4$ °C/decade) and Region B ($-0.3$ °C/decade); verifies $\hat{\beta}_D \approx +0.7$ °C/decade, $p_D < 0.05$, and status is `"supported"`.
     2. `test_same_sign_slopes_inconclusive`: Synthesizes Region A ($+0.5$ °C/decade) and Region B ($+0.1$ °C/decade) where difference is significant but signs are both positive; verifies status is `"inconclusive"` with `"signs_not_opposite"` diagnostic.
     3. `test_opposite_signs_nonsignificant_contrast`: Synthesizes opposite signs with high noise ($p_D \ge 0.05$); verifies status is `"inconclusive"` with `"contrast_not_supported"`.

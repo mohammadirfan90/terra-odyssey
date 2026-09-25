@@ -1,7 +1,7 @@
 # Plan 2.1 Summary: Temporal Aggregation & Missingness Validator
 
 ## Implementation Summary
-- **Module**: `terra-odyssey/src/analysis/aggregation.py`
+- **Module**: `terra-odyssey/backend/src/analysis/aggregation.py`
   - `aggregate_annual_temperature`: Day-weighted calendar-year mean with exact leap-year awareness (366 vs 365 days, Feb 29 vs 28). Strictly requires 12/12 valid months; any incomplete year is masked to `NaN`.
   - `aggregate_annual_precipitation`: Full calendar-year accumulation sum ($mm/\text{year}$) requiring 12/12 complete months; missing months are never imputed as zero.
   - `aggregate_seasonal`: Strict seasonal grouping for DJF, MAM, JJA, SON. DJF correctly assigns December of year $y-1$ to winter of year $y$. Requires all 3 months valid.

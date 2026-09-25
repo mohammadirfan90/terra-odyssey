@@ -39,8 +39,9 @@ New-Item -ItemType Directory -Path $StageDir -Force | Out-Null
 
 try {
     # Copy terra-odyssey files, excluding caches and node_modules
-    $excludeDirs = @("__pycache__", ".pytest_cache", ".coverage", "htmlcov", "node_modules", ".next", "out")
-    $excludeExts = @(".pyc", ".pyo", ".pyd")
+    $excludeDirs = @("__pycache__", ".pytest_cache", "htmlcov", "coverage", "node_modules", ".next", ".turbo", "out")
+    $excludeExts = @(".pyc", ".pyo", ".pyd", ".tsbuildinfo")
+    $excludeNames = @(".coverage", "next-env.d.ts")
 
     Get-ChildItem -Path $SourceDir -Recurse | ForEach-Object {
         $item = $_
@@ -48,14 +49,17 @@ try {
         
         # Check if any parent or self matches excluded dirs
         $parts = $relPath.Split([System.IO.Path]::DirectorySeparatorChar, [System.IO.Path]::AltDirectorySeparatorChar)
-        $isExcludedDir = $parts | Where-Object { $excludeDirs -contains $_ }
-        
-        if ($isExcludedDir) {
+        $isExcludedDir = $parts | Where-Object { ($excludeDirs -contains $_) -or ($_ -like "pytest-cache-files-*") }
+        $isPrivateEnvFile = $item.Name -eq ".env" -or (
+            $item.Name -like ".env.*" -and $item.Name -ne ".env.example"
+        )
+
+        if ($isExcludedDir -or $isPrivateEnvFile) {
             return
         }
 
         if (-not $item.PSIsContainer) {
-            if ($excludeExts -contains $item.Extension) {
+            if (($excludeExts -contains $item.Extension) -or ($excludeNames -contains $item.Name)) {
                 return
             }
             $targetFile = Join-Path $StageDir $relPath

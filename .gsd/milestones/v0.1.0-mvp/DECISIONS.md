@@ -13,7 +13,7 @@
   - Finite-sample correction: `use_correction=True`.
   - Reference distribution: Two-sided Student-$t$ distribution (`use_t=True`) with $df = n - 2$.
   - Sensitivity checks: evaluate lag sensitivities at lags 1, 3, and 5 under `method.diagnostics`.
-- **Numerical Test Oracle:** Implement an independent, transparent NumPy Newey-West HAC calculation strictly under `terra-odyssey/tests/numerical/`. Use it as a test oracle to cross-verify:
+- **Numerical Test Oracle:** Implement an independent, transparent NumPy Newey-West HAC calculation strictly under `terra-odyssey/backend/tests/numerical/`. Use it as a test oracle to cross-verify:
   - OLS slope & intercept coefficients
   - Covariance matrix
   - Slope standard error
@@ -199,7 +199,7 @@
 - **Typed Error Semantics:** Missing data or network/credential absence returns RFC 9457 `application/problem+json` with HTTP 503 (`code: "earthdata_unavailable"`).
 - **Provenance Separation:** Transport mode separated from scientific release:
   `{"source_release": "5.12.4", "data_mode": "cached_verified", "cache_hit": true, "granule_checksums": [...]}`.
-- **Fixture Separation:** Real sample NASA granules reside in `terra-odyssey/data/samples/`; synthetic testing fixtures reside strictly in `terra-odyssey/tests/fixtures/`.
+- **Fixture Separation:** Real sample NASA granules reside in `terra-odyssey/backend/data/samples/`; synthetic testing fixtures reside strictly in `terra-odyssey/backend/tests/fixtures/`.
 
 ### 4. Investigation Export Bundling
 - **Structure:** `terra-odyssey-investigation-{id}.zip`:

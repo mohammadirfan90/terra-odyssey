@@ -4,10 +4,10 @@
 Implement NASA GPM IMERG Final monthly precipitation (`GPM_3IMERGM` v07) data adapter with CMR discovery, rate-to-accumulation conversion using exact calendar month hours, fill-value and negative rate masking, and synthetic test suite.
 
 ## Delivered Artifacts
-- [`terra-odyssey/src/data/adapters/d2_gpm_imerg.py`](file:///A:/teraaaaaa/terra-odyssey/src/data/adapters/d2_gpm_imerg.py): Full adapter implementation with `discover()`, `decode()`, `validate()`, `quality_mask()`, `calculate_accumulation()`, `process()`, and `cite()`.
-- [`terra-odyssey/src/data/adapters/__init__.py`](file:///A:/teraaaaaa/terra-odyssey/src/data/adapters/__init__.py): Exposed `GpmImergAdapter`.
-- [`terra-odyssey/tests/fixtures/synthetic_gpm.py`](file:///A:/teraaaaaa/terra-odyssey/tests/fixtures/synthetic_gpm.py): Labeled synthetic GPM IMERG fixture generator.
-- [`terra-odyssey/tests/unit/test_d2_gpm_imerg.py`](file:///A:/teraaaaaa/terra-odyssey/tests/unit/test_d2_gpm_imerg.py): 10 unit tests verifying leap-year handling, rate-to-accumulation multiplication, fill-value masking, coordinate validation, and manifest conformance.
+- [`terra-odyssey/backend/src/data/adapters/d2_gpm_imerg.py`](file:///A:/teraaaaaa/terra-odyssey/backend/src/data/adapters/d2_gpm_imerg.py): Full adapter implementation with `discover()`, `decode()`, `validate()`, `quality_mask()`, `calculate_accumulation()`, `process()`, and `cite()`.
+- [`terra-odyssey/backend/src/data/adapters/__init__.py`](file:///A:/teraaaaaa/terra-odyssey/backend/src/data/adapters/__init__.py): Exposed `GpmImergAdapter`.
+- [`terra-odyssey/backend/tests/fixtures/synthetic_gpm.py`](file:///A:/teraaaaaa/terra-odyssey/backend/tests/fixtures/synthetic_gpm.py): Labeled synthetic GPM IMERG fixture generator.
+- [`terra-odyssey/backend/tests/unit/test_d2_gpm_imerg.py`](file:///A:/teraaaaaa/terra-odyssey/backend/tests/unit/test_d2_gpm_imerg.py): 10 unit tests verifying leap-year handling, rate-to-accumulation multiplication, fill-value masking, coordinate validation, and manifest conformance.
 
 ## Verification Evidence
 Executed: `python -m pytest tests/unit/ -v` from `terra-odyssey/`:

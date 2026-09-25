@@ -29,11 +29,11 @@ Attach or make available:
 | Workstream | Add these files |
 |---|---|
 | UI screen | `docs/UX_SPEC.md`, relevant schema, screenshot or UI export for the screen |
-| Chart/map | `docs/UX_SPEC.md`, `docs/SCIENTIFIC_RULES.md`, `terra-odyssey/schemas/analysis-result.schema.json` |
-| NASA adapter | `docs/DATA_CATALOG.md`, selected `terra-odyssey/data/manifests/*.json`, `terra-odyssey/schemas/dataset-manifest.schema.json`, source documentation link |
-| Trend estimator | `docs/SCIENTIFIC_RULES.md`, `docs/VALIDATION_PLAN.md`, `terra-odyssey/schemas/analysis-result.schema.json`, numerical reference fixture |
+| Chart/map | `docs/UX_SPEC.md`, `docs/SCIENTIFIC_RULES.md`, `terra-odyssey/backend/schemas/analysis-result.schema.json` |
+| NASA adapter | `docs/DATA_CATALOG.md`, selected `terra-odyssey/backend/data/manifests/*.json`, `terra-odyssey/backend/schemas/dataset-manifest.schema.json`, source documentation link |
+| Trend estimator | `docs/SCIENTIFIC_RULES.md`, `docs/VALIDATION_PLAN.md`, `terra-odyssey/backend/schemas/analysis-result.schema.json`, numerical reference fixture |
 | API endpoint | `docs/API_CONTRACT.md`, relevant request/result schemas, one real cached result |
-| Reproducibility/export | `docs/API_CONTRACT.md`, `terra-odyssey/schemas/investigation-record.schema.json`, `docs/VALIDATION_PLAN.md` |
+| Reproducibility/export | `docs/API_CONTRACT.md`, `terra-odyssey/backend/schemas/investigation-record.schema.json`, `docs/VALIDATION_PLAN.md` |
 | Release review | `docs/VALIDATION_PLAN.md`, `docs/SCIENTIFIC_RULES.md`, changed files, test output |
 
 ### Tier 2 — optional deep research

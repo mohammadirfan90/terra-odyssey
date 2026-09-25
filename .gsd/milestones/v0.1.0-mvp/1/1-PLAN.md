@@ -15,16 +15,16 @@ Implement the data ingestion and normalization adapter for NASA MERRA-2 monthly 
 - `.gsd/ARCHITECTURE.md`
 - `.gsd/phases/1/RESEARCH.md`
 - `docs/SCIENTIFIC_RULES.md`
-- `terra-odyssey/data/manifests/d1_merra2.json`
-- `terra-odyssey/schemas/dataset-manifest.schema.json`
+- `terra-odyssey/backend/data/manifests/d1_merra2.json`
+- `terra-odyssey/backend/schemas/dataset-manifest.schema.json`
 
 ## Tasks
 
 <task type="auto">
   <name>Implement Merra2Adapter Ingestion Class</name>
   <files>
-    terra-odyssey/src/data/adapters/d1_merra2.py
-    terra-odyssey/src/data/adapters/__init__.py
+    terra-odyssey/backend/src/data/adapters/d1_merra2.py
+    terra-odyssey/backend/src/data/adapters/__init__.py
   </files>
   <action>
     Create the `Merra2Adapter` class implementing the standard 7-step adapter lifecycle:
@@ -40,7 +40,7 @@ Implement the data ingestion and normalization adapter for NASA MERRA-2 monthly 
     USE: Type hints, dataclasses or Pydantic models for configuration, and explicit docstrings.
   </action>
   <verify>
-    python -c "from terra_odyssey.src.data.adapters.d1_merra2 import Merra2Adapter; a = Merra2Adapter(); print(a.cite()['doi'])"
+    python -c "from data.adapters.d1_merra2 import Merra2Adapter; a = Merra2Adapter(); print(a.cite()['doi'])"
   </verify>
   <done>
     Merra2Adapter imports cleanly, defines all lifecycle methods, and emits official DOI and reanalysis metadata.
@@ -50,8 +50,8 @@ Implement the data ingestion and normalization adapter for NASA MERRA-2 monthly 
 <task type="auto">
   <name>Create Synthetic MERRA-2 Fixture and Comprehensive Unit Tests</name>
   <files>
-    terra-odyssey/tests/fixtures/synthetic_merra2.py
-    terra-odyssey/tests/unit/test_d1_merra2.py
+    terra-odyssey/backend/tests/fixtures/synthetic_merra2.py
+    terra-odyssey/backend/tests/unit/test_d1_merra2.py
   </files>
   <action>
     1. Create `synthetic_merra2.py` which builds a labeled synthetic xarray dataset simulating 2 years (24 months) of global 0.5° x 0.625° gridded T2M data with known Kelvin values (e.g., 273.15 to 310.15 K) and intentional fill values (1.0e15).
@@ -60,10 +60,10 @@ Implement the data ingestion and normalization adapter for NASA MERRA-2 monthly 
        - Fill-value masking: verifies fill values become NaN and valid values are preserved.
        - Unit conversion accuracy: 273.15 K -> 0.00 °C, 373.15 K -> 100.00 °C.
        - Coordinate validation: passes valid global grid, raises ValueError on mismatched dimensions.
-       - Metadata validation against `terra-odyssey/schemas/dataset-manifest.schema.json`.
+       - Metadata validation against `terra-odyssey/backend/schemas/dataset-manifest.schema.json`.
   </action>
   <verify>
-    pytest terra-odyssey/tests/unit/test_d1_merra2.py -v
+    pytest terra-odyssey/backend/tests/unit/test_d1_merra2.py -v
   </verify>
   <done>
     All unit test cases pass with 100% assertions satisfied for conversion, masking, coordinate checks, and citation metadata.

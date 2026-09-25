@@ -16,15 +16,15 @@ Implement an area-weighted spatial aggregation module using `shapely` and `pypro
 - `.gsd/phases/3/RESEARCH.md`
 - `docs/SCIENTIFIC_RULES.md`
 - `docs/VALIDATION_PLAN.md`
-- `terra-odyssey/schemas/analysis-result.schema.json`
+- `terra-odyssey/backend/schemas/analysis-result.schema.json`
 
 ## Tasks
 
 <task type="auto">
   <name>Implement Spatial Aggregation with Cell-Bound Geodesic Area Weighting</name>
-  <files>terra-odyssey/src/analysis/spatial_aggregation.py</files>
+  <files>terra-odyssey/backend/src/analysis/spatial_aggregation.py</files>
   <action>
-    Create `terra-odyssey/src/analysis/spatial_aggregation.py` with:
+    Create `terra-odyssey/backend/src/analysis/spatial_aggregation.py` with:
     1. `compute_cell_bounds_and_areas(lats: np.ndarray, lons: np.ndarray) -> tuple[np.ndarray, np.ndarray]`:
        - Calculates exact cell boundaries $[\phi_s, \phi_n]$ and $[\lambda_w, \lambda_e]$.
        - Computes cell surface areas using spherical / geodesic formulation:
@@ -46,15 +46,15 @@ Implement an area-weighted spatial aggregation module using `shapely` and `pypro
            $$\bar{Y}_t = \frac{\sum Y_{ij,t} w_{ij} M_{ij,t}}{\sum w_{ij} M_{ij,t}}$$
        - Returns `(da_regional_mean, da_coverage_series)`.
   </action>
-  <verify>python -c "from src.analysis.spatial_aggregation import compute_cell_bounds_and_areas, compute_polygon_weights, aggregate_spatial_mean; print('Spatial aggregation importable')"</verify>
+  <verify>python -c "from analysis.spatial_aggregation import compute_cell_bounds_and_areas, compute_polygon_weights, aggregate_spatial_mean; print('Spatial aggregation importable')"</verify>
   <done>Spatial aggregation computes exact cell-bound weights, fractional polygon overlaps, area coverage ratios, and masks insufficient coverage months.</done>
 </task>
 
 <task type="auto">
   <name>Create Unit Tests for Spatial Aggregation</name>
-  <files>terra-odyssey/tests/unit/test_spatial_aggregation.py</files>
+  <files>terra-odyssey/backend/tests/unit/test_spatial_aggregation.py</files>
   <action>
-    Create comprehensive unit tests in `terra-odyssey/tests/unit/test_spatial_aggregation.py`:
+    Create comprehensive unit tests in `terra-odyssey/backend/tests/unit/test_spatial_aggregation.py`:
     1. `test_cell_bound_areas_decrease_poleward`: Confirms polar cell areas are smaller than equatorial cell areas by exact $\cos(\phi)$ ratio.
     2. `test_hand_computed_polygon_weights`: Compares fractional overlap weights against an analytical 4-cell test fixture where a polygon covers 50% of two cells and 100% of two cells.
     3. `test_merra2_strict_100_percent_coverage`: Verifies a MERRA-2 regional month with 95% area coverage is masked to `NaN`.

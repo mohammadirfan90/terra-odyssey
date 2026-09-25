@@ -16,16 +16,16 @@ Implement the core statistical trend estimator using `statsmodels` OLS with expl
 - `.gsd/phases/2/RESEARCH.md`
 - `docs/SCIENTIFIC_RULES.md`
 - `docs/VALIDATION_PLAN.md`
-- `terra-odyssey/schemas/analysis-result.schema.json`
-- `terra-odyssey/src/analysis/aggregation.py`
+- `terra-odyssey/backend/schemas/analysis-result.schema.json`
+- `terra-odyssey/backend/src/analysis/aggregation.py`
 
 ## Tasks
 
 <task type="auto">
   <name>Implement OLS Trend Estimator with HAC Covariance and Theil-Sen Diagnostics</name>
-  <files>terra-odyssey/src/analysis/trend_estimator.py</files>
+  <files>terra-odyssey/backend/src/analysis/trend_estimator.py</files>
   <action>
-    Create `terra-odyssey/src/analysis/trend_estimator.py` with:
+    Create `terra-odyssey/backend/src/analysis/trend_estimator.py` with:
     1. Function `estimate_linear_trend(years: np.ndarray, values: np.ndarray, dataset_id: str, variable: str, units: str, unit_per_decade: str, geometry: dict, confidence_level: float = 0.95) -> dict`:
        - Validates input arrays: filters NaNs, checks for monotonic consecutive years, ensures $n \ge 20$ (returns status `"ineligible"` if $n < 20$ or non-consecutive).
        - Centers year coordinates: $x = \text{years} - \text{mean}(\text{years})$ for numerical float64 stability.
@@ -59,15 +59,15 @@ Implement the core statistical trend estimator using `statsmodels` OLS with expl
          - `"ineligible"`: $n < 20$ or incomplete/non-consecutive records.
        - Returns a dictionary conforming strictly to `schemas/analysis-result.schema.json`.
   </action>
-  <verify>python -c "from src.analysis.trend_estimator import estimate_linear_trend; print('Trend estimator importable')"</verify>
+  <verify>python -c "from analysis.trend_estimator import estimate_linear_trend; print('Trend estimator importable')"</verify>
   <done>Trend estimator fits OLS + HAC (lag 2), evaluates lag 1/3/5 sensitivities, computes Theil-Sen point diagnostic, and formats results compliant with analysis-result schema.</done>
 </task>
 
 <task type="auto">
   <name>Implement Independent Pure-NumPy HAC Numerical Test Oracle</name>
-  <files>terra-odyssey/tests/numerical/test_hac_oracle.py</files>
+  <files>terra-odyssey/backend/tests/numerical/test_hac_oracle.py</files>
   <action>
-    Create `terra-odyssey/tests/numerical/test_hac_oracle.py` containing an independent, transparent pure-NumPy Newey-West Bartlett HAC implementation:
+    Create `terra-odyssey/backend/tests/numerical/test_hac_oracle.py` containing an independent, transparent pure-NumPy Newey-West Bartlett HAC implementation:
     1. Independent mathematical implementation of:
        $$\hat{\Gamma}_l = \frac{1}{n} \sum_{t=l+1}^n e_t e_{t-l} X_t X_{t-l}^T$$
        $$\hat{\Omega} = \hat{\Gamma}_0 + \sum_{l=1}^L \left(1 - \frac{l}{L+1}\right) (\hat{\Gamma}_l + \hat{\Gamma}_l^T)$$
@@ -85,15 +85,15 @@ Implement the core statistical trend estimator using `statsmodels` OLS with expl
 
 <task type="auto">
   <name>Create Unit & Schema Conformance Tests for Trend Estimator</name>
-  <files>terra-odyssey/tests/unit/test_trend_estimator.py</files>
+  <files>terra-odyssey/backend/tests/unit/test_trend_estimator.py</files>
   <action>
-    Create `terra-odyssey/tests/unit/test_trend_estimator.py` testing:
+    Create `terra-odyssey/backend/tests/unit/test_trend_estimator.py` testing:
     1. `test_known_synthetic_slope`: Evaluates a 25-year time series with ground-truth slope 0.3°C/decade; confirms recovered slope and fitted change are within nominal sampling error.
     2. `test_ineligible_short_series`: Series with 15 years returns `status="ineligible"` with appropriate caveats.
     3. `test_ineligible_non_consecutive`: Series with gaps returns `status="ineligible"`.
     4. `test_theil_sen_outlier_robustness`: Adds single extreme outlier to time series; verifies Theil-Sen diagnostic detects deviation from OLS slope.
     5. `test_lag_sensitivities_present`: Verifies `diagnostics.lag_sensitivities` contains results for lags 1, 3, and 5.
-    6. `test_schema_validation`: Validates dictionary output against `terra-odyssey/schemas/analysis-result.schema.json` using `jsonschema`.
+    6. `test_schema_validation`: Validates dictionary output against `terra-odyssey/backend/schemas/analysis-result.schema.json` using `jsonschema`.
   </action>
   <verify>pytest tests/unit/test_trend_estimator.py -v</verify>
   <done>All trend estimator unit tests and JSON schema validation pass with 100% assertions.</done>
