@@ -1,8 +1,9 @@
 "use client";
 
 import React, { useState } from "react";
-import { useCatalog, useCapabilities, useCreateInvestigation, useInvestigationStatus, CANDIDATE_PRESETS } from "@/lib/api/client";
+import { useCatalog, useCapabilities, useCreateInvestigation, useInvestigationStatus, useInvestigationMap, CANDIDATE_PRESETS } from "@/lib/api/client";
 import { QuestionBuilder } from "@/components/investigation/QuestionBuilder";
+import { EarthTrendMapWrapper } from "@/components/map/EarthTrendMapWrapper";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Globe, Compass, BarChart3, FileText, CheckCircle2, AlertTriangle, Loader2 } from "lucide-react";
@@ -14,9 +15,12 @@ export default function WorkspacePage() {
 
   const [activeTab, setActiveTab] = useState<string>("question");
   const [activeJobId, setActiveJobId] = useState<string | null>(null);
+  const [regionA, setRegionA] = useState<[number, number, number, number] | null>([-122.5, 35.0, -118.5, 39.5]);
+  const [regionB, setRegionB] = useState<[number, number, number, number] | null>([-92.0, 30.0, -84.0, 34.0]);
 
   // Poll status of active job
   const { data: jobStatus } = useInvestigationStatus(activeJobId);
+  const { data: mapGridData } = useInvestigationMap(activeJobId);
 
   const handleLaunchInvestigation = (req: any) => {
     createMutation.mutate(req, {
@@ -113,18 +117,21 @@ export default function WorkspacePage() {
             )}
           </TabsContent>
 
-          {/* Tab 2: Spatial Trend Map Placeholder for Plan 5.2 */}
+          {/* Tab 2: Spatial Trend Map */}
           <TabsContent value="map" className="pt-2">
-            <div className="flex flex-col items-center justify-center p-16 rounded-lg border border-slate-800 bg-slate-900/40 text-center space-y-3">
-              <Globe className="w-10 h-10 text-cyan-400/60 animate-pulse" />
-              <h2 className="text-sm font-semibold text-slate-200">
-                Spatial Trend Map & Terra Draw (Plan 5.2)
-              </h2>
-              <p className="text-xs text-slate-400 max-w-md">
-                GPU-accelerated MapLibre GL JS engine with 2D Mercator and 3D Globe projections, zero-centred diverging palette (BrBG/RdBu), Benjamini-Yekutieli discovery stippling, and Terra Draw region selector.
-              </p>
+            <div className="flex flex-col space-y-3">
+              <EarthTrendMapWrapper
+                gridData={mapGridData}
+                regionA={regionA}
+                regionB={regionB}
+                onUpdateRegions={(newA, newB) => {
+                  setRegionA(newA);
+                  setRegionB(newB);
+                }}
+              />
             </div>
           </TabsContent>
+
 
           {/* Tab 3: Linked Time-Series Placeholder for Plan 5.3 */}
           <TabsContent value="charts" className="pt-2">
