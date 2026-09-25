@@ -1,5 +1,5 @@
 ---
-updated: 2026-09-25T01:23:00Z
+updated: 2026-09-25T03:08:00Z
 ---
 
 # Project State: Terra Odyssey
@@ -7,23 +7,24 @@ updated: 2026-09-25T01:23:00Z
 ## Current Position
 
 **Milestone:** v0.1.0-mvp
-**Phase:** 3 - Regional Contrast & Evidence Engine
-**Task:** Execution and Verification complete (63/63 tests passing)
-**Status:** Phase 3 complete; ready for Phase 4
+**Phase:** 4 - API & Investigation Orchestration
+**Task:** Phase 4 Complete (3/3 plans verified), Ready for Phase 5 (Interactive Web Workspace)
+**Status:** Phase 4 Complete (100%)
 
 ## Last Action
 
-Executed Phase 3 plans across 3 waves and verified full test suite:
-- **Plan 3.1**: Area-Weighted Spatial Aggregation Engine (`spatial_aggregation.py`, `test_spatial_aggregation.py`) with exact cell-bound spherical areas, Shapely fractional polygon overlap, and MERRA-2/GPM coverage enforcement.
-- **Plan 3.2**: Paired Regional Difference Contrast Estimator (`paired_contrast.py`, `test_paired_contrast.py`) fitting $D_t = Y_{A,t} - Y_{B,t}$ with OLS + Newey-West HAC, verifying algebraic linearity, and enforcing the strict opposite-trend qualification hierarchy.
-- **Plan 3.3**: Multiple-Testing Control & Evidence Adjudication (`multiplicity.py`, `test_multiplicity.py`) wrapping Benjamini-Yekutieli (`fdr_by`) as conservative primary under spatial dependence, BH sensitivity, and mandatory `exploratory_map_selected` disclosure.
-- Verified: Full test suite passing (63/63 tests in 2.76s). Phase 3 `VERIFICATION.md` verdict: PASS.
+Completed Phase 4 (Plan 4.3):
+- Implemented investigation API endpoints (`/api/investigations`, polling, `/series`, `/map`, `/evidence`, `/export`) in `terra-odyssey/src/backend/api/investigations.py`.
+- Implemented compressed structured-grid map streaming with decimation and cell capping.
+- Implemented reproducible, frozen investigation export bundler (`terra-odyssey/src/backend/exporter.py`) with offline Draft 2020-12 schema validation against `schemas/investigation-record.schema.json`.
+- Validated all 63 unit and integration tests passing (`pytest terra-odyssey/tests/unit/ -v`).
+- Packaged clean codebase archive to `terra-odyssey.zip` (55 clean files, 93.7 KB).
+- Produced Phase 4 verification report in `.gsd/phases/4/VERIFICATION.md`.
 
 ## Next Steps
 
-1. Repackage codebase archive `terra-odyssey.zip`.
-2. Commit, push branch `feat/phase-3-execution`, create PR, and merge to `main`.
-3. Proceed to Phase 4: `/discuss-phase 4` or `/plan 4` (API & Investigation Orchestration).
+1. Initiate Phase 5: Interactive Web Workspace (Plan 5.1: Question builder and variable selection catalog).
+
 
 ## Active Decisions
 

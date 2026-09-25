@@ -3,18 +3,165 @@
   "$id": "https://terra-odyssey.local/schemas/investigation-record.schema.json",
   "title": "Terra Odyssey reproducible investigation record",
   "type": "object",
-  "required": ["investigation_id", "created_at", "request", "resolved_configuration", "source_manifests", "results", "software"],
+  "required": [
+    "schema_version",
+    "investigation_id",
+    "created_at",
+    "published_at",
+    "job",
+    "data_mode",
+    "request",
+    "resolved_configuration",
+    "resolved_configuration_hash",
+    "source_manifests",
+    "source_manifest_objects",
+    "results",
+    "artifact_index",
+    "record_hash",
+    "software"
+  ],
   "properties": {
-    "investigation_id": {"type": "string"},
-    "created_at": {"type": "string", "format": "date-time"},
-    "request": {"type": "object"},
-    "resolved_configuration": {"type": "object"},
-    "source_manifests": {"type": "array", "items": {"type": "string"}},
-    "results": {"type": "array", "items": {"$ref": "analysis-result.schema.json"}},
-    "software": {"type": "object", "required": ["version", "environment"], "properties": {"version": {"type": "string"}, "environment": {"type": "object"}, "git_commit": {"type": ["string", "null"]}}},
-    "selection_history": {"type": "array", "items": {"type": "object"}},
-    "citations": {"type": "array", "items": {"type": "string", "format": "uri"}}
+    "schema_version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "investigation_id": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "published_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "job": {
+      "type": "object",
+      "required": ["job_id", "job_status", "stage", "result_status", "progress_pct", "created_at"],
+      "properties": {
+        "job_id": {"type": "string"},
+        "job_status": {
+          "enum": ["submitted", "running", "succeeded", "failed", "cancel_requested", "cancelled"]
+        },
+        "stage": {
+          "enum": ["validating", "acquiring", "normalizing", "aggregating", "analyzing", "publishing"]
+        },
+        "result_status": {
+          "enum": ["supported", "inconclusive", "ineligible"]
+        },
+        "progress_pct": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "created_at": {"type": "string", "format": "date-time"},
+        "started_at": {"type": ["string", "null"], "format": "date-time"},
+        "completed_at": {"type": ["string", "null"], "format": "date-time"},
+        "error": {"type": ["object", "string", "null"]}
+      },
+      "additionalProperties": false
+    },
+    "data_mode": {
+      "enum": ["live", "cached_verified", "demo_sample"]
+    },
+    "request": {
+      "type": "object",
+      "required": ["dataset_id", "variable", "period", "region_a", "temporal_aggregation", "spatial_aggregation"],
+      "properties": {
+        "dataset_id": {"type": "string"},
+        "variable": {"type": "string"},
+        "period": {
+          "type": "object",
+          "required": ["start_year", "end_year"],
+          "properties": {
+            "start_year": {"type": "integer"},
+            "end_year": {"type": "integer"}
+          },
+          "additionalProperties": false
+        },
+        "region_a": {"type": ["object", "array"]},
+        "region_b": {"type": ["object", "array", "null"]},
+        "temporal_aggregation": {"type": "string"},
+        "spatial_aggregation": {"type": "string"},
+        "execution_mode": {"type": "string", "enum": ["auto", "live", "cached_only", "demo_sample"]},
+        "estimator_family": {"type": "string"},
+        "selection_status": {"type": "string", "enum": ["predefined", "exploratory_map_selected"]}
+      },
+      "additionalProperties": true
+    },
+    "resolved_configuration": {
+      "type": "object",
+      "required": ["dataset_id", "variable", "period", "quality_policy", "estimator", "spatial_weighting"],
+      "properties": {
+        "dataset_id": {"type": "string"},
+        "variable": {"type": "string"},
+        "units": {"type": "string"},
+        "period": {"type": "object"},
+        "quality_policy": {"type": "object"},
+        "estimator": {"type": "object"},
+        "spatial_weighting": {"type": "string"},
+        "execution_mode": {"type": "string"},
+        "selection_status": {"type": "string"}
+      },
+      "additionalProperties": true
+    },
+    "resolved_configuration_hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "source_manifests": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "source_manifest_objects": {
+      "type": "array",
+      "items": {"type": "object"}
+    },
+    "results": {
+      "type": "array",
+      "items": {
+        "$ref": "analysis-result.schema.json"
+      }
+    },
+    "artifact_index": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["checksum_sha256", "mime_type", "byte_size"],
+        "properties": {
+          "checksum_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+          "mime_type": {"type": "string"},
+          "byte_size": {"type": "integer", "minimum": 0}
+        },
+        "additionalProperties": false
+      }
+    },
+    "record_hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "map_family_id": {
+      "type": ["string", "null"]
+    },
+    "software": {
+      "type": "object",
+      "required": ["version", "environment"],
+      "properties": {
+        "version": {"type": "string"},
+        "environment": {"type": "object"},
+        "git_commit": {"type": ["string", "null"]}
+      },
+      "additionalProperties": false
+    },
+    "selection_history": {
+      "type": "array",
+      "items": {"type": "object"}
+    },
+    "citations": {
+      "type": "array",
+      "items": {"type": "string"}
+    }
   },
   "additionalProperties": false
 }
-
