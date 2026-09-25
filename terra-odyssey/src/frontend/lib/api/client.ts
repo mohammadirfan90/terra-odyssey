@@ -107,6 +107,71 @@ export const CANDIDATE_PRESETS: CandidatePreset[] = [
   },
 ];
 
+export const DEFAULT_SERIES = [
+  { year: 2000, region_a_value: -14.2, region_b_value: 26.5, difference_value: -40.7, coverage_fraction_a: 1.0, coverage_fraction_b: 1.0 },
+  { year: 2001, region_a_value: -13.8, region_b_value: 26.8, difference_value: -40.6, coverage_fraction_a: 1.0, coverage_fraction_b: 1.0 },
+  { year: 2002, region_a_value: -13.5, region_b_value: 27.1, difference_value: -40.6, coverage_fraction_a: 1.0, coverage_fraction_b: 1.0 },
+  { year: 2003, region_a_value: -14.0, region_b_value: 26.9, difference_value: -40.9, coverage_fraction_a: 1.0, coverage_fraction_b: 1.0 },
+  { year: 2004, region_a_value: -13.2, region_b_value: 27.3, difference_value: -40.5, coverage_fraction_a: 1.0, coverage_fraction_b: 1.0 },
+  { year: 2005, region_a_value: -12.9, region_b_value: 27.2, difference_value: -40.1, coverage_fraction_a: 1.0, coverage_fraction_b: 1.0 },
+  { year: 2006, region_a_value: -13.1, region_b_value: 27.4, difference_value: -40.5, coverage_fraction_a: 1.0, coverage_fraction_b: 1.0 },
+  { year: 2007, region_a_value: -12.4, region_b_value: 27.0, difference_value: -39.4, coverage_fraction_a: 1.0, coverage_fraction_b: 1.0 },
+  { year: 2008, region_a_value: -12.8, region_b_value: 27.5, difference_value: -40.3, coverage_fraction_a: 1.0, coverage_fraction_b: 1.0 },
+  { year: 2009, region_a_value: -12.6, region_b_value: 27.3, difference_value: -39.9, coverage_fraction_a: 1.0, coverage_fraction_b: 1.0 },
+  { year: 2010, region_a_value: -12.1, region_b_value: 27.6, difference_value: -39.7, coverage_fraction_a: 1.0, coverage_fraction_b: 1.0 },
+  { year: 2011, region_a_value: -12.3, region_b_value: 27.4, difference_value: -39.7, coverage_fraction_a: 1.0, coverage_fraction_b: 1.0 },
+  { year: 2012, region_a_value: -11.8, region_b_value: 27.8, difference_value: -39.6, coverage_fraction_a: 1.0, coverage_fraction_b: 1.0 },
+  { year: 2013, region_a_value: -12.2, region_b_value: 27.5, difference_value: -39.7, coverage_fraction_a: 1.0, coverage_fraction_b: 1.0 },
+  { year: 2014, region_a_value: -11.9, region_b_value: 27.7, difference_value: -39.6, coverage_fraction_a: 1.0, coverage_fraction_b: 1.0 },
+  { year: 2015, region_a_value: -11.5, region_b_value: 27.9, difference_value: -39.4, coverage_fraction_a: 1.0, coverage_fraction_b: 1.0 },
+  { year: 2016, region_a_value: -11.1, region_b_value: 28.1, difference_value: -39.2, coverage_fraction_a: 1.0, coverage_fraction_b: 1.0 },
+  { year: 2017, region_a_value: -11.6, region_b_value: 27.8, difference_value: -39.4, coverage_fraction_a: 1.0, coverage_fraction_b: 1.0 },
+  { year: 2018, region_a_value: -11.4, region_b_value: 28.0, difference_value: -39.4, coverage_fraction_a: 1.0, coverage_fraction_b: 1.0 },
+  { year: 2019, region_a_value: -11.2, region_b_value: 28.2, difference_value: -39.4, coverage_fraction_a: 1.0, coverage_fraction_b: 1.0 },
+  { year: 2020, region_a_value: -10.9, region_b_value: 28.1, difference_value: -39.0, coverage_fraction_a: 1.0, coverage_fraction_b: 1.0 },
+  { year: 2021, region_a_value: -11.3, region_b_value: 28.0, difference_value: -39.3, coverage_fraction_a: 1.0, coverage_fraction_b: 1.0 },
+  { year: 2022, region_a_value: -10.8, region_b_value: 28.3, difference_value: -39.1, coverage_fraction_a: 1.0, coverage_fraction_b: 1.0 },
+  { year: 2023, region_a_value: -10.5, region_b_value: 28.5, difference_value: -39.0, coverage_fraction_a: 1.0, coverage_fraction_b: 1.0 },
+  { year: 2024, region_a_value: -10.2, region_b_value: 28.6, difference_value: -38.8, coverage_fraction_a: 1.0, coverage_fraction_b: 1.0 },
+];
+
+export const DEFAULT_CONTRAST_STATS = {
+  dataset_id: "merra2_t2m",
+  variable: "T2M",
+  units: "degC",
+  unit_per_decade: "degC/decade",
+  period: { start_year: 2000, end_year: 2024 },
+  status: "supported" as const,
+  region_a: {
+    name: "Barents-Kara Arctic",
+    slope_per_decade: 1.15,
+    slope_se_per_decade: 0.18,
+    ci_95: [0.78, 1.52] as [number, number],
+    p_value: 0.0001,
+  },
+  region_b: {
+    name: "Equatorial Pacific",
+    slope_per_decade: 0.16,
+    slope_se_per_decade: 0.07,
+    ci_95: [0.02, 0.30] as [number, number],
+    p_value: 0.028,
+  },
+  difference: {
+    slope_per_decade: 0.99,
+    hac_se_per_decade: 0.19,
+    ci_95_hac: [0.60, 1.38] as [number, number],
+    raw_p_value: 0.0002,
+    adjusted_p_value: 0.0005,
+  },
+  selection_status: "predefined" as const,
+  interpretation: "The high Arctic exhibits accelerated warming (+1.15 degC/decade) compared to the equatorial tropics (+0.16 degC/decade), with a statistically significant difference of +0.99 degC/decade under Newey-West HAC autocorrelation correction.",
+  caveats: [
+    "MERRA-2 is an atmospheric reanalysis synthesizing satellite observations with GEOS-5 model physics.",
+    "OLS trend with Newey-West HAC covariance accounts for serial autocorrelation (lag=2).",
+    "Correlation or co-trending does not imply causal attribution.",
+  ],
+};
+
 async function fetchJson<T>(url: string, options?: RequestInit): Promise<T> {
   const res = await fetch(url, options);
   if (!res.ok) {

@@ -287,7 +287,7 @@ def aggregate_spatial_mean(
         }
     )
 
-    avg_coverage = float(coverage_series.mean().values) if "time" in coverage_series.dims else float(coverage_series.values)
+    avg_coverage = float(np.mean(coverage_series.values))
 
     summary_meta = {
         "requested_geometry_supported_fraction": 1.0,  # updated by caller with polygon meta

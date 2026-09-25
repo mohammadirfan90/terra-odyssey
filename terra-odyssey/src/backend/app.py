@@ -70,6 +70,31 @@ def create_app() -> FastAPI:
     async def health_check() -> dict:
         return {"status": "ok", "version": "0.1.0"}
 
+    # Mount Next.js static export bundle at root if built
+    from pathlib import Path
+    frontend_out = Path(__file__).resolve().parent.parent / "frontend" / "out"
+    if frontend_out.is_dir():
+        from fastapi.responses import FileResponse
+        from fastapi.staticfiles import StaticFiles
+
+        next_dir = frontend_out / "_next"
+        if next_dir.is_dir():
+            app.mount("/_next", StaticFiles(directory=str(next_dir)), name="next_static")
+
+        @app.get("/", include_in_schema=False)
+        async def serve_index():
+            index_file = frontend_out / "index.html"
+            if index_file.is_file():
+                return FileResponse(index_file)
+            return {"status": "ok", "app": "Terra Odyssey"}
+
+        @app.get("/404", include_in_schema=False)
+        async def serve_404():
+            not_found = frontend_out / "404.html"
+            if not_found.is_file():
+                return FileResponse(not_found)
+            return {"status": "not_found"}
+
     return app
 
 

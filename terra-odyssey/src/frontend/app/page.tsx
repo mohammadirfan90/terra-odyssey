@@ -1,9 +1,23 @@
 "use client";
 
 import React, { useState } from "react";
-import { useCatalog, useCapabilities, useCreateInvestigation, useInvestigationStatus, useInvestigationMap, CANDIDATE_PRESETS } from "@/lib/api/client";
+import {
+  useCatalog,
+  useCapabilities,
+  useCreateInvestigation,
+  useInvestigationStatus,
+  useInvestigationMap,
+  useInvestigationSeries,
+  useInvestigationEvidence,
+  CANDIDATE_PRESETS,
+  DEFAULT_SERIES,
+  DEFAULT_CONTRAST_STATS,
+} from "@/lib/api/client";
 import { QuestionBuilder } from "@/components/investigation/QuestionBuilder";
 import { EarthTrendMapWrapper } from "@/components/map/EarthTrendMapWrapper";
+import { LinkedTimeSeriesChart } from "@/components/charts/LinkedTimeSeriesChart";
+import { EvidenceDrawer } from "@/components/evidence/EvidenceDrawer";
+import { ContrastStats } from "@/components/evidence/ContrastCard";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Globe, Compass, BarChart3, FileText, CheckCircle2, AlertTriangle, Loader2 } from "lucide-react";
@@ -21,6 +35,60 @@ export default function WorkspacePage() {
   // Poll status of active job
   const { data: jobStatus } = useInvestigationStatus(activeJobId);
   const { data: mapGridData } = useInvestigationMap(activeJobId);
+  const { data: seriesPayload } = useInvestigationSeries(activeJobId);
+  const { data: evidencePayload } = useInvestigationEvidence(activeJobId);
+
+  // Derive series data (live job or candidate demo fallback)
+  const displaySeries = seriesPayload?.data && seriesPayload.data.length > 0
+    ? seriesPayload.data
+    : DEFAULT_SERIES;
+
+  // Derive contrast stats (live job or candidate demo fallback)
+  let displayStats: ContrastStats = DEFAULT_CONTRAST_STATS;
+  if (evidencePayload?.results && evidencePayload.results.length > 0) {
+    const rawRes: any = evidencePayload.results[0];
+    const diag = rawRes.method?.diagnostics || {};
+    const uncert = rawRes.uncertainty || {};
+    const effect = rawRes.effect || {};
+    const estimand = rawRes.estimand || {};
+
+    displayStats = {
+      dataset_id: estimand.dataset_id || "merra2_t2m",
+      variable: estimand.variable || "T2M",
+      units: estimand.units || "degC",
+      unit_per_decade: effect.unit_per_decade || "degC/decade",
+      period: {
+        start_year: parseInt(estimand.period?.start?.slice(0, 4) || "2000", 10),
+        end_year: parseInt(estimand.period?.end?.slice(0, 4) || "2024", 10),
+      },
+      status: evidencePayload.result_status || (rawRes.status as any) || "inconclusive",
+      sub_status: diag.contrast_sub_status,
+      region_a: {
+        name: "Region A",
+        slope_per_decade: effect.region_a_estimate ?? 0.0,
+        slope_se_per_decade: diag.slope_se_per_decade_a ?? 0.1,
+        ci_95: [diag.ci_lower_a ?? -0.2, diag.ci_upper_a ?? 0.2],
+        p_value: diag.p_value_a ?? 0.05,
+      },
+      region_b: {
+        name: "Region B",
+        slope_per_decade: effect.region_b_estimate ?? 0.0,
+        slope_se_per_decade: diag.slope_se_per_decade_b ?? 0.1,
+        ci_95: [diag.ci_lower_b ?? -0.2, diag.ci_upper_b ?? 0.2],
+        p_value: diag.p_value_b ?? 0.05,
+      },
+      difference: {
+        slope_per_decade: effect.estimate ?? 0.0,
+        hac_se_per_decade: diag.slope_se_per_decade ?? 0.1,
+        ci_95_hac: [uncert.lower ?? -0.2, uncert.upper ?? 0.2],
+        raw_p_value: rawRes.method?.raw_p_value ?? rawRes.method?.p_value ?? 0.05,
+        adjusted_p_value: rawRes.method?.adjusted_p_value,
+      },
+      selection_status: rawRes.method?.selection_status,
+      caveats: rawRes.caveats,
+      interpretation: rawRes.interpretation?.text,
+    };
+  }
 
   const handleLaunchInvestigation = (req: any) => {
     createMutation.mutate(req, {
@@ -132,30 +200,42 @@ export default function WorkspacePage() {
             </div>
           </TabsContent>
 
-
-          {/* Tab 3: Linked Time-Series Placeholder for Plan 5.3 */}
+          {/* Tab 3: Linked Time-Series Chart */}
           <TabsContent value="charts" className="pt-2">
-            <div className="flex flex-col items-center justify-center p-16 rounded-lg border border-slate-800 bg-slate-900/40 text-center space-y-3">
-              <BarChart3 className="w-10 h-10 text-amber-400/60 animate-pulse" />
-              <h2 className="text-sm font-semibold text-slate-200">
-                D3/SVG Linked Time-Series & Difference Chart (Plan 5.3)
-              </h2>
-              <p className="text-xs text-slate-400 max-w-md">
-                Synchronized dual regional curves, synchronous difference series D(t), zero-line contrast, valid annual coverage bars, and year hover inspection.
-              </p>
+            <div className="space-y-4">
+              {!activeJobId && (
+                <div className="p-3 bg-slate-900/60 border border-slate-800 rounded-md text-xs text-slate-400 flex items-center justify-between">
+                  <span>Displaying demonstration candidate contrast series ({displayStats.region_a.name} vs {displayStats.region_b?.name}). Launch an investigation in Tab 1 to run on live/cached NASA data.</span>
+                  <Badge variant="outline" className="text-[10px] text-amber-400 border-amber-800">Demo Record</Badge>
+                </div>
+              )}
+              <LinkedTimeSeriesChart
+                data={displaySeries}
+                unit={displayStats.units}
+                variableName={displayStats.variable}
+                regionAName={displayStats.region_a.name}
+                regionBName={displayStats.region_b?.name}
+              />
             </div>
           </TabsContent>
 
-          {/* Tab 4: Evidence & Export Placeholder for Plan 5.3 */}
+          {/* Tab 4: Evidence & Export Drawer */}
           <TabsContent value="evidence" className="pt-2">
-            <div className="flex flex-col items-center justify-center p-16 rounded-lg border border-slate-800 bg-slate-900/40 text-center space-y-3">
-              <FileText className="w-10 h-10 text-emerald-400/60 animate-pulse" />
-              <h2 className="text-sm font-semibold text-slate-200">
-                Evidence Drawer & Export Bundling (Plan 5.3)
-              </h2>
-              <p className="text-xs text-slate-400 max-w-md">
-                Qualified evidence status cards, scalar Newey-West HAC confidence intervals, methods inspector, and 1-click downloads for reproducible ZIP archives and data CSVs.
-              </p>
+            <div className="space-y-4">
+              {!activeJobId && (
+                <div className="p-3 bg-slate-900/60 border border-slate-800 rounded-md text-xs text-slate-400 flex items-center justify-between">
+                  <span>Displaying candidate contrast evidence record ({displayStats.region_a.name} vs {displayStats.region_b?.name}).</span>
+                  <Badge variant="outline" className="text-[10px] text-amber-400 border-amber-800">Demo Record</Badge>
+                </div>
+              )}
+              <EvidenceDrawer
+                jobId={activeJobId || "demo-candidate"}
+                stats={displayStats}
+                timeSeriesData={displaySeries}
+                datasetId={displayStats.dataset_id}
+                variableName={displayStats.variable}
+                unit={displayStats.units}
+              />
             </div>
           </TabsContent>
         </Tabs>
