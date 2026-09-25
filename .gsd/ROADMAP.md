@@ -65,7 +65,7 @@ updated: 2026-09-24T23:20:00Z
 
 **Plans:**
 - [x] Plan 4.1: Catalog and investigation creation API endpoints
-- [ ] Plan 4.2: Investigation execution worker and job state stepper
+- [x] Plan 4.2: Investigation execution worker and job state stepper
 - [ ] Plan 4.3: JSON, CSV, and summary report export bundling
 
 ---
@@ -89,7 +89,7 @@ updated: 2026-09-24T23:20:00Z
 | 1 | ✅ | 3/3 | 100% |
 | 2 | ✅ | 3/3 | 100% |
 | 3 | ✅ | 3/3 | 100% |
-| 4 | 🔄 | 1/3 | 33% |
+| 4 | 🔄 | 2/3 | 67% |
 | 5 | ⬜ | 0/3 | 0% |
 
 ---
