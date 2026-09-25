@@ -11,6 +11,11 @@ from .interval_sensitivity import (
     attach_interval_sensitivity_to_result,
     compute_interval_sensitivity,
 )
+from .modified_mann_kendall import (
+    MannKendallResult,
+    compute_sens_slope,
+    modified_mann_kendall_test,
+)
 from .multiplicity import (
     adjudicate_contrast_family,
     adjust_pvalues,
@@ -46,4 +51,7 @@ __all__ = [
     "estimate_paired_contrast",
     "adjust_pvalues",
     "adjudicate_contrast_family",
+    "modified_mann_kendall_test",
+    "MannKendallResult",
+    "compute_sens_slope",
 ]
