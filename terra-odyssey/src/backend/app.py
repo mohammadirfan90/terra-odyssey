@@ -9,6 +9,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from src.backend.api.catalog import router as catalog_router
+from src.backend.api.investigations import router as investigations_router
 from src.backend.errors import register_error_handlers
 from src.backend.store import JobStore
 from src.backend.worker import start_worker_task, stop_worker_task
@@ -63,6 +64,7 @@ def create_app() -> FastAPI:
 
     # Mount API routes
     app.include_router(catalog_router, prefix="/api")
+    app.include_router(investigations_router, prefix="/api")
 
     @app.get("/api/health", tags=["Health"])
     async def health_check() -> dict:
