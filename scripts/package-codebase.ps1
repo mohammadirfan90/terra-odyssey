@@ -38,8 +38,8 @@ $StageDir = Join-Path ([System.IO.Path]::GetTempPath()) ("terra-odyssey-pkg-" + 
 New-Item -ItemType Directory -Path $StageDir -Force | Out-Null
 
 try {
-    # Copy terra-odyssey files, excluding caches
-    $excludeDirs = @("__pycache__", ".pytest_cache", ".coverage", "htmlcov")
+    # Copy terra-odyssey files, excluding caches and node_modules
+    $excludeDirs = @("__pycache__", ".pytest_cache", ".coverage", "htmlcov", "node_modules", ".next", "out")
     $excludeExts = @(".pyc", ".pyo", ".pyd")
 
     Get-ChildItem -Path $SourceDir -Recurse | ForEach-Object {

@@ -1,0 +1,14 @@
+{
+  "include": [
+    "src",
+    "tests"
+  ],
+  "extraPaths": [
+    ".",
+    "src",
+    "C:/Users/ghotc/AppData/Roaming/Python/Python313/site-packages",
+    "C:/Python313/Lib/site-packages"
+  ],
+  "pythonPath": "C:/Python313/python.exe",
+  "pythonPlatform": "Windows"
+}

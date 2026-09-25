@@ -247,12 +247,27 @@ class MapProvenance(BaseModel):
     family_size: int
 
 
+class MapBands(BaseModel):
+    """Frozen 9 diagnostic bands contract for gridded trend field delivery."""
+    model_config = ConfigDict(extra="allow")
+
+    slope_per_decade: List[Optional[float]]
+    slope_se_per_decade: List[Optional[float]] = Field(default_factory=list)
+    ci_lower_per_decade: List[Optional[float]] = Field(default_factory=list)
+    ci_upper_per_decade: List[Optional[float]] = Field(default_factory=list)
+    raw_p_value: List[Optional[float]] = Field(default_factory=list)
+    adjusted_p_value: List[Optional[float]] = Field(default_factory=list)
+    coverage_fraction: List[Optional[float]] = Field(default_factory=list)
+    eligibility_code: List[str] = Field(default_factory=list)
+    evidence_code: List[str] = Field(default_factory=list)
+
+
 class StructuredGridMapResponse(BaseModel):
     """Compressed 2D gridded trend field delivery schema."""
     model_config = ConfigDict(extra="ignore")
 
     grid: GridMetadata
-    bands: Dict[str, List[Any]]
+    bands: Union[MapBands, Dict[str, List[Any]]]
     legend: LegendMetadata
     provenance: MapProvenance
 

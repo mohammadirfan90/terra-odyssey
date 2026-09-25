@@ -8,6 +8,10 @@
 # Dependencies
 node_modules/
 .pnpm-store/
+.next/
+out/
+next-env.d.ts
+*.tsbuildinfo
 
 # Python
 __pycache__/
@@ -26,6 +30,7 @@ downloads/
 eggs/
 .eggs/
 lib/
+!terra-odyssey/src/frontend/lib/
 lib64/
 parts/
 sdist/

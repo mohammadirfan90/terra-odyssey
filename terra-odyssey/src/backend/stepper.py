@@ -23,26 +23,26 @@ import numpy as np
 import pandas as pd
 import xarray as xr
 
-from src.analysis.aggregation import (
+from ..analysis.aggregation import (
     aggregate_annual_precipitation,
     aggregate_annual_temperature,
     aggregate_seasonal,
     validate_consecutive_series,
 )
-from src.analysis.multiplicity import adjudicate_contrast_family
-from src.analysis.paired_contrast import estimate_paired_contrast
-from src.analysis.spatial_aggregation import (
+from ..analysis.multiplicity import adjudicate_contrast_family, adjust_pvalues
+from ..analysis.paired_contrast import estimate_paired_contrast
+from ..analysis.spatial_aggregation import (
     aggregate_spatial_mean,
     compute_polygon_weights,
 )
-from src.analysis.trend_estimator import estimate_linear_trend
-from src.backend.errors import (
+from ..analysis.trend_estimator import estimate_linear_trend, fit_ols_hac_trend
+from .errors import (
     DataUnavailableError,
     InvalidGeometryError,
     ScientificallyIneligibleError,
     TerraOdysseyError,
 )
-from src.backend.store import JobStore
+from .store import JobStore
 
 logger = logging.getLogger("terra_odyssey.backend.stepper")
 
@@ -208,7 +208,10 @@ def run_pipeline(
             unit_per_decade = "degC/decade"
         else:
             # GPM precipitation accumulation (mm/year)
-            # In synthetic rate mode, rate * 8760 hours/year
+            # If rate in mm/hr, convert to mm/month accumulation: rate * days_in_month * 24
+            if "time" in da.dims:
+                hours_in_month = da.time.dt.days_in_month * 24
+                da = da * hours_in_month
             da.attrs["units"] = "mm/year"
             units = "mm/year"
             unit_per_decade = "mm/year/decade"
@@ -228,45 +231,52 @@ def run_pipeline(
         lats = da[lat_name].values
         lons = da[lon_name].values
 
+        # Enforce validated temporal aggregation (calendar hours and day-of-month weighting)
+        if "time" in da.dims:
+            if "merra" in dataset_id.lower() or "d1" in dataset_id.lower():
+                da_ann = aggregate_annual_temperature(da)
+            else:
+                da_ann = aggregate_annual_precipitation(da)
+        else:
+            da_ann = da
+
         weights_a, meta_a = compute_polygon_weights(region_a_raw, lats, lons)
         ts_a, cov_a, sum_meta_a = aggregate_spatial_mean(
-            da, weights_a, coverage_threshold=1.0 if "merra" in dataset_id.lower() else 0.90, product_id=dataset_id
+            da_ann, weights_a, coverage_threshold=1.0 if "merra" in dataset_id.lower() else 0.90, product_id=dataset_id
         )
 
         has_paired = region_b_raw is not None
         if has_paired:
             weights_b, meta_b = compute_polygon_weights(region_b_raw, lats, lons)
             ts_b, cov_b, sum_meta_b = aggregate_spatial_mean(
-                da, weights_b, coverage_threshold=1.0 if "merra" in dataset_id.lower() else 0.90, product_id=dataset_id
+                da_ann, weights_b, coverage_threshold=1.0 if "merra" in dataset_id.lower() else 0.90, product_id=dataset_id
             )
 
-        # Temporal summarization to annual values
-        # Build pandas series of annual values
-        if "time" in ts_a.dims:
-            times = pd.to_datetime(ts_a["time"].values)
-            df_a = pd.DataFrame({"time": times, "val": ts_a.values})
-            df_a["year"] = df_a["time"].dt.year
-            ann_a = df_a.groupby("year")["val"].mean()
-            years_a = ann_a.index.values.astype(int)
-            vals_a = ann_a.values.astype(float)
+        # Extract consecutive annual values
+        if "year" in ts_a.dims or "year" in ts_a.coords:
+            years_a = ts_a["year"].values.astype(int)
+            vals_a = ts_a.values.astype(float)
+        elif "time" in ts_a.dims:
+            years_a = pd.to_datetime(ts_a["time"].values).year.values.astype(int)
+            vals_a = ts_a.values.astype(float)
         else:
             years_a = np.arange(start_year, end_year + 1)
             vals_a = np.full(len(years_a), float(ts_a.values))
 
         if has_paired:
-            if "time" in ts_b.dims:
-                df_b = pd.DataFrame({"time": pd.to_datetime(ts_b["time"].values), "val": ts_b.values})
-                df_b["year"] = df_b["time"].dt.year
-                ann_b = df_b.groupby("year")["val"].mean()
-                years_b = ann_b.index.values.astype(int)
-                vals_b = ann_b.values.astype(float)
+            if "year" in ts_b.dims or "year" in ts_b.coords:
+                years_b = ts_b["year"].values.astype(int)
+                vals_b = ts_b.values.astype(float)
+            elif "time" in ts_b.dims:
+                years_b = pd.to_datetime(ts_b["time"].values).year.values.astype(int)
+                vals_b = ts_b.values.astype(float)
             else:
                 years_b = np.arange(start_year, end_year + 1)
                 vals_b = np.full(len(years_b), float(ts_b.values))
 
         # Check coverage eligibility
         coverage_ineligible = False
-        min_cov = float(cov_a.min().values) if "time" in cov_a.dims else float(cov_a.values)
+        min_cov = float(np.min(cov_a.values))
         if "merra" in dataset_id.lower() and min_cov < 0.999:
             coverage_ineligible = True
         elif min_cov < 0.80:
@@ -339,6 +349,14 @@ def run_pipeline(
             )
             analysis_results.append(contrast_res)
             result_status = contrast_res["status"]
+
+            # Wire exploratory hypothesis screening family tracking into contrast adjudication
+            if selection_status == "exploratory_map_selected":
+                family_id = f"map_screening_{job_id}"
+                adjudicated = adjudicate_contrast_family(analysis_results, family_id=family_id, fdr_level=0.05)
+                if adjudicated:
+                    analysis_results = adjudicated
+                    result_status = analysis_results[0]["status"]
         else:
             single_res = estimate_linear_trend(
                 years=years_a,
@@ -353,6 +371,12 @@ def run_pipeline(
             )
             analysis_results.append(single_res)
             result_status = single_res["status"]
+
+        if data_mode == "demo_sample":
+            demo_caveat = "Analysis executed using synthetic demonstration sample data. For verified scientific findings, provide cached NASA granules or live Earthdata access."
+            for r in analysis_results:
+                if "caveats" in r and demo_caveat not in r["caveats"]:
+                    r["caveats"].append(demo_caveat)
 
         if store.is_cancelled(job_id):
             store.set_result(job_id, job_status="cancelled", error={"reason": "cancelled_at_analyzing"})
@@ -384,11 +408,75 @@ def run_pipeline(
             ts_df = pd.DataFrame({"year": years_a, "region_a_value": vals_a})
         ts_df.to_csv(csv_file, index=False)
 
-        # 3. Write map_grid.json.gz (compressed 2D field preview)
+        # 3. Write map_grid.json.gz with real OLS+HAC decimated grid fits & Benjamini-Yekutieli FDR multiple testing
         map_file = staging_dir / "map_grid.json.gz"
         stride = max(1, len(lats) // 50)
         sub_lats = lats[::stride].tolist()
         sub_lons = lons[::stride].tolist()
+        total_cells = len(sub_lats) * len(sub_lons)
+
+        da_sub = da_ann.isel({lat_name: slice(None, None, stride), lon_name: slice(None, None, stride)})
+        sub_vals = da_sub.values  # (n_years, len(sub_lats), len(sub_lons))
+        sub_years = da_sub["year"].values.astype(int) if "year" in da_sub.coords else years_a
+
+        slope_band: List[Optional[float]] = []
+        slope_se_band: List[Optional[float]] = []
+        ci_lower_band: List[Optional[float]] = []
+        ci_upper_band: List[Optional[float]] = []
+        raw_p_band: List[Optional[float]] = []
+        cov_band: List[Optional[float]] = []
+        elig_band: List[str] = []
+
+        for i in range(len(sub_lats)):
+            for j in range(len(sub_lons)):
+                y_series = sub_vals[:, i, j] if sub_vals.ndim == 3 else np.array([sub_vals[i, j]])
+                valid_mask = ~np.isnan(y_series)
+                valid_cnt = int(np.sum(valid_mask))
+                cov_frac = float(valid_cnt / max(1, len(sub_years)))
+                cov_band.append(round(cov_frac, 4))
+
+                if valid_cnt >= 20:
+                    try:
+                        fit = fit_ols_hac_trend(sub_years[valid_mask], y_series[valid_mask], confidence_level=0.95)
+                        slope_band.append(round(float(fit["slope_per_decade"]), 4))
+                        slope_se_band.append(round(float(fit["slope_se_per_decade"]), 4))
+                        ci_lower_band.append(round(float(fit["ci_lower_decade"]), 4))
+                        ci_upper_band.append(round(float(fit["ci_upper_decade"]), 4))
+                        raw_p_band.append(float(fit["p_value"]))
+                        elig_band.append("eligible")
+                    except Exception:
+                        slope_band.append(None)
+                        slope_se_band.append(None)
+                        ci_lower_band.append(None)
+                        ci_upper_band.append(None)
+                        raw_p_band.append(1.0)
+                        elig_band.append("ineligible")
+                else:
+                    slope_band.append(None)
+                    slope_se_band.append(None)
+                    ci_lower_band.append(None)
+                    ci_upper_band.append(None)
+                    raw_p_band.append(1.0)
+                    elig_band.append("missing" if valid_cnt == 0 else "ineligible")
+
+        # Adjust p-values across all eligible cells in map screening family using Benjamini-Yekutieli (fdr_by)
+        p_arr = np.array([p if p is not None else 1.0 for p in raw_p_band], dtype=np.float64)
+        rej_by, adj_p_by = adjust_pvalues(p_arr, method="fdr_by", alpha=0.05)
+
+        adj_p_band: List[Optional[float]] = []
+        evid_band: List[str] = []
+        for idx in range(total_cells):
+            if elig_band[idx] == "eligible":
+                adj_val = float(adj_p_by[idx])
+                adj_p_band.append(round(adj_val, 6))
+                evid_band.append("supported" if adj_val < 0.05 else "inconclusive")
+            else:
+                adj_p_band.append(None)
+                evid_band.append("ineligible")
+
+        valid_slopes = [s for s in slope_band if s is not None]
+        max_abs_slope = float(max(abs(min(valid_slopes, default=-1.0)), abs(max(valid_slopes, default=1.0)), 0.1))
+
         grid_data = {
             "grid": {
                 "crs": "EPSG:4326",
@@ -399,20 +487,28 @@ def run_pipeline(
                 "order": "latitude_longitude",
             },
             "bands": {
-                "slope_per_decade": [0.15] * (len(sub_lats) * len(sub_lons)),
-                "raw_p_value": [0.01] * (len(sub_lats) * len(sub_lons)),
-                "evidence_code": ["supported"] * (len(sub_lats) * len(sub_lons)),
+                "slope_per_decade": slope_band,
+                "slope_se_per_decade": slope_se_band,
+                "ci_lower_per_decade": ci_lower_band,
+                "ci_upper_per_decade": ci_upper_band,
+                "raw_p_value": [round(p, 6) if p is not None else None for p in raw_p_band],
+                "adjusted_p_value": adj_p_band,
+                "coverage_fraction": cov_band,
+                "eligibility_code": elig_band,
+                "evidence_code": evid_band,
             },
             "legend": {
                 "variable": variable,
                 "units": unit_per_decade,
                 "center": 0.0,
-                "minimum": -1.0,
-                "maximum": 1.0,
+                "minimum": -round(max_abs_slope, 2),
+                "maximum": round(max_abs_slope, 2),
+                "fdr_method": "fdr_by",
+                "fdr_level": 0.05,
             },
             "provenance": {
                 "map_family_id": f"map_family_{job_id}",
-                "family_size": len(sub_lats) * len(sub_lons),
+                "family_size": total_cells,
             },
         }
         with gzip.open(map_file, "wt", encoding="utf-8") as gz:
