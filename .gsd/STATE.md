@@ -13,17 +13,15 @@ updated: 2026-09-25T03:58:00Z
 
 ## Last Action
 
-Executed Plan 5.3 (Wave 3) & Verified Phase 5:
-- Implemented `d3-time-series.ts`, `CoverageBars.tsx`, and `LinkedTimeSeriesChart.tsx` (D3 + SVG dual regional series $Y_A(t)$ and $Y_B(t)$, synchronous difference $D_t$, zero reference line, fitted linear trends, decoupled year crosshair hover, and valid annual coverage bars).
-- Built `ContrastCard.tsx`, `MethodsInspector.tsx`, `ExportButton.tsx`, and `EvidenceDrawer.tsx` with semantic adjudication badges (`supported`, `inconclusive`, `ineligible`), scalar HAC slope CIs, and 1-click artifact downloads.
-- Cleared the Phase 4 Scientific Integration Gate in `stepper.py` with real OLS+HAC decimated grid fits, Benjamini-Yekutieli FDR multiple testing, validated temporal aggregation (day/month/leap-year weighting), and explicit demonstration mode disclosure.
-- Mounted Next.js static build in FastAPI `app.py`, enabling single-port unified deployment (`GET /` serves Next.js SPA; `/api` endpoints and RFC 9457 handlers preserved).
-- Packaged clean codebase archive: `terra-odyssey.zip` (95 files, 165.4 KB).
-- Verified: all 63 unit and integration tests passing (`pytest terra-odyssey/tests/unit/ -v`), Next.js static export compiled in 3.6s without errors.
+Executed `/audit-milestone` for Milestone `v0.1.0-mvp`:
+- Audited all 5 roadmap phases against SPEC and SCIENTIFIC_RULES.md.
+- Verified empirical proof: 77/77 tests passing (14 numerical oracle tests + 63 unit/API tests), Next.js static build compiled in 3.6s, single-port FastAPI mount verified.
+- Documented 4 minor technical debt items in `.gsd/milestones/v0.1.0-mvp-AUDIT.md`.
+- Milestone Health: GOOD (100% requirements verified, zero gap closures).
 
 ## Next Steps
 
-1. Milestone v0.1.0-mvp complete! All 5 roadmap phases verified and operational. Run `/audit-milestone` or prepare final showcase demonstration.
+1. Run `/complete-milestone` to archive milestone `v0.1.0-mvp` and summarize lessons learned.
 
 
 

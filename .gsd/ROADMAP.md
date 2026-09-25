@@ -1,13 +1,13 @@
 ---
 milestone: v0.1.0-mvp
 version: 0.1.0
-updated: 2026-09-24T23:20:00Z
+updated: 2026-09-25T10:40:00Z
 ---
 
 # Roadmap: Terra Odyssey
 
-> **Current Phase:** 4 - API & Investigation Orchestration
-> **Status:** ready for planning
+> **Current Phase:** All Phases Complete (1–5)
+> **Status:** Audited & Ready for Completion (`/complete-milestone`)
 
 ## Must-Haves (from SPEC)
 
@@ -15,8 +15,8 @@ updated: 2026-09-24T23:20:00Z
 - [x] Gridded temporal cube normalization and spatial aggregation engine
 - [x] OLS trend estimator with Newey-West HAC standard error diagnostics
 - [x] Paired regional contrast estimator with multiple-testing control
-- [ ] InvestigationRecord schema serialization and JSON/CSV export
-- [ ] Accessible web investigation workspace with map and linked time series
+- [x] InvestigationRecord schema serialization and JSON/CSV export
+- [x] Accessible web investigation workspace with map and linked time series
 
 ---
 
