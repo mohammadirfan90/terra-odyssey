@@ -1,0 +1,29 @@
+name: Scientific & Statistical Review
+description: Propose an estimator refinement, mathematical audit, or dataset quality review
+labels: ["science", "statistics"]
+body:
+  - type: markdown
+    attributes:
+      value: Review of scientific estimators, quality masks, and multiplicity policies.
+  - type: textarea
+    id: component
+    attributes:
+      label: Component Under Review
+      description: Specific estimator, mask, weighting method, or statistical test.
+      placeholder: e.g., Newey-West HAC lag selection, FDR Benjamini-Yekutieli, area weights
+    validations:
+      required: true
+  - type: textarea
+    id: scientific_justification
+    attributes:
+      label: Scientific Justification & Literature Reference
+      description: Peer-reviewed citations or mathematical reasoning supporting this review.
+    validations:
+      required: true
+  - type: textarea
+    id: recommended_action
+    attributes:
+      label: Recommended Action or Code Change
+      description: What change should be made to our mathematical model or verification suite?
+    validations:
+      required: true
