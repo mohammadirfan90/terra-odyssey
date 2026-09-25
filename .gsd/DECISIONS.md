@@ -225,6 +225,14 @@
 
 **Date:** 2026-09-25
 
+> **Scientific interpretation corrections:** Viridis must not be used for signed trend fields; use a frozen zero-centred diverging scale. HAC uncertainty is reported for fitted regression coefficients and slopes, not as an automatic year-by-year band around observations. The trend map summarizes the complete interval and does not change with annual chart hover.
+>
+> **Post-selection inference:** `exploratory_map_selected` records that a region was chosen after viewing a frozen screening map. The screening map’s BY adjustment does not automatically adjust a new freehand regional contrast. A BY-adjusted contrast requires a separately declared finite contrast family; otherwise the paired result remains explicitly exploratory.
+>
+> **Map implementation gate:** CanvasSource compatibility and scientific fidelity must be validated under both Mercator and globe projections. GeoJSON fill layers are the fallback for capped grids, with COG/raster or a projection-aware custom layer reserved for future high-density maps.
+>
+> **Phase 4 gate:** Phase 5 production evidence views cannot be enabled until fabricated map bands, silent synthetic fallback, simplified temporal aggregation and missing contrast-family integration are removed.
+
 ### 1. Technology Stack & Layer Responsibility Split
 - **Framework:** Next.js App Router (TypeScript) with static export capability (`output: 'export'`) served by FastAPI for production/hackathon single-port deployment.
 - **Styling & Components:** Tailwind CSS v4 + `shadcn/ui` (panels, drawers, dialogs, tabs, badges, forms).
@@ -234,42 +242,77 @@
 - **Scientific Visualizations:** Custom MapLibre `CanvasSource` (offscreen raster canvas) + stippled/pattern FDR discovery layer. D3 + SVG for linked time series and difference charts.
 - **State & Communication:** TanStack Query (`@tanstack/react-query`) for polling FastAPI endpoints (`/api/catalog`, `/api/capabilities`, `/api/investigations`).
 
-### 2. Map Architecture & Scientific Grid Rendering
-- **Grid Visualization Pipeline:**
-  1. Retrieve compressed structured grid from `GET /api/investigations/{id}/map`.
-  2. MapLibre dynamically loads in a client component with `ssr: false`.
-  3. Offscreen HTML5 Canvas converts grid array values to RGBA pixels using a frozen diverging color scale (e.g. ColorBrewer RdBu or Viridis colorblind-safe).
-  4. Offscreen canvas added to MapLibre via `CanvasSource`.
-  5. Second pattern/stippled layer added for Benjamini-Yekutieli (`fdr_by`) statistically significant discoveries (ensuring significance is never encoded by color alone).
-  6. Dedicated missing-data / insufficient coverage visual layer.
-  7. Mathematical hover inspection (`cell-index.ts`) computing grid cell coordinates, raw slope, HAC CI, and local test p-value without spatial interpolation.
-- **Projections:**
+### 2. Map Architecture, Projection Spike & Scientific Grid Rendering
+- **Zero-Centred Diverging Scale (Viridis Forbidden for Signed Slopes):**
+  - Viridis is sequential and strictly prohibited for signed trend fields.
+  - Use zero-centred diverging palettes: `BrBG`, `PuOr`, `RdBu` or scientific `"vik"`.
+  - Symmetric domain: $[-\max|\beta|, +\max|\beta|]$ frozen across the full dataset interval. Panning and zooming must never rescale the color ramp.
+- **Validation Spike & Fallback Path:**
+  - *Primary Experiment*: MapLibre `CanvasSource` via an offscreen canvas rendering cells mathematically. Must be tested/validated under both 2D Mercator and 3D Globe projections.
+  - *Fallback for $\le 10,000$ displayed cells*: GeoJSON cell polygons with MapLibre fill and fill-pattern layers.
+  - *Future High-Density Path*: Cloud-Optimized GeoTIFF (COG) raster tiles or projection-aware custom WebGL shader layer.
+- **Evidence & Missing Data Layers:**
+  - Benjamini-Yekutieli (`fdr_by`) statistically significant discoveries rendered using a second stippled/pattern layer (significance is never encoded by color alone).
+  - Dedicated missing-data and insufficient-coverage visual layer (diagonal hatching / muted fill).
+- **Map Bands Contract:**
+  - Grid payload must include:
+    ```json
+    {
+      "bands": {
+        "slope_per_decade": [],
+        "slope_se_per_decade": [],
+        "ci_lower_per_decade": [],
+        "ci_upper_per_decade": [],
+        "raw_p_value": [],
+        "adjusted_p_value": [],
+        "coverage_fraction": [],
+        "eligibility_code": [],
+        "evidence_code": []
+      }
+    }
+    ```
+    (If payload size becomes excessive, keep slope, adjusted evidence, and coverage in `/map`, retrieving full diagnostics through a `/map/cell` detail endpoint).
+- **Fast Transport:** FastAPI serves `map_grid.json.gz` with HTTP `Content-Encoding: gzip`. The browser handles decompression transparently; frontend does not execute manual JS decompression.
+- **Projection Modes:**
   - 2D Mercator: primary analysis and precision regional selection.
   - 3D Globe: global overview and NASA-style presentation.
-  - Toggle between 2D and Globe preserves all underlying scientific evidence, selected regions, and legend thresholds unchanged (scientific calculations remain backend geodesic area-weighted).
+  - Projection toggle preserves all scientific evidence, selected regions, and legend thresholds unchanged.
 
-### 3. Region Selection & Exploratory Search Tracking
+### 3. Region Selection & Post-Selection Inference (Multiplicity Disclosure)
 - **Terra Draw Integration:** Explicit controls for Draw Region A, Draw Region B, Edit, Delete, Confirm.
 - **Visual Accessibility:** Regions A and B must feature prominent persistent text labels ("A" and "B") rather than relying on color alone.
-- **Honesty in Selection (Multiplicity Disclosure):**
-  - If a user draws or selects regions *after* viewing the gridded trend map, the frontend automatically marks:
+- **Exploratory Hypothesis Tracking:**
+  - Drawing arbitrary polygons after viewing a cellwise screening map creates a new data-dependent regional hypothesis.
+  - Applying BY to the original map-cell p-values does *not* automatically adjust the newly selected regional contrast.
+  - Record two distinct family concepts:
     ```json
     {
       "selection_status": "exploratory_map_selected",
-      "map_family_id": "<frozen-map-family-id>",
-      "selection_method": "map_draw",
-      "selected_at": "<iso-timestamp>"
+      "screening_family_id": "<map-family-id>",
+      "contrast_family_id": null
     }
     ```
-  - This ensures the backend applies Benjamini-Yekutieli multiplicity penalty and adds mandatory caveats to the final evidence status.
+  - For freehand exploratory regions: run the paired contrast, report its raw p-value, disclose post-map selection, label it exploratory, and do not claim BY-adjusted confirmation unless the contrast belonged to a declared finite family.
+  - Curated presets defined before analysis remain `predefined`.
 
 ### 4. Linked Scientific Charts & Evidence Panels
 - **D3/SVG Time-Series Engine:**
-  - Dual time-series curves (Region A in warm slate/amber, Region B in cool cyan/teal) with valid coverage bars.
-  - Synchronous difference series $D_t = Y_{A,t} - Y_{B,t}$ with 95% HAC confidence bands and zero-line contrast.
-  - Responsive crosshair scrubbing linking time-series hover to annual map time-step or summary.
+  - Display observed $Y_A(t)$, $Y_B(t)$, and synchronous difference $D_t = Y_{A,t} - Y_{B,t}$ with valid coverage bars.
+  - Display fitted trend lines and zero-line contrast.
+  - Newey-West HAC uncertainty is reported as a scalar slope CI in the evidence card. A fitted-mean trend band is displayed only if explicitly calculated from the full HAC coefficient covariance matrix (never a raw $D_t$ band labeled as "HAC confidence band").
+  - Chart hover: crosshair shows A, B, and D values for that specific year.
+  - **No Annual Map-Time Linking:** The trend map represents the slope over the complete interval, not an annual field. Chart hover does *not* change the trend map.
 - **Evidence Drawer & Status Badges:**
   - Clear semantic badges (`Supported: Opposite-Trend Pair`, `Inconclusive: Contrasting Slopes Not Significant`, `Inconclusive: Slopes Share Same Sign`, `Ineligible: Record Too Short`).
-  - Transparent methods inspector detailing OLS + Newey-West HAC lag, BY FDR correction, and dataset release metadata.
+  - Transparent methods inspector detailing OLS + Newey-West HAC lag, BY FDR screening correction, and dataset release metadata.
   - Direct download triggers for frozen `.zip` bundle, `.json` record, and `.csv` series.
+
+### 5. Phase 4 Scientific Integration Gate
+- Phase 5 production evidence views cannot be enabled until the following Phase 4 backend items are completed:
+  1. Replace prototype fabricated map slopes and p-values in stepper with verified scientific calculation or real sample pipeline.
+  2. Eliminate silent `auto` fallback to synthetic cube.
+  3. Align temporal aggregation with validated day-of-month and calendar-hours aggregation.
+  4. Integrate actual exploratory contrast-family adjudication.
+- Phase 5 frontend may use explicit developer fixtures during initial UI development, but production evidence rendering remains blocked until this gate is cleared.
+
 
