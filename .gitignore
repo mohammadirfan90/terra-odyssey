@@ -1,6 +1,7 @@
 # Environment variables and secrets
 .env
 .env.*
+!.env.example
 *.env
 *.key
 *.pem
@@ -30,7 +31,7 @@ downloads/
 eggs/
 .eggs/
 lib/
-!terra-odyssey/src/frontend/lib/
+!terra-odyssey/frontend/lib/
 lib64/
 parts/
 sdist/
@@ -45,6 +46,11 @@ wheels/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
 
 # OS and Editor files
 .DS_Store

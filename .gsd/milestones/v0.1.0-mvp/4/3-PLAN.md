@@ -12,10 +12,10 @@ depends_on:
 Implement the REST endpoints for investigation creation, status polling, time-series retrieval, compressed structured-grid map delivery, and immutable frozen `.zip` export bundle generation conforming to `schemas/investigation-record.schema.json`.
 
 ## Context
-- `terra-odyssey/src/backend/schemas.py`
-- `terra-odyssey/src/backend/store.py`
-- `terra-odyssey/src/backend/stepper.py`
-- `terra-odyssey/src/backend/worker.py`
+- `terra-odyssey/backend/src/backend/schemas.py`
+- `terra-odyssey/backend/src/backend/store.py`
+- `terra-odyssey/backend/src/backend/stepper.py`
+- `terra-odyssey/backend/src/backend/worker.py`
 - `schemas/investigation-record.schema.json`
 - `schemas/analysis-result.schema.json`
 - `.gsd/DECISIONS.md`
@@ -26,22 +26,22 @@ Implement the REST endpoints for investigation creation, status polling, time-se
 <task type="auto">
   <name>Implement Investigation API Endpoints & Structured Grid Delivery</name>
   <files>
-    terra-odyssey/src/backend/api/investigations.py
-    terra-odyssey/src/backend/app.py
+    terra-odyssey/backend/src/backend/api/investigations.py
+    terra-odyssey/backend/src/backend/app.py
   </files>
   <action>
-    1. In `terra-odyssey/src/backend/api/investigations.py`:
+    1. In `terra-odyssey/backend/src/backend/api/investigations.py`:
        - `POST /api/investigations`: Accepts `InvestigationRequest`. Validates parameters. Calls `store.create_job()`, enqueues via `worker.enqueue_job()`. Returns HTTP 202 Accepted with header `Location: /api/investigations/{id}` and job record body.
        - `GET /api/investigations/{id}`: Returns `JobStatusResponse` with operational status, stage, progress, and result summary.
        - `DELETE /api/investigations/{id}`: Calls `store.request_cancellation(id)`. Returns HTTP 202 Accepted.
        - `GET /api/investigations/{id}/series`: Reads `region_time_series.csv` and returns typed time-series data (years, Region A, Region B, difference, valid area coverage).
        - `GET /api/investigations/{id}/map`: Query params `bbox: Optional[str] = None`, `max_cells: int = 10000`. Reads cached `map_grid.json.gz`, applies bounding-box slice and downsampling stride to enforce `max_cells` ceiling. Outputs JSON `null` for missing cells, never averages $p$-values, and preserves frozen FDR legend metadata. Returns compressed `application/json` (with gzip Content-Encoding support).
        - `GET /api/investigations/{id}/evidence`: Reads `analysis_results.json` and returns effect sizes, HAC confidence intervals, multiplicity adjustments, and caveats.
-    2. In `terra-odyssey/src/backend/app.py`:
+    2. In `terra-odyssey/backend/src/backend/app.py`:
        - Mount the investigations router at `/api`.
   </action>
   <verify>
-    python -c "from terra_odyssey.src.backend.app import create_app; from fastapi.testclient import TestClient; c = TestClient(create_app()); print('Router mounted successfully!')"
+    python -c "from backend.app import create_app; from fastapi.testclient import TestClient; c = TestClient(create_app()); print('Router mounted successfully!')"
   </verify>
   <done>
     All investigation endpoints respond correctly, return HTTP 202 on submission, enforce structured map grid limits, and deliver time-series and evidence payloads.
@@ -51,11 +51,11 @@ Implement the REST endpoints for investigation creation, status polling, time-se
 <task type="auto">
   <name>Implement Frozen Export Bundler</name>
   <files>
-    terra-odyssey/src/backend/exporter.py
-    terra-odyssey/src/backend/api/investigations.py
+    terra-odyssey/backend/src/backend/exporter.py
+    terra-odyssey/backend/src/backend/api/investigations.py
   </files>
   <action>
-    1. In `terra-odyssey/src/backend/exporter.py`:
+    1. In `terra-odyssey/backend/src/backend/exporter.py`:
        - Implement `build_export_bundle(job_id, artifacts_dir, export_path)`:
          - Creates in-memory or temporary `.zip` archive containing:
            1. `investigation_record.json`: Formatted strictly according to `schemas/investigation-record.schema.json`. Validates against Draft 2020-12 validator before writing.
@@ -68,7 +68,7 @@ Implement the REST endpoints for investigation creation, status polling, time-se
            8. `README.md`: Verification and replay guide.
            9. `checksums.sha256`: SHA-256 hash of each file in the archive.
          - Strictly strips any secrets, tokens, or absolute local paths from all files.
-    2. In `terra-odyssey/src/backend/api/investigations.py`:
+    2. In `terra-odyssey/backend/src/backend/api/investigations.py`:
        - Implement `GET /api/investigations/{id}/export`:
          - Parameter `format: str = Query("zip", regex="^(zip|json|timeseries_csv)$")`.
          - If `format == "zip"`: Returns `StreamingResponse` with `application/zip` and `Content-Disposition: attachment; filename=terra-odyssey-investigation-{id}.zip`.
@@ -76,7 +76,7 @@ Implement the REST endpoints for investigation creation, status polling, time-se
          - If `format == "timeseries_csv"`: Returns `region_time_series.csv`.
   </action>
   <verify>
-    python -c "import terra_odyssey.src.backend.exporter as exp; print('Exporter imported cleanly!')"
+    python -c "import backend.exporter as exp; print('Exporter imported cleanly!')"
   </verify>
   <done>
     `build_export_bundle` compiles complete frozen ZIP archives, validates `investigation_record.json` against the official JSON schema, and supports format query selection.
@@ -86,7 +86,7 @@ Implement the REST endpoints for investigation creation, status polling, time-se
 <task type="auto">
   <name>End-to-End API Integration Tests</name>
   <files>
-    terra-odyssey/tests/unit/test_api_investigations.py
+    terra-odyssey/backend/tests/unit/test_api_investigations.py
   </files>
   <action>
     Create end-to-end integration tests using `fastapi.testclient.TestClient`:
@@ -103,7 +103,7 @@ Implement the REST endpoints for investigation creation, status polling, time-se
        - Runs investigation where slopes are same sign or nonsignificant; verifies `job_status == "succeeded"` and `result_status == "inconclusive"`.
   </action>
   <verify>
-    python -m pytest terra-odyssey/tests/unit/test_api_investigations.py -v
+    python -m pytest terra-odyssey/backend/tests/unit/test_api_investigations.py -v
   </verify>
   <done>
     All end-to-end API lifecycle, error handling, map delivery, and export validation tests pass.

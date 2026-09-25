@@ -1,7 +1,7 @@
 # Plan 3.2 Summary: Paired Regional Difference Contrast Estimator
 
 ## Implementation Summary
-- **Module**: `terra-odyssey/src/analysis/paired_contrast.py`
+- **Module**: `terra-odyssey/backend/src/analysis/paired_contrast.py`
   - Aligns Region A and Region B time series on identical calendar years.
   - Requires at least 20 consecutive common complete annual observations ($n \ge 20$).
   - Fits synchronous difference series $D_t = Y_{A,t} - Y_{B,t}$ with verified Phase 2 OLS + Newey-West HAC covariance ($L=2$, Bartlett kernel, small-sample correction, Student-$t$).

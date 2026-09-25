@@ -1,6 +1,8 @@
 #!/bin/bash
 # Terra Odyssey - Codebase Packaging Script (Bash version)
-# Archives the /terra-odyssey application directory into terra-odyssey.zip at the repository root.
+# Archives the standalone applications without dependencies, secrets, or generated caches.
+
+set -euo pipefail
 
 script_dir="$(cd "$(dirname "$0")" && pwd)"
 repo_root="$(cd "$script_dir/.." && pwd)"
@@ -20,11 +22,17 @@ echo "Target directory: terra-odyssey/"
 echo "Destination:      terra-odyssey.zip"
 echo ""
 
-# Remove old zip if present
 rm -f "$zip_path"
 
-# Create zip from inside terra-odyssey
-(cd "$source_dir" && zip -r -q "$zip_path" .)
+(
+    cd "$source_dir"
+    zip -r -q "$zip_path" . \
+        -x '*/node_modules/*' '*/.next/*' '*/.turbo/*' '*/out/*' \
+           '*/__pycache__/*' '*/.pytest_cache/*' '*/pytest-cache-files-*/*' '*/htmlcov/*' '*/coverage/*' \
+           '*.pyc' '*.pyo' '*.pyd' '*.tsbuildinfo' '*/next-env.d.ts' \
+           '.env' '*/.env' '.env.local' '*/.env.local' \
+           '*/.env.development*' '*/.env.production*' '*/.env.test*'
+)
 
 if [ -f "$zip_path" ]; then
     size=$(du -h "$zip_path" | cut -f1)

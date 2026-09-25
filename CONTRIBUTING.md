@@ -22,15 +22,16 @@ git clone https://github.com/mohammadirfan90/terra-odyssey.git
 cd terra-odyssey
 
 # Install dependencies in editable mode
-pip install -e "./terra-odyssey[dev]"
+cd terra-odyssey/backend
+pip install -e ".[dev]"
 
 # Run tests
-pytest terra-odyssey/tests/ -v
+python -m pytest -v
 ```
 
 ### Frontend (Next.js)
 ```bash
-cd terra-odyssey/src/frontend
+cd terra-odyssey/frontend
 npm install
 npm run dev
 ```
@@ -40,8 +41,8 @@ npm run dev
 ## Code Quality & Testing
 
 - Every analytical estimator must include unit tests and, where applicable, numerical reference oracle tests.
-- Run `pytest terra-odyssey/tests/ -v` before committing.
-- Run `npm run build` inside `terra-odyssey/src/frontend` to ensure TypeScript builds cleanly.
+- Run `python -m pytest -v` before committing.
+- Run `npm run typecheck` and `npm run build` inside `terra-odyssey/frontend` to ensure TypeScript builds cleanly.
 - After updating files in `terra-odyssey/`, execute `pwsh .\scripts\package-codebase.ps1` to keep `terra-odyssey.zip` synchronized.
 
 ---

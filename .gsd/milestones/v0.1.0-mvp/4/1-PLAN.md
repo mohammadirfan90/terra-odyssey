@@ -22,16 +22,16 @@ Extend `schemas/investigation-record.schema.json` to formally type all metadata 
 <task type="auto">
   <name>Extend InvestigationRecord JSON Schema & Pydantic Contracts</name>
   <files>
-    terra-odyssey/schemas/investigation-record.schema.json
-    terra-odyssey/src/backend/schemas.py
+    terra-odyssey/backend/schemas/investigation-record.schema.json
+    terra-odyssey/backend/src/backend/schemas.py
   </files>
   <action>
-    1. Update `terra-odyssey/schemas/investigation-record.schema.json`:
+    1. Update `terra-odyssey/backend/schemas/investigation-record.schema.json`:
        - Add required properties: `schema_version`, `job`, `data_mode`, `artifact_index`, `record_hash`, `published_at`, `source_manifest_objects`, `resolved_configuration_hash`, and optional `map_family_id`.
        - Strongly type `job`: object with `job_id`, `job_status` (enum: `submitted`, `running`, `succeeded`, `failed`, `cancel_requested`, `cancelled`), `stage` (enum: `validating`, `acquiring`, `normalizing`, `aggregating`, `analyzing`, `publishing`), `result_status` (enum: `supported`, `inconclusive`, `ineligible`), `progress_pct` (0..100), `created_at`, `started_at`, `completed_at`.
        - Strongly type `request`, `resolved_configuration`, `selection_history`, `artifact_index`, and `software`.
        - Ensure `results` references `analysis-result.schema.json`.
-    2. In `terra-odyssey/src/backend/schemas.py`:
+    2. In `terra-odyssey/backend/src/backend/schemas.py`:
        - Define Pydantic v2 models mirroring the JSON schemas:
          - `InvestigationRequest`: `dataset_id`, `variable`, `period` (`start_year`, `end_year`), `region_a` (GeoJSON geometry or bbox), `region_b` (optional GeoJSON geometry or bbox), `temporal_aggregation` (`"annual_mean"` | `"annual_total"` | `"seasonal"`), `spatial_aggregation` (`"area_weighted"`), `execution_mode` (`"auto"` | `"live"` | `"cached_only"` | `"demo_sample"`), `estimator_family` (`"ols_hac"`), `selection_status` (`"predefined"` | `"exploratory_map_selected"`).
          - `JobStatusResponse`: operational `job_id`, `job_status`, `stage`, `result_status`, `progress_pct`, `created_at`, `updated_at`, `error`.
@@ -41,7 +41,7 @@ Extend `schemas/investigation-record.schema.json` to formally type all metadata 
        - Avoid any implicit type coercion that masks validation errors.
   </action>
   <verify>
-    python -c "import jsonschema, json; s = json.load(open('terra-odyssey/schemas/investigation-record.schema.json')); jsonschema.Draft202012Validator.check_schema(s); print('Schema valid!')"
+    python -c "import jsonschema, json; s = json.load(open('terra-odyssey/backend/schemas/investigation-record.schema.json')); jsonschema.Draft202012Validator.check_schema(s); print('Schema valid!')"
   </verify>
   <done>
     `investigation-record.schema.json` compiles cleanly under JSON Schema Draft 2020-12, and Pydantic models in `schemas.py` instantiate and validate test payloads without error.
@@ -51,24 +51,24 @@ Extend `schemas/investigation-record.schema.json` to formally type all metadata 
 <task type="auto">
   <name>Build Catalog Service and RFC 9457 Error Handlers</name>
   <files>
-    terra-odyssey/src/backend/api/catalog.py
-    terra-odyssey/src/backend/errors.py
-    terra-odyssey/src/backend/app.py
+    terra-odyssey/backend/src/backend/api/catalog.py
+    terra-odyssey/backend/src/backend/errors.py
+    terra-odyssey/backend/src/backend/app.py
   </files>
   <action>
-    1. In `terra-odyssey/src/backend/errors.py`:
+    1. In `terra-odyssey/backend/src/backend/errors.py`:
        - Define custom exceptions: `TerraOdysseyError`, `DataUnavailableError` (HTTP 503), `ScientificallyIneligibleError` (HTTP 422), `InvalidGeometryError` (HTTP 400), `InvestigationNotFoundError` (HTTP 404).
        - Implement RFC 9457 Problem Details serialization for FastAPI exception handlers returning `application/problem+json`.
-    2. In `terra-odyssey/src/backend/api/catalog.py`:
+    2. In `terra-odyssey/backend/src/backend/api/catalog.py`:
        - Implement `GET /api/catalog`: Returns reviewed datasets (`merra2_t2m`, `gpm_imerg_precipitation`), native spatial resolutions, temporal coverage, variables, units, valid aggregation choices, and quality policies directly from Phase 1 dataset manifests.
        - Implement `GET /api/capabilities`: Returns available execution modes (`auto`, `live`, `cached_only`, `demo_sample`), cached granule availability, and system software versions.
-    3. In `terra-odyssey/src/backend/app.py`:
+    3. In `terra-odyssey/backend/src/backend/app.py`:
        - Initialize FastAPI application with title `"Terra Odyssey Scientific API"`, version `"0.1.0"`.
        - Register RFC 9457 error handlers.
        - Mount the catalog router at `/api`.
   </action>
   <verify>
-    python -c "from terra-odyssey.src.backend.app import create_app; from fastapi.testclient import TestClient; client = TestClient(create_app()); res = client.get('/api/catalog'); assert res.status_code == 200; print(res.json()['datasets'].keys())"
+    python -c "from backend.app import create_app; from fastapi.testclient import TestClient; client = TestClient(create_app()); res = client.get('/api/catalog'); assert res.status_code == 200; print(res.json()['datasets'].keys())"
   </verify>
   <done>
     FastAPI app initializes cleanly, `/api/catalog` returns reviewed dataset metadata, and custom exceptions render RFC 9457 `application/problem+json`.
@@ -78,7 +78,7 @@ Extend `schemas/investigation-record.schema.json` to formally type all metadata 
 <task type="auto">
   <name>Unit Tests for Catalog and Schema Validation</name>
   <files>
-    terra-odyssey/tests/unit/test_api_catalog.py
+    terra-odyssey/backend/tests/unit/test_api_catalog.py
   </files>
   <action>
     Create comprehensive unit tests covering:
@@ -88,7 +88,7 @@ Extend `schemas/investigation-record.schema.json` to formally type all metadata 
     4. `test_rfc9457_error_formatting`: triggers a custom scientific or data unavailable error and verifies RFC 9457 response structure, status code, and Content-Type `application/problem+json`.
   </action>
   <verify>
-    python -m pytest terra-odyssey/tests/unit/test_api_catalog.py -v
+    python -m pytest terra-odyssey/backend/tests/unit/test_api_catalog.py -v
   </verify>
   <done>
     All unit tests in `test_api_catalog.py` pass cleanly.

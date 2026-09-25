@@ -113,7 +113,7 @@ Clients pass explicit `execution_mode`:
 - `"auto"`: Check local checksum-verified cache; if missing, attempt live CMR/OPeNDAP query with back-pressure handling.
 - `"live"`: Demand live DAAC acquisition; fail if credentials or connection are absent.
 - `"cached_only"`: Rely strictly on verified local cache; fail if any required granule is missing.
-- `"demo_sample"`: Execute against verified sample granules (`terra-odyssey/data/samples/`) on their real footprint and time range.
+- `"demo_sample"`: Execute against verified sample granules (`terra-odyssey/backend/data/samples/`) on their real footprint and time range.
 
 ### RFC 9457 Problem Details (`application/problem+json`)
 When data is missing or live DAAC is unreachable:

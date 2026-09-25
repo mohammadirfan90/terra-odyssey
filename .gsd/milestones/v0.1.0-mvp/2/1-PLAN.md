@@ -15,16 +15,16 @@ Build the temporal aggregation engine that converts monthly 1D/gridded data into
 - `.gsd/DECISIONS.md`
 - `.gsd/phases/2/RESEARCH.md`
 - `docs/SCIENTIFIC_RULES.md`
-- `terra-odyssey/src/data/adapters/d1_merra2.py`
-- `terra-odyssey/src/data/adapters/d2_gpm_imerg.py`
+- `terra-odyssey/backend/src/data/adapters/d1_merra2.py`
+- `terra-odyssey/backend/src/data/adapters/d2_gpm_imerg.py`
 
 ## Tasks
 
 <task type="auto">
   <name>Implement Temporal Aggregation and Completeness Module</name>
-  <files>terra-odyssey/src/analysis/aggregation.py</files>
+  <files>terra-odyssey/backend/src/analysis/aggregation.py</files>
   <action>
-    Create `terra-odyssey/src/analysis/aggregation.py` with:
+    Create `terra-odyssey/backend/src/analysis/aggregation.py` with:
     1. `aggregate_annual_temperature(da_monthly: xr.DataArray) -> xr.DataArray`:
        - Validates monthly input array with time dimension.
        - Computes days in each calendar month ($d_m$) with exact leap-year awareness.
@@ -47,15 +47,15 @@ Build the temporal aggregation engine that converts monthly 1D/gridded data into
        - Raises or returns eligibility status (`is_eligible: bool`, `valid_count: int`, `missing_years: list[int]`).
        - Never collapses non-consecutive years into consecutive indices.
   </action>
-  <verify>python -c "from src.analysis.aggregation import aggregate_annual_temperature, aggregate_annual_precipitation; print('Aggregation module importable')"</verify>
+  <verify>python -c "from analysis.aggregation import aggregate_annual_temperature, aggregate_annual_precipitation; print('Aggregation module importable')"</verify>
   <done>Aggregation functions compute exact day-weighted annual means, sum precipitation, enforce strict 12/12 monthly completeness, and validate consecutive spans.</done>
 </task>
 
 <task type="auto">
   <name>Create Unit Tests for Aggregation & Completeness</name>
-  <files>terra-odyssey/tests/unit/test_aggregation.py</files>
+  <files>terra-odyssey/backend/tests/unit/test_aggregation.py</files>
   <action>
-    Create comprehensive unit tests in `terra-odyssey/tests/unit/test_aggregation.py`:
+    Create comprehensive unit tests in `terra-odyssey/backend/tests/unit/test_aggregation.py`:
     1. `test_annual_temperature_complete_year`: Full 12 months with varying days per month (including leap-year Feb with 29 days vs non-leap 28 days) produces exact mathematical day-weighted mean.
     2. `test_annual_temperature_missing_month_masked`: A year with 11 valid months returns `NaN` in inferential series.
     3. `test_annual_precipitation_complete_and_incomplete`: 12 valid months sum accurately; missing month yields `NaN`.

@@ -4,16 +4,12 @@ on:
   push:
     branches: [main]
     paths:
-      - 'terra-odyssey/src/**'
-      - 'terra-odyssey/tests/**'
-      - 'terra-odyssey/pyproject.toml'
+      - 'terra-odyssey/backend/**'
       - '.github/workflows/backend-ci.yml'
   pull_request:
     branches: [main]
     paths:
-      - 'terra-odyssey/src/**'
-      - 'terra-odyssey/tests/**'
-      - 'terra-odyssey/pyproject.toml'
+      - 'terra-odyssey/backend/**'
       - '.github/workflows/backend-ci.yml'
 
 jobs:
@@ -26,6 +22,10 @@ jobs:
         os: [ubuntu-latest, windows-latest]
         python-version: ['3.11', '3.12', '3.13']
 
+    defaults:
+      run:
+        working-directory: terra-odyssey/backend
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -35,12 +35,12 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           cache: 'pip'
+          cache-dependency-path: terra-odyssey/backend/pyproject.toml
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -e "./terra-odyssey[dev]"
+          pip install -e ".[dev]"
 
       - name: Run test suite with coverage
-        run: |
-          pytest terra-odyssey/tests/ -v --durations=10
+        run: pytest -v --durations=10

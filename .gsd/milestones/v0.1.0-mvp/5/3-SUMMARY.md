@@ -39,24 +39,24 @@ completed_at: 2026-09-25T04:30:00Z
      - Transparently disclosed synthetic demonstration mode in caveats when running without local NASA granules.
 
 4. **Unified Single-Port FastAPI Mount**:
-   - Mounted Next.js static export bundle (`src/frontend/out`) directly in FastAPI `app.py`.
+   - Mounted Next.js static export bundle (`frontend/out`) directly in FastAPI `app.py`.
    - Served `index.html` at `/`, static assets at `/_next/`, and preserved all `/api/...` endpoints and RFC 9457 error handlers.
 
 ## Key Files Created/Modified
-- `terra-odyssey/src/frontend/lib/charts/d3-time-series.ts`
-- `terra-odyssey/src/frontend/components/charts/CoverageBars.tsx`
-- `terra-odyssey/src/frontend/components/charts/LinkedTimeSeriesChart.tsx`
-- `terra-odyssey/src/frontend/components/evidence/ContrastCard.tsx`
-- `terra-odyssey/src/frontend/components/evidence/MethodsInspector.tsx`
-- `terra-odyssey/src/frontend/components/evidence/ExportButton.tsx`
-- `terra-odyssey/src/frontend/components/evidence/EvidenceDrawer.tsx`
-- `terra-odyssey/src/frontend/lib/api/client.ts`
-- `terra-odyssey/src/frontend/app/page.tsx`
-- `terra-odyssey/src/backend/stepper.py`
-- `terra-odyssey/src/backend/app.py`
-- `terra-odyssey/src/analysis/spatial_aggregation.py`
+- `terra-odyssey/frontend/lib/charts/d3-time-series.ts`
+- `terra-odyssey/frontend/components/charts/CoverageBars.tsx`
+- `terra-odyssey/frontend/components/charts/LinkedTimeSeriesChart.tsx`
+- `terra-odyssey/frontend/components/evidence/ContrastCard.tsx`
+- `terra-odyssey/frontend/components/evidence/MethodsInspector.tsx`
+- `terra-odyssey/frontend/components/evidence/ExportButton.tsx`
+- `terra-odyssey/frontend/components/evidence/EvidenceDrawer.tsx`
+- `terra-odyssey/frontend/lib/api/client.ts`
+- `terra-odyssey/frontend/app/page.tsx`
+- `terra-odyssey/backend/src/backend/stepper.py`
+- `terra-odyssey/backend/src/backend/app.py`
+- `terra-odyssey/backend/src/analysis/spatial_aggregation.py`
 
 ## Verification Evidence
-- `npm --prefix terra-odyssey/src/frontend run build`: Static export compiled in 3.6s with zero errors (`out/` exported).
-- `python -m pytest terra-odyssey/tests/unit/ -v`: 63/63 passed (100% pass in 6.79s).
+- `npm --prefix terra-odyssey/frontend run build`: Static export compiled in 3.6s with zero errors (`out/` exported).
+- `python -m pytest terra-odyssey/backend/tests/unit/ -v`: 63/63 passed (100% pass in 6.79s).
 - Verified FastAPI root mount: `client.get('/')` returns `200 text/html` with `TERRA ODYSSEY` SPA, while `client.get('/api/health')` returns `200 JSON`.

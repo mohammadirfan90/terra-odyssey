@@ -1,14 +1,9 @@
 {
   "include": [
-    "terra-odyssey/src",
-    "terra-odyssey/tests"
+    "terra-odyssey/backend/src",
+    "terra-odyssey/backend/tests"
   ],
   "extraPaths": [
-    "terra-odyssey",
-    "terra-odyssey/src",
-    "C:/Users/ghotc/AppData/Roaming/Python/Python313/site-packages",
-    "C:/Python313/Lib/site-packages"
-  ],
-  "pythonPath": "C:/Python313/python.exe",
-  "pythonPlatform": "Windows"
+    "terra-odyssey/backend/src"
+  ]
 }

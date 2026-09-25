@@ -37,18 +37,18 @@ completed_at: 2026-09-25T04:10:00Z
    - Provided an honest UI disclosure pill: *"Exploratory post-screening selection: paired contrast p-value is unadjusted"*.
 
 ## Key Files Created/Modified
-- `terra-odyssey/src/frontend/components/map/EarthTrendMap.tsx`
-- `terra-odyssey/src/frontend/components/map/EarthTrendMapWrapper.tsx`
-- `terra-odyssey/src/frontend/components/map/CellInspector.tsx`
-- `terra-odyssey/src/frontend/components/map/ProjectionToggle.tsx`
-- `terra-odyssey/src/frontend/components/map/RegionDrawControls.tsx`
-- `terra-odyssey/src/frontend/lib/map/color-scale.ts`
-- `terra-odyssey/src/frontend/lib/map/grid-to-canvas.ts`
-- `terra-odyssey/src/frontend/lib/map/cell-index.ts`
-- `terra-odyssey/src/frontend/lib/map/selection-history.ts`
-- `terra-odyssey/src/frontend/app/page.tsx`
+- `terra-odyssey/frontend/components/map/EarthTrendMap.tsx`
+- `terra-odyssey/frontend/components/map/EarthTrendMapWrapper.tsx`
+- `terra-odyssey/frontend/components/map/CellInspector.tsx`
+- `terra-odyssey/frontend/components/map/ProjectionToggle.tsx`
+- `terra-odyssey/frontend/components/map/RegionDrawControls.tsx`
+- `terra-odyssey/frontend/lib/map/color-scale.ts`
+- `terra-odyssey/frontend/lib/map/grid-to-canvas.ts`
+- `terra-odyssey/frontend/lib/map/cell-index.ts`
+- `terra-odyssey/frontend/lib/map/selection-history.ts`
+- `terra-odyssey/frontend/app/page.tsx`
 
 ## Verification Evidence
-- `npm --prefix terra-odyssey/src/frontend run build`: Static export compiled in 5.4s without errors (`out/` exported).
-- `python -m pytest terra-odyssey/tests/unit/`: 63/63 passed (100% pass in 6.35s).
+- `npm --prefix terra-odyssey/frontend run build`: Static export compiled in 5.4s without errors (`out/` exported).
+- `python -m pytest terra-odyssey/backend/tests/unit/`: 63/63 passed (100% pass in 6.35s).
 - Verified symmetric zero-centred color scaling and Benjamini-Yekutieli stippling compliance.

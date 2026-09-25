@@ -16,16 +16,16 @@ Implement family-wise multiple-testing adjustments for exploratory spatial scans
 - `.gsd/phases/3/RESEARCH.md`
 - `docs/SCIENTIFIC_RULES.md`
 - `docs/VALIDATION_PLAN.md`
-- `terra-odyssey/schemas/analysis-result.schema.json`
-- `terra-odyssey/src/analysis/paired_contrast.py`
+- `terra-odyssey/backend/schemas/analysis-result.schema.json`
+- `terra-odyssey/backend/src/analysis/paired_contrast.py`
 
 ## Tasks
 
 <task type="auto">
   <name>Implement Multiplicity Control and Family Adjudication Module</name>
-  <files>terra-odyssey/src/analysis/multiplicity.py</files>
+  <files>terra-odyssey/backend/src/analysis/multiplicity.py</files>
   <action>
-    Create `terra-odyssey/src/analysis/multiplicity.py` with:
+    Create `terra-odyssey/backend/src/analysis/multiplicity.py` with:
     1. Function `adjust_pvalues(p_values: np.ndarray, method: str = "fdr_by", alpha: float = 0.05) -> tuple[np.ndarray, np.ndarray]`:
        - Wraps `statsmodels.stats.multitest.multipletests`.
        - Supports `method="fdr_by"` (Benjamini-Yekutieli, arbitrary dependency) and `method="fdr_bh"` (Benjamini-Hochberg).
@@ -45,15 +45,15 @@ Implement family-wise multiple-testing adjustments for exploratory spatial scans
          - Re-adjudicates status: if nominally supported with raw $p < 0.05$ but $p_{\text{adj}} \ge 0.05$, status becomes `"inconclusive"` with caveat `"contrast_not_supported_after_multiplicity"`.
        - Returns updated list of schema-compliant result dictionaries.
   </action>
-  <verify>python -c "from src.analysis.multiplicity import adjust_pvalues, adjudicate_contrast_family; print('Multiplicity module importable')"</verify>
+  <verify>python -c "from analysis.multiplicity import adjust_pvalues, adjudicate_contrast_family; print('Multiplicity module importable')"</verify>
   <done>Multiplicity module applies Benjamini-Yekutieli FDR control with BH sensitivity diagnostics and re-adjudicates exploratory contrast families.</done>
 </task>
 
 <task type="auto">
   <name>Create Unit Tests for Multiple-Testing and Family Adjudication</name>
-  <files>terra-odyssey/tests/unit/test_multiplicity.py</files>
+  <files>terra-odyssey/backend/tests/unit/test_multiplicity.py</files>
   <action>
-    Create comprehensive unit tests in `terra-odyssey/tests/unit/test_multiplicity.py`:
+    Create comprehensive unit tests in `terra-odyssey/backend/tests/unit/test_multiplicity.py`:
     1. `test_by_controls_fdr_under_null`: Simulates 100 hypotheses under a global null ($U[0, 1]$ p-values); confirms BY rejects $\le 5\%$ of tests on average.
     2. `test_by_more_conservative_than_bh`: Verifies that for identical p-value inputs, adjusted p-values from BY are strictly $\ge$ adjusted p-values from BH ($p_{\text{BY}} = c(M) \cdot p_{\text{BH}}$).
     3. `test_family_readjudication_downgrades_marginal_significance`: Takes a candidate contrast with raw $p = 0.035$ embedded in a family of $M = 20$ tests; confirms that under BY it is appropriately re-adjudicated to `"inconclusive"` with the required multiplicity caveat.

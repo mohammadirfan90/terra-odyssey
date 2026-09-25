@@ -30,5 +30,5 @@
 ---
 
 ## Verdict: PASS
-All 63 unit and integration tests passing cleanly (`pytest terra-odyssey/tests/unit/ -v`).
+All 63 unit and integration tests passing cleanly (`pytest terra-odyssey/backend/tests/unit/ -v`).
 Packaging verified with clean archive `terra-odyssey.zip` (55 files, 93.7 KB).

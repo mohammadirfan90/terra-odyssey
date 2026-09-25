@@ -10,7 +10,7 @@ completed_at: 2026-09-25T03:04:00Z
 
 ## Objectives Achieved
 1. **Investigation REST Endpoints**:
-   - Implemented `terra-odyssey/src/backend/api/investigations.py` with full RESTful lifecycle:
+   - Implemented `terra-odyssey/backend/src/backend/api/investigations.py` with full RESTful lifecycle:
      - `POST /api/investigations`: Accepts `InvestigationRequest`, performs parameter & geometry validation, creates job record in SQLite `JobStore`, enqueues job into bounded worker queue, and returns HTTP 202 Accepted with `Location: /api/investigations/{id}` header.
      - `GET /api/investigations/{id}`: Returns authoritative `JobStatusResponse` containing operational status, pipeline stage, progress percentage, and top-level result summary.
      - `DELETE /api/investigations/{id}`: Sets cooperative cancellation flag in store, returning HTTP 202 Accepted.
@@ -23,7 +23,7 @@ completed_at: 2026-09-25T03:04:00Z
    - Preserves nulls for unmasked cells, never averages p-values across cells, and embeds frozen FDR critical values and discovery thresholds.
 
 3. **Immutable Frozen Export Bundler**:
-   - Implemented `terra-odyssey/src/backend/exporter.py` generating complete, self-contained, reproducible investigation `.zip` archives.
+   - Implemented `terra-odyssey/backend/src/backend/exporter.py` generating complete, self-contained, reproducible investigation `.zip` archives.
    - Dispatches format queries via `GET /api/investigations/{id}/export?format={zip|json|timeseries_csv}`.
    - ZIP bundle contents:
      - `investigation_record.json`: Conforming strictly to `schemas/investigation-record.schema.json` and validated locally via Draft 2020-12 validator without internet reliance.
@@ -38,7 +38,7 @@ completed_at: 2026-09-25T03:04:00Z
    - Strips absolute local file paths, personal tokens, and secrets from export manifests.
 
 4. **Empirical Verification**:
-   - Implemented comprehensive integration suite in `terra-odyssey/tests/unit/test_api_investigations.py`.
+   - Implemented comprehensive integration suite in `terra-odyssey/backend/tests/unit/test_api_investigations.py`.
    - Verified schema local `$ref` offline resolution via referencing Registry.
    - Tested full lifecycle: submission, execution, polling, time series retrieval, downsampled map retrieval, evidence inspection, and ZIP export unpacking.
    - Tested cache-only 503 Problem Details response and orthogonal status separation (inconclusive scientific result with succeeded operational job status).
@@ -46,16 +46,16 @@ completed_at: 2026-09-25T03:04:00Z
    - Clean codebase archive packaged to `terra-odyssey.zip` (55 clean files, 93.7 KB).
 
 ## Key Files Created/Modified
-- `terra-odyssey/src/backend/api/investigations.py`
-- `terra-odyssey/src/backend/exporter.py`
-- `terra-odyssey/src/backend/worker.py`
-- `terra-odyssey/src/backend/app.py`
-- `terra-odyssey/schemas/investigation-record.schema.json`
-- `terra-odyssey/tests/unit/test_api_investigations.py`
-- `terra-odyssey/tests/unit/test_job_orchestration.py`
+- `terra-odyssey/backend/src/backend/api/investigations.py`
+- `terra-odyssey/backend/src/backend/exporter.py`
+- `terra-odyssey/backend/src/backend/worker.py`
+- `terra-odyssey/backend/src/backend/app.py`
+- `terra-odyssey/backend/schemas/investigation-record.schema.json`
+- `terra-odyssey/backend/tests/unit/test_api_investigations.py`
+- `terra-odyssey/backend/tests/unit/test_job_orchestration.py`
 - `terra-odyssey.zip`
 
 ## Verification Evidence
-- `pytest terra-odyssey/tests/unit/test_api_investigations.py`: 4/4 passed (100%)
-- `pytest terra-odyssey/tests/unit/`: 63/63 passed (100%)
+- `pytest terra-odyssey/backend/tests/unit/test_api_investigations.py`: 4/4 passed (100%)
+- `pytest terra-odyssey/backend/tests/unit/`: 63/63 passed (100%)
 - `pwsh .\scripts\package-codebase.ps1`: 55 clean files, 93.7 KB

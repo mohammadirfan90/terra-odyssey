@@ -4,10 +4,10 @@
 Implement NASA MERRA-2 monthly 2-meter air temperature (`M2TMNXSLV` v5.12.4) data adapter with CMR discovery, NetCDF-4 parsing, fill-value masking, Kelvin-to-Celsius conversion, and synthetic test suite.
 
 ## Delivered Artifacts
-- [`terra-odyssey/src/data/adapters/d1_merra2.py`](file:///A:/teraaaaaa/terra-odyssey/src/data/adapters/d1_merra2.py): Full adapter implementation with `discover()`, `decode()`, `validate()`, `quality_mask()`, `convert_units()`, `process()`, and `cite()`.
-- [`terra-odyssey/src/data/adapters/__init__.py`](file:///A:/teraaaaaa/terra-odyssey/src/data/adapters/__init__.py): Exposed `Merra2Adapter`.
-- [`terra-odyssey/tests/fixtures/synthetic_merra2.py`](file:///A:/teraaaaaa/terra-odyssey/tests/fixtures/synthetic_merra2.py): Labeled synthetic NetCDF fixture generator.
-- [`terra-odyssey/tests/unit/test_d1_merra2.py`](file:///A:/teraaaaaa/terra-odyssey/tests/unit/test_d1_merra2.py): 9 unit tests verifying all behavior.
+- [`terra-odyssey/backend/src/data/adapters/d1_merra2.py`](file:///A:/teraaaaaa/terra-odyssey/backend/src/data/adapters/d1_merra2.py): Full adapter implementation with `discover()`, `decode()`, `validate()`, `quality_mask()`, `convert_units()`, `process()`, and `cite()`.
+- [`terra-odyssey/backend/src/data/adapters/__init__.py`](file:///A:/teraaaaaa/terra-odyssey/backend/src/data/adapters/__init__.py): Exposed `Merra2Adapter`.
+- [`terra-odyssey/backend/tests/fixtures/synthetic_merra2.py`](file:///A:/teraaaaaa/terra-odyssey/backend/tests/fixtures/synthetic_merra2.py): Labeled synthetic NetCDF fixture generator.
+- [`terra-odyssey/backend/tests/unit/test_d1_merra2.py`](file:///A:/teraaaaaa/terra-odyssey/backend/tests/unit/test_d1_merra2.py): 9 unit tests verifying all behavior.
 - [`terra-odyssey/conftest.py`](file:///A:/teraaaaaa/terra-odyssey/conftest.py): Pytest configuration ensuring path resolution.
 
 ## Verification Evidence

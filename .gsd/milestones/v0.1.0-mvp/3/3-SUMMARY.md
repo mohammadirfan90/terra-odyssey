@@ -1,7 +1,7 @@
 # Plan 3.3 Summary: Multiple-Testing Control & Evidence Adjudication
 
 ## Implementation Summary
-- **Module**: `terra-odyssey/src/analysis/multiplicity.py`
+- **Module**: `terra-odyssey/backend/src/analysis/multiplicity.py`
   - `adjust_pvalues`: Implements multiple-testing corrections using `statsmodels.stats.multitest.multipletests`. Supports Benjamini-Yekutieli (`fdr_by`) as conservative primary default for spatially correlated tests, and Benjamini-Hochberg (`fdr_bh`) as sensitivity diagnostic.
   - `adjudicate_contrast_family`: Freezes declared hypothesis search family (`family_id`, `family_size`), sets `selection_status="exploratory_map_selected"`, applies `fdr_by` multiplicity adjustment, records sensitivity diagnostics under `method.diagnostics.multiplicity_sensitivity`, and re-adjudicates evidence status.
   - Transparent downgrading: any candidate contrast where raw $p < 0.05$ but BY-adjusted $p \ge 0.05$ is downgraded to `"inconclusive"` with sub-status `"contrast_not_supported_after_multiplicity"` and explicit caveats.

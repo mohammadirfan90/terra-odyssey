@@ -1,0 +1,141 @@
+[
+  {
+    "analysis_id": "contrast_merra2_t2m_T2M_2000_2024_d4900b7c",
+    "status": "inconclusive",
+    "estimand": {
+      "dataset_id": "merra2_t2m",
+      "variable": "T2M",
+      "units": "degC",
+      "period": {
+        "start": "2000-01-01",
+        "end": "2024-12-31"
+      },
+      "geometry": {
+        "type": "FeatureCollection",
+        "features": [
+          {
+            "type": "Feature",
+            "properties": {
+              "region": "A"
+            },
+            "geometry": {
+              "type": "BBox",
+              "bbox": [
+                -122.5,
+                35.0,
+                -118.5,
+                39.5
+              ]
+            }
+          },
+          {
+            "type": "Feature",
+            "properties": {
+              "region": "B"
+            },
+            "geometry": {
+              "type": "BBox",
+              "bbox": [
+                -92.0,
+                30.0,
+                -84.0,
+                34.0
+              ]
+            }
+          }
+        ]
+      },
+      "temporal_aggregation": "annual",
+      "spatial_aggregation": "paired_regional_contrast"
+    },
+    "effect": {
+      "estimate": -0.07300570320257088,
+      "unit_per_decade": "degC/decade",
+      "fitted_change": -0.17521368768617013,
+      "contrast_orientation": "region_a_minus_region_b",
+      "region_a_estimate": 0.29929480739936387,
+      "region_b_estimate": 0.37230051060193436
+    },
+    "uncertainty": {
+      "lower": -0.14568587102384284,
+      "upper": -0.0003255353812989508,
+      "level": 0.95,
+      "method": "newey_west_hac_bartlett_lag2_small_sample"
+    },
+    "coverage": {
+      "valid_periods": 25,
+      "expected_periods": 25,
+      "valid_fraction": 1.0,
+      "missing_periods": []
+    },
+    "method": {
+      "estimator": "paired_difference_ols_hac",
+      "dependence_treatment": "newey_west_hac_bartlett_lag2_small_sample",
+      "test_family": "single_predefined_test",
+      "selection_status": "predefined",
+      "p_value": 0.04906425311025613,
+      "raw_p_value": 0.04906425311025613,
+      "adjusted_p_value": null,
+      "decision_p_value": 0.04906425311025613,
+      "multiplicity_method": null,
+      "fdr_level": null,
+      "family_id": null,
+      "family_size": null,
+      "hypothesis_id": null,
+      "diagnostics": {
+        "contrast_sub_status": "signs_not_opposite",
+        "has_opposite_signs": false,
+        "degrees_of_freedom": 23,
+        "t_statistic": -2.0779231537463585,
+        "slope_se_per_decade": 0.03513397647595697,
+        "region_a_se_per_decade": 0.027937488333337788,
+        "region_b_se_per_decade": 0.03401519237991207,
+        "lag_sensitivities": {
+          "lag_1": {
+            "maxlags": 1,
+            "slope_se_per_decade": 0.035894555145095264,
+            "p_value": 0.05365456852729131,
+            "ci_lower_decade": -0.14725924787607814,
+            "ci_upper_decade": 0.0012478414709363693
+          },
+          "lag_3": {
+            "maxlags": 3,
+            "slope_se_per_decade": 0.03498334252899423,
+            "p_value": 0.04817554602040192,
+            "ci_lower_decade": -0.1453742609630709,
+            "ci_upper_decade": -0.0006371454420708769
+          },
+          "lag_5": {
+            "maxlags": 5,
+            "slope_se_per_decade": 0.034424851209314704,
+            "p_value": 0.044941775861091084,
+            "ci_lower_decade": -0.14421893364426286,
+            "ci_upper_decade": -0.0017924727608789083
+          }
+        },
+        "theil_sen": {
+          "slope_per_decade": -0.08338190305109912,
+          "direction_agreement_with_ols": true,
+          "absolute_difference_from_ols": 0.010376199848528236,
+          "relative_difference_from_ols": 14.212862000297587
+        }
+      }
+    },
+    "provenance": {
+      "manifest_hash": "0000000000000000",
+      "source_release": "v1.0",
+      "configuration_hash": "f39005e79b17423e"
+    },
+    "caveats": [
+      "Paired contrast evaluates the synchronous difference D_t = Y_{A,t} - Y_{B,t}.",
+      "HAC covariance accounts for cross-regional correlation and serial dependence.",
+      "Spatial contrast indicates differential regional rate of change, not causal attribution.",
+      "Empirical slopes for Region A and Region B share the same sign.",
+      "Analysis executed using synthetic demonstration sample data. For verified scientific findings, provide cached NASA granules or live Earthdata access."
+    ],
+    "interpretation": {
+      "level": "spatial_contrast",
+      "text": "Paired contrast inconclusive: empirical slopes have the same sign (Region A: +0.299 degC/decade, Region B: +0.372 degC/decade). Criterion for an opposite-trend pair is not satisfied."
+    }
+  }
+]

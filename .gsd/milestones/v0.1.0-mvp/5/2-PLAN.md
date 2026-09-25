@@ -12,8 +12,8 @@ depends_on:
 Implement the GPU-accelerated Earth Trend Map using MapLibre GL JS wrapped in the Mapcn component architecture. Execute the validation spike testing `CanvasSource` under 2D Mercator and 3D Globe projections (with GeoJSON fallback for $\le 10,000$ cells). Render signed slopes with a frozen zero-centred diverging palette (`RdBu`/`BrBG`), overlay Benjamini-Yekutieli FDR discoveries with a stippled pattern layer, provide mathematical cell inspection, and integrate Terra Draw for drawing Region A and Region B polygons with persistent labels and exploratory search tracking.
 
 ## Context
-- `terra-odyssey/src/frontend/components/map/`
-- `terra-odyssey/src/frontend/lib/map/`
+- `terra-odyssey/frontend/components/map/`
+- `terra-odyssey/frontend/lib/map/`
 - `docs/UX_SPEC.md`
 - `.gsd/DECISIONS.md`
 - `.gsd/phases/5/RESEARCH.md`
@@ -23,12 +23,12 @@ Implement the GPU-accelerated Earth Trend Map using MapLibre GL JS wrapped in th
 <task type="auto">
   <name>Mapcn & MapLibre Integration with CanvasSource/Globe Validation Spike</name>
   <files>
-    terra-odyssey/src/frontend/components/ui/map.tsx
-    terra-odyssey/src/frontend/components/map/EarthTrendMap.tsx
-    terra-odyssey/src/frontend/components/map/TrendCanvasSource.ts
-    terra-odyssey/src/frontend/components/map/ProjectionToggle.tsx
-    terra-odyssey/src/frontend/lib/map/color-scale.ts
-    terra-odyssey/src/frontend/lib/map/grid-to-canvas.ts
+    terra-odyssey/frontend/components/ui/map.tsx
+    terra-odyssey/frontend/components/map/EarthTrendMap.tsx
+    terra-odyssey/frontend/components/map/TrendCanvasSource.ts
+    terra-odyssey/frontend/components/map/ProjectionToggle.tsx
+    terra-odyssey/frontend/lib/map/color-scale.ts
+    terra-odyssey/frontend/lib/map/grid-to-canvas.ts
   </files>
   <action>
     1. Install MapLibre GL JS and map utilities:
@@ -47,7 +47,7 @@ Implement the GPU-accelerated Earth Trend Map using MapLibre GL JS wrapped in th
        - `ProjectionToggle.tsx`: switches between `2D Analysis` (Mercator) and `Globe Overview` without reloading state or recalculating evidence.
   </action>
   <verify>
-    npm --prefix terra-odyssey/src/frontend run build
+    npm --prefix terra-odyssey/frontend run build
   </verify>
   <done>
     Trend map renders signed slopes on a symmetric diverging color scale and smoothly toggles between Mercator and Globe views without evidence corruption.
@@ -57,9 +57,9 @@ Implement the GPU-accelerated Earth Trend Map using MapLibre GL JS wrapped in th
 <task type="auto">
   <name>FDR Discovery Pattern Layer, Coverage Masks & Mathematical Cell Inspector</name>
   <files>
-    terra-odyssey/src/frontend/components/map/EvidencePatternLayer.tsx
-    terra-odyssey/src/frontend/components/map/CellInspector.tsx
-    terra-odyssey/src/frontend/lib/map/cell-index.ts
+    terra-odyssey/frontend/components/map/EvidencePatternLayer.tsx
+    terra-odyssey/frontend/components/map/CellInspector.tsx
+    terra-odyssey/frontend/lib/map/cell-index.ts
   </files>
   <action>
     1. Implement `EvidencePatternLayer.tsx`:
@@ -76,7 +76,7 @@ Implement the GPU-accelerated Earth Trend Map using MapLibre GL JS wrapped in th
        - Pure nearest-cell calculation: zero spatial interpolation or smoothing.
   </action>
   <verify>
-    npm --prefix terra-odyssey/src/frontend run build
+    npm --prefix terra-odyssey/frontend run build
   </verify>
   <done>
     FDR discoveries are clearly highlighted via stippling, invalid cells are visually masked, and cell inspection reveals exact un-interpolated statistics.
@@ -86,8 +86,8 @@ Implement the GPU-accelerated Earth Trend Map using MapLibre GL JS wrapped in th
 <task type="auto">
   <name>Terra Draw Region Selection & Multiplicity Tracking</name>
   <files>
-    terra-odyssey/src/frontend/components/map/RegionDrawControls.tsx
-    terra-odyssey/src/frontend/lib/map/selection-history.ts
+    terra-odyssey/frontend/components/map/RegionDrawControls.tsx
+    terra-odyssey/frontend/lib/map/selection-history.ts
   </files>
   <action>
     1. Install and integrate Terra Draw (`terra-draw` / `maplibre-gl-terradraw` or MapLibre drawing mode adapter).
@@ -110,7 +110,7 @@ Implement the GPU-accelerated Earth Trend Map using MapLibre GL JS wrapped in th
        - Display honest UI disclosure pill: "Exploratory post-screening selection: paired contrast p-value is unadjusted".
   </action>
   <verify>
-    npm --prefix terra-odyssey/src/frontend run build
+    npm --prefix terra-odyssey/frontend run build
   </verify>
   <done>
     Users can draw Region A and Region B polygons with clear labels, and post-map selections automatically disclose exploratory screening status.

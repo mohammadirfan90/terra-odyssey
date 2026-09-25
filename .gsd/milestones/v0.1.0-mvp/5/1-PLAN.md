@@ -9,13 +9,13 @@ depends_on:
 # Plan 5.1: Next.js Workspace Scaffold, Design System, Question Builder & Map Contract Extension
 
 ## Objective
-Scaffold the Next.js App Router application in `terra-odyssey/src/frontend`, configure Tailwind CSS v4 and shadcn/ui components, extend the backend `/api/investigations/{id}/map` contract to freeze the 9 required diagnostic bands with gzip transport, and implement the Question Builder with NASA dataset catalog integration, temporal constraints ($\ge 20$ years), candidate pair presets, and TanStack Query client.
+Scaffold the Next.js App Router application in `terra-odyssey/frontend`, configure Tailwind CSS v4 and shadcn/ui components, extend the backend `/api/investigations/{id}/map` contract to freeze the 9 required diagnostic bands with gzip transport, and implement the Question Builder with NASA dataset catalog integration, temporal constraints ($\ge 20$ years), candidate pair presets, and TanStack Query client.
 
 ## Context
-- `terra-odyssey/src/backend/app.py`
-- `terra-odyssey/src/backend/schemas.py`
-- `terra-odyssey/src/backend/stepper.py`
-- `terra-odyssey/src/backend/api/investigations.py`
+- `terra-odyssey/backend/src/backend/app.py`
+- `terra-odyssey/backend/src/backend/schemas.py`
+- `terra-odyssey/backend/src/backend/stepper.py`
+- `terra-odyssey/backend/src/backend/api/investigations.py`
 - `docs/UX_SPEC.md`
 - `.gsd/DECISIONS.md`
 - `.gsd/phases/5/RESEARCH.md`
@@ -25,16 +25,16 @@ Scaffold the Next.js App Router application in `terra-odyssey/src/frontend`, con
 <task type="auto">
   <name>Scaffold Next.js App Router & Design System</name>
   <files>
-    terra-odyssey/src/frontend/package.json
-    terra-odyssey/src/frontend/tsconfig.json
-    terra-odyssey/src/frontend/next.config.ts
-    terra-odyssey/src/frontend/app/globals.css
-    terra-odyssey/src/frontend/app/layout.tsx
-    terra-odyssey/src/frontend/app/page.tsx
-    terra-odyssey/src/frontend/components/ui/
+    terra-odyssey/frontend/package.json
+    terra-odyssey/frontend/tsconfig.json
+    terra-odyssey/frontend/next.config.ts
+    terra-odyssey/frontend/app/globals.css
+    terra-odyssey/frontend/app/layout.tsx
+    terra-odyssey/frontend/app/page.tsx
+    terra-odyssey/frontend/components/ui/
   </files>
   <action>
-    1. Initialize Next.js App Router project in `terra-odyssey/src/frontend`:
+    1. Initialize Next.js App Router project in `terra-odyssey/frontend`:
        - Install dependencies: `next`, `react`, `react-dom`, `@tanstack/react-query`, `lucide-react`, `clsx`, `tailwind-merge`, `class-variance-authority`.
        - Dev dependencies: `typescript`, `@types/node`, `@types/react`, `@types/react-dom`, `tailwindcss`, `@tailwindcss/postcss`, `postcss`.
        - Configure `next.config.ts` with `output: 'export'` for static export serving.
@@ -45,7 +45,7 @@ Scaffold the Next.js App Router application in `terra-odyssey/src/frontend`, con
     3. Setup root layout with TanStack Query provider, instrument panel header, mode toggle (Guided vs Expert), and status indicator.
   </action>
   <verify>
-    npm --prefix terra-odyssey/src/frontend run build
+    npm --prefix terra-odyssey/frontend run build
   </verify>
   <done>
     Next.js application builds cleanly to static export with responsive instrument-panel shell and typography.
@@ -55,23 +55,23 @@ Scaffold the Next.js App Router application in `terra-odyssey/src/frontend`, con
 <task type="auto">
   <name>Extend Backend Map Bands Contract & Gzip Transport</name>
   <files>
-    terra-odyssey/src/backend/schemas.py
-    terra-odyssey/src/backend/stepper.py
-    terra-odyssey/src/backend/api/investigations.py
-    terra-odyssey/tests/unit/test_api_investigations.py
+    terra-odyssey/backend/src/backend/schemas.py
+    terra-odyssey/backend/src/backend/stepper.py
+    terra-odyssey/backend/src/backend/api/investigations.py
+    terra-odyssey/backend/tests/unit/test_api_investigations.py
   </files>
   <action>
-    1. In `terra-odyssey/src/backend/schemas.py`:
+    1. In `terra-odyssey/backend/src/backend/schemas.py`:
        - Update `MapGridResponse` schema to freeze the 9 required bands:
          `slope_per_decade`, `slope_se_per_decade`, `ci_lower_per_decade`, `ci_upper_per_decade`, `raw_p_value`, `adjusted_p_value`, `coverage_fraction`, `eligibility_code`, `evidence_code`.
-    2. In `terra-odyssey/src/backend/stepper.py`:
+    2. In `terra-odyssey/backend/src/backend/stepper.py`:
        - Update map publication to serialize all 9 frozen bands.
-    3. In `terra-odyssey/src/backend/api/investigations.py`:
+    3. In `terra-odyssey/backend/src/backend/api/investigations.py`:
        - Ensure `GET /api/investigations/{id}/map` returns compressed payload with `Content-Encoding: gzip` when client sends `Accept-Encoding: gzip`, or decompressed JSON when requested plain.
     4. Update tests in `test_api_investigations.py` to assert all 9 bands are present in map responses.
   </action>
   <verify>
-    python -m pytest terra-odyssey/tests/unit/test_api_investigations.py -v
+    python -m pytest terra-odyssey/backend/tests/unit/test_api_investigations.py -v
   </verify>
   <done>
     Backend map endpoint serves all 9 frozen bands and supports transparent HTTP gzip transport.
@@ -81,12 +81,12 @@ Scaffold the Next.js App Router application in `terra-odyssey/src/frontend`, con
 <task type="auto">
   <name>Implement Question Builder & Catalog Integration</name>
   <files>
-    terra-odyssey/src/frontend/lib/api/types.ts
-    terra-odyssey/src/frontend/lib/api/client.ts
-    terra-odyssey/src/frontend/components/investigation/QuestionBuilder.tsx
-    terra-odyssey/src/frontend/components/investigation/DatasetCatalog.tsx
-    terra-odyssey/src/frontend/components/investigation/PeriodSelector.tsx
-    terra-odyssey/src/frontend/components/investigation/PresetSelector.tsx
+    terra-odyssey/frontend/lib/api/types.ts
+    terra-odyssey/frontend/lib/api/client.ts
+    terra-odyssey/frontend/components/investigation/QuestionBuilder.tsx
+    terra-odyssey/frontend/components/investigation/DatasetCatalog.tsx
+    terra-odyssey/frontend/components/investigation/PeriodSelector.tsx
+    terra-odyssey/frontend/components/investigation/PresetSelector.tsx
   </files>
   <action>
     1. Define TypeScript types in `lib/api/types.ts` mirroring backend Pydantic models:
@@ -102,7 +102,7 @@ Scaffold the Next.js App Router application in `terra-odyssey/src/frontend`, con
        - Expert controls accordion: estimator family (`ols_hac`, `theil_sen`), multiplicity procedure (`fdr_by`, `fdr_bh`), execution mode (`auto`, `cached_only`, `demo_sample`).
   </action>
   <verify>
-    npm --prefix terra-odyssey/src/frontend run build
+    npm --prefix terra-odyssey/frontend run build
   </verify>
   <done>
     Question Builder allows intuitive, fully validated parameter configuration, integrates with catalog endpoints, and submits jobs to the backend.
