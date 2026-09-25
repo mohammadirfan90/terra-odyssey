@@ -219,3 +219,57 @@
 - Extend `schemas/investigation-record.schema.json` prior to implementation with typed properties:
   `schema_version`, `job`, `data_mode`, `artifact_index`, `record_hash`, `published_at`, `source_manifest_objects`, `resolved_configuration_hash`, and `map_family_id`.
 
+---
+
+## Phase 5: Interactive Web Workspace
+
+**Date:** 2026-09-25
+
+### 1. Technology Stack & Layer Responsibility Split
+- **Framework:** Next.js App Router (TypeScript) with static export capability (`output: 'export'`) served by FastAPI for production/hackathon single-port deployment.
+- **Styling & Components:** Tailwind CSS v4 + `shadcn/ui` (panels, drawers, dialogs, tabs, badges, forms).
+- **Map System:** Mapcn component system (built on MapLibre GL JS, styled with Tailwind, following the shadcn copy-into-codebase model). Mapcn acts strictly as the presentation wrapper for controls, popups, and layout; it does not perform scientific calculations.
+- **Map Engine:** MapLibre GL JS (WebGL GPU-accelerated rendering engine for projections, raster/canvas sources, and scientific layers).
+- **Spatial Drawing:** `maplibre-gl-terradraw` (or Terra Draw with MapLibre adapter) for drawing Region A & Region B rectangles/polygons.
+- **Scientific Visualizations:** Custom MapLibre `CanvasSource` (offscreen raster canvas) + stippled/pattern FDR discovery layer. D3 + SVG for linked time series and difference charts.
+- **State & Communication:** TanStack Query (`@tanstack/react-query`) for polling FastAPI endpoints (`/api/catalog`, `/api/capabilities`, `/api/investigations`).
+
+### 2. Map Architecture & Scientific Grid Rendering
+- **Grid Visualization Pipeline:**
+  1. Retrieve compressed structured grid from `GET /api/investigations/{id}/map`.
+  2. MapLibre dynamically loads in a client component with `ssr: false`.
+  3. Offscreen HTML5 Canvas converts grid array values to RGBA pixels using a frozen diverging color scale (e.g. ColorBrewer RdBu or Viridis colorblind-safe).
+  4. Offscreen canvas added to MapLibre via `CanvasSource`.
+  5. Second pattern/stippled layer added for Benjamini-Yekutieli (`fdr_by`) statistically significant discoveries (ensuring significance is never encoded by color alone).
+  6. Dedicated missing-data / insufficient coverage visual layer.
+  7. Mathematical hover inspection (`cell-index.ts`) computing grid cell coordinates, raw slope, HAC CI, and local test p-value without spatial interpolation.
+- **Projections:**
+  - 2D Mercator: primary analysis and precision regional selection.
+  - 3D Globe: global overview and NASA-style presentation.
+  - Toggle between 2D and Globe preserves all underlying scientific evidence, selected regions, and legend thresholds unchanged (scientific calculations remain backend geodesic area-weighted).
+
+### 3. Region Selection & Exploratory Search Tracking
+- **Terra Draw Integration:** Explicit controls for Draw Region A, Draw Region B, Edit, Delete, Confirm.
+- **Visual Accessibility:** Regions A and B must feature prominent persistent text labels ("A" and "B") rather than relying on color alone.
+- **Honesty in Selection (Multiplicity Disclosure):**
+  - If a user draws or selects regions *after* viewing the gridded trend map, the frontend automatically marks:
+    ```json
+    {
+      "selection_status": "exploratory_map_selected",
+      "map_family_id": "<frozen-map-family-id>",
+      "selection_method": "map_draw",
+      "selected_at": "<iso-timestamp>"
+    }
+    ```
+  - This ensures the backend applies Benjamini-Yekutieli multiplicity penalty and adds mandatory caveats to the final evidence status.
+
+### 4. Linked Scientific Charts & Evidence Panels
+- **D3/SVG Time-Series Engine:**
+  - Dual time-series curves (Region A in warm slate/amber, Region B in cool cyan/teal) with valid coverage bars.
+  - Synchronous difference series $D_t = Y_{A,t} - Y_{B,t}$ with 95% HAC confidence bands and zero-line contrast.
+  - Responsive crosshair scrubbing linking time-series hover to annual map time-step or summary.
+- **Evidence Drawer & Status Badges:**
+  - Clear semantic badges (`Supported: Opposite-Trend Pair`, `Inconclusive: Contrasting Slopes Not Significant`, `Inconclusive: Slopes Share Same Sign`, `Ineligible: Record Too Short`).
+  - Transparent methods inspector detailing OLS + Newey-West HAC lag, BY FDR correction, and dataset release metadata.
+  - Direct download triggers for frozen `.zip` bundle, `.json` record, and `.csv` series.
+
