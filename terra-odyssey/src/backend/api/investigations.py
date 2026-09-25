@@ -7,7 +7,7 @@ import json
 import logging
 from pathlib import Path
 from typing import Any, Dict, List, Optional
-from fastapi import APIRouter, Header, Query, Response, status
+from fastapi import APIRouter, Header, Query, Request, Response, status
 from fastapi.responses import FileResponse, JSONResponse, StreamingResponse
 
 from src.backend.errors import (
@@ -165,6 +165,7 @@ async def get_investigation_evidence(job_id: str) -> Dict[str, Any]:
 @router.get("/{job_id}/map")
 async def get_investigation_map(
     job_id: str,
+    request: Request,
     bbox: Optional[str] = Query(None, description="Optional bounding box: min_lon,min_lat,max_lon,max_lat"),
     max_cells: int = Query(10000, ge=10, le=100000, description="Maximum cells ceiling for downsampling"),
 ) -> Response:
@@ -245,7 +246,18 @@ async def get_investigation_map(
         "provenance": grid_data["provenance"],
     }
 
+    accept_encoding = request.headers.get("accept-encoding", "").lower()
+    if "gzip" in accept_encoding:
+        json_bytes = json.dumps(result).encode("utf-8")
+        compressed_bytes = gzip.compress(json_bytes)
+        return Response(
+            content=compressed_bytes,
+            media_type="application/json",
+            headers={"Content-Encoding": "gzip"},
+        )
+
     return JSONResponse(content=result)
+
 
 
 @router.get("/{job_id}/export")

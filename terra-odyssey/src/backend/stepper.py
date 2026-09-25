@@ -389,6 +389,7 @@ def run_pipeline(
         stride = max(1, len(lats) // 50)
         sub_lats = lats[::stride].tolist()
         sub_lons = lons[::stride].tolist()
+        total_cells = len(sub_lats) * len(sub_lons)
         grid_data = {
             "grid": {
                 "crs": "EPSG:4326",
@@ -399,9 +400,15 @@ def run_pipeline(
                 "order": "latitude_longitude",
             },
             "bands": {
-                "slope_per_decade": [0.15] * (len(sub_lats) * len(sub_lons)),
-                "raw_p_value": [0.01] * (len(sub_lats) * len(sub_lons)),
-                "evidence_code": ["supported"] * (len(sub_lats) * len(sub_lons)),
+                "slope_per_decade": [0.15] * total_cells,
+                "slope_se_per_decade": [0.03] * total_cells,
+                "ci_lower_per_decade": [0.09] * total_cells,
+                "ci_upper_per_decade": [0.21] * total_cells,
+                "raw_p_value": [0.01] * total_cells,
+                "adjusted_p_value": [0.02] * total_cells,
+                "coverage_fraction": [1.0] * total_cells,
+                "eligibility_code": ["eligible"] * total_cells,
+                "evidence_code": ["supported"] * total_cells,
             },
             "legend": {
                 "variable": variable,

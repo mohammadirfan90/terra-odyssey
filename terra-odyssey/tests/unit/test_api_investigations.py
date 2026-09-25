@@ -82,7 +82,24 @@ def test_investigation_lifecycle_demo_sample(client):
     assert "legend" in map_data
     total_cells = map_data["grid"]["width"] * map_data["grid"]["height"]
     assert total_cells <= 500
-    assert "slope_per_decade" in map_data["bands"]
+    for expected_band in (
+        "slope_per_decade",
+        "slope_se_per_decade",
+        "ci_lower_per_decade",
+        "ci_upper_per_decade",
+        "raw_p_value",
+        "adjusted_p_value",
+        "coverage_fraction",
+        "eligibility_code",
+        "evidence_code",
+    ):
+        assert expected_band in map_data["bands"], f"Missing required diagnostic band {expected_band}"
+
+    # Test gzip Content-Encoding when requested
+    gzip_map_res = c.get(f"/api/investigations/{job_id}/map?max_cells=500", headers={"Accept-Encoding": "gzip"})
+    assert gzip_map_res.status_code == 200
+    assert gzip_map_res.headers.get("content-encoding") == "gzip"
+
 
     # 5. GET /api/investigations/{job_id}/evidence
     ev_res = c.get(f"/api/investigations/{job_id}/evidence")
