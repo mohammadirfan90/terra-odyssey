@@ -12,7 +12,9 @@ node_modules/
 .next/
 out/
 next-env.d.ts
+!terra-odyssey/frontend/next-env.d.ts
 *.tsbuildinfo
+.puku-cli/
 
 # Python
 __pycache__/
