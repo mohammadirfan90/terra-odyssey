@@ -96,6 +96,33 @@ async def get_catalog() -> CatalogResponse:
         supported_spatial_aggregations=["area_weighted"],
     )
 
+    d4_data = load_manifest("d4_modis_vegetation.json") or {}
+    datasets["d4_modis_ndvi"] = DatasetCatalogItem(
+        dataset_id="d4_modis_ndvi",
+        name="MODIS Vegetation Indices Monthly NDVI (MOD13A3)",
+        collection=d4_data.get("collection", "MOD13A3"),
+        version=d4_data.get("version", "061"),
+        source_type=d4_data.get("source_type", "mission_product"),
+        variable=d4_data.get("variable", "NDVI"),
+        units="dimensionless",
+        spatial_support=d4_data.get("spatial_support", "nominal 1 km MODIS sinusoidal tiles"),
+        temporal_support=d4_data.get("temporal_support", "monthly composite"),
+        coverage_start=d4_data.get("coverage_start", "2000-02-01"),
+        coverage_end=d4_data.get("coverage_end"),
+        quality_policy=d4_data.get("quality_policy", {
+            "fill_values": ["-3000"],
+            "mask_description": "Decode MODLAND quality, aerosol, cloud, and reliability fields before aggregation.",
+            "qa_fields": ["pixel_reliability", "VI_Quality"]
+        }),
+        provenance=d4_data.get("provenance", {
+            "documentation_urls": ["https://doi.org/10.5067/MODIS/MOD13A3.061"],
+            "doi": "10.5067/MODIS/MOD13A3.061",
+            "provider": "NASA LP DAAC"
+        }),
+        supported_aggregations=["annual_mean", "seasonal"],
+        supported_spatial_aggregations=["area_weighted"],
+    )
+
     defaults = {
         "dataset_id": "merra2_t2m",
         "variable": "T2M",
