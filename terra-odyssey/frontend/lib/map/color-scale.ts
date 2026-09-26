@@ -29,11 +29,49 @@ export const BRBG_COLORS = [
   "#01665e", // strong wetting / surplus
 ];
 
+// ColorBrewer PRGn (Purple-Green: natural fit for vegetation trend bipolar)
+export const PRGN_COLORS = [
+  "#762a83", // strong browning / vegetation loss
+  "#9970ab",
+  "#c2a5cf",
+  "#e7d4e8",
+  "#f7f7f7", // neutral zero
+  "#d9f0d3",
+  "#a6dba0",
+  "#5aae61",
+  "#1b7837", // strong greening / vegetation gain
+];
+
+// ColorBrewer YlGn (sequential: for absolute NDVI value maps, not trend diverging)
+export const YLGN_COLORS = [
+  "#ffffe5",
+  "#f7fcb9",
+  "#d9f0a3",
+  "#addd8e",
+  "#78c679",
+  "#41ab5d",
+  "#238443",
+  "#006837",
+  "#004529",
+];
+
 export interface ColorScaleConfig {
   min: number;
   center: number;
   max: number;
-  palette: "RdBu" | "BrBG";
+  palette: "RdBu" | "BrBG" | "PRGn" | "YlGn";
+}
+
+/**
+ * Map a NASA product variable name to the most scientifically appropriate
+ * diverging palette for trend anomaly mapping.
+ */
+export function getVariablePalette(variable: string): "RdBu" | "BrBG" | "PRGn" {
+  const v = variable.toUpperCase();
+  if (v === "NDVI" || v === "EVI" || v.includes("VEGETATION")) return "PRGn";
+  if (v === "PRECIPITATIONCAL" || v === "PRECIPITATION" || v.includes("PRECIP")) return "BrBG";
+  // T2M, LST, and all thermal variables default to temperature diverging
+  return "RdBu";
 }
 
 export function parseHexToRgb(hex: string): [number, number, number] {
@@ -48,14 +86,17 @@ export function parseHexToRgb(hex: string): [number, number, number] {
 export function getDivergingColorRgba(
   value: number | null | undefined,
   maxAbsValue: number,
-  palette: "RdBu" | "BrBG" = "RdBu"
+  palette: "RdBu" | "BrBG" | "PRGn" = "RdBu"
 ): [number, number, number, number] {
   if (value === null || value === undefined || isNaN(value)) {
     // Muted dark transparent for masked / missing data
     return [30, 41, 59, 140];
   }
 
-  const colors = palette === "BrBG" ? BRBG_COLORS : RDBU_COLORS;
+  const colors =
+    palette === "BrBG" ? BRBG_COLORS :
+    palette === "PRGn" ? PRGN_COLORS :
+    RDBU_COLORS;
   const clampedMax = Math.max(0.001, maxAbsValue);
 
   // Normalize [-maxAbs, +maxAbs] to [0, 1]
