@@ -38,8 +38,8 @@ $StageDir = Join-Path ([System.IO.Path]::GetTempPath()) ("terra-odyssey-pkg-" + 
 New-Item -ItemType Directory -Path $StageDir -Force | Out-Null
 
 try {
-    # Copy terra-odyssey files, excluding caches and node_modules
-    $excludeDirs = @("__pycache__", ".pytest_cache", "htmlcov", "coverage", "node_modules", ".next", ".turbo", "out")
+    # Copy terra-odyssey files, excluding caches, node_modules, and virtualenvs
+    $excludeDirs = @("__pycache__", ".pytest_cache", "htmlcov", "coverage", "node_modules", ".next", ".turbo", "out", ".venv", "venv", "env")
     $excludeExts = @(".pyc", ".pyo", ".pyd", ".tsbuildinfo")
     $excludeNames = @(".coverage", "next-env.d.ts")
 
