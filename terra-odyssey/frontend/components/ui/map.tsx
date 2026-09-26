@@ -847,9 +847,17 @@ function ControlButton({
   children: React.ReactNode;
   disabled?: boolean;
 }) {
+  const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
+    // Stop React-level propagation so parent handlers (e.g. the legacy
+    // draw-region mousedown/mouseup pair wrapping the map) can't swallow
+    // the click and so the underlying MapLibre canvas doesn't see it as a
+    // map gesture start.
+    event.stopPropagation();
+    onClick();
+  };
   return (
     <button
-      onClick={onClick}
+      onClick={handleClick}
       aria-label={label}
       type="button"
       className={cn(
@@ -878,17 +886,30 @@ function MapControls({
   const { map } = useMap();
   const [waitingForLocation, setWaitingForLocation] = useState(false);
 
-  const handleZoomIn = useCallback(() => {
-    map?.zoomTo(map.getZoom() + 1, { duration: 300 });
+  // Keep the latest map instance in a ref so click handlers always see the
+  // live value, even if they were attached before the map finished mounting.
+  const mapRef = useRef<MapLibreGL.Map | null>(null);
+  useEffect(() => {
+    mapRef.current = map;
   }, [map]);
+
+  const handleZoomIn = useCallback(() => {
+    const m = mapRef.current;
+    if (!m) return;
+    m.zoomTo(m.getZoom() + 1, { duration: 300 });
+  }, []);
 
   const handleZoomOut = useCallback(() => {
-    map?.zoomTo(map.getZoom() - 1, { duration: 300 });
-  }, [map]);
+    const m = mapRef.current;
+    if (!m) return;
+    m.zoomTo(m.getZoom() - 1, { duration: 300 });
+  }, []);
 
   const handleResetBearing = useCallback(() => {
-    map?.resetNorthPitch({ duration: 300 });
-  }, [map]);
+    const m = mapRef.current;
+    if (!m) return;
+    m.resetNorthPitch({ duration: 300 });
+  }, []);
 
   const handleLocate = useCallback(() => {
     if (!("geolocation" in navigator)) return;
@@ -899,7 +920,8 @@ function MapControls({
           longitude: pos.coords.longitude,
           latitude: pos.coords.latitude,
         };
-        map?.flyTo({
+        const m = mapRef.current;
+        m?.flyTo({
           center: [coords.longitude, coords.latitude],
           zoom: 14,
           duration: 1500,
@@ -915,17 +937,18 @@ function MapControls({
       // prompt would leave the button disabled forever.
       { timeout: 10000 },
     );
-  }, [map, onLocate]);
+  }, [onLocate]);
 
   const handleFullscreen = useCallback(() => {
-    const container = map?.getContainer();
+    const m = mapRef.current;
+    const container = m?.getContainer();
     if (!container) return;
     if (document.fullscreenElement) {
       document.exitFullscreen();
     } else {
       container.requestFullscreen();
     }
-  }, [map]);
+  }, []);
 
   return (
     <div
