@@ -1,5 +1,5 @@
 ---
-updated: 2026-09-29T17:05:00+06:00
+updated: 2026-09-29T17:35:00+06:00
 milestone: v0.2.0-trends
 status: IN_PROGRESS
 ---
@@ -15,6 +15,27 @@ status: IN_PROGRESS
 **Phase 1 Verification:** [.gsd/TRENDS_PHASE_1_VERIFICATION.md](TRENDS_PHASE_1_VERIFICATION.md)
 **Phase 2 Verification:** [.gsd/TRENDS_PHASE_2_VERIFICATION.md](TRENDS_PHASE_2_VERIFICATION.md)
 **Phase 3 Verification:** [.gsd/phases/3/VERIFICATION.md](phases/3/VERIFICATION.md)
+
+---
+### Salinity Telemetry Calibration & Chart Layout Remediation:
+1. **Fixed 420 PSU Accumulation Bug**:
+   - Replaced accidental precipitation fallback in `stepper.py` with explicit annual mean normalization (`aggregate_annual_temperature` and `normalize_to_annual`).
+   - Implemented `normalize_to_annual` on `SmapSssAdapter`, `AquariusSSSAdapter`, and `AvisoSshAdapter`, ensuring monthly salinities are averaged across available months rather than accumulated, accurately restoring physical ocean salinity (~35.1 PSU).
+2. **Short-Mission Bounds & Pre-Launch Masking**:
+   - Masked pre-launch and post-mission times to NaN for SMAP (pre-2015) and Aquarius in synthetic telemetry generation.
+   - Constrained analysis time interval in `page.tsx` on dataset selection, aligning time interval display with satellite observation capabilities.
+   - Filtered out unobserved NaN years in `ts_df` before writing `series.json` and `region_time_series.csv`.
+3. **Strict Trend Ineligibility in Dock Chart**:
+   - Guarded linear regression trendline fitting in `DockTimeSeriesChart.tsx`: datasets with `<20` years of data or with `unsupportedReason` now cleanly suppress trendlines and OLS decadal slopes, eliminating false trends.
+4. **Dock Chart Header Collision Resolved**:
+   - Embedded the amber short-record warning chip inline into the top-left legend flex container, preventing overlap with axis badges and region chips.
+5. **Quality & Packaging**:
+   - Backend pytest suite: **249/249 passed (100% green)**.
+   - Frontend TypeScript: **0 errors**.
+   - Frontend ESLint: **0 errors**.
+   - Next.js Turbopack build: **Compiled successfully**.
+   - Archive packaged into `terra-odyssey.zip`.
+   - PR #48 opened: https://github.com/mohammadirfan90/terra-odyssey/pull/48.
 
 ---
 ### Dataset Pipeline Hardening & Error Elimination Across All Catalogs:
