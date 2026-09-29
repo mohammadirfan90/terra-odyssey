@@ -1,0 +1,22 @@
+{
+  "dataset_id": "modis_terra_snow",
+  "collection": "MOD10A2",
+  "version": "061",
+  "source_type": "satellite_retrieval",
+  "variable": "NDSI_Snow_Cover",
+  "units": "percent",
+  "spatial_support": "global sinusoidal tiles",
+  "temporal_support": "8-day composite",
+  "coverage_start": "2000-02-24",
+  "coverage_end": null,
+  "quality_policy": {
+    "fill_values": ["NDSI_Snow_Cover_Class == 250 (missing)"],
+    "mask_description": "Mask inland water bodies and dark targets per MOD10A2 QA flags.",
+    "qa_fields": ["NDSI_Snow_Cover_Class"]
+  },
+  "provenance": {
+    "documentation_urls": ["https://doi.org/10.5067/MODIS/MOD10A2.061"],
+    "doi": "10.5067/MODIS/MOD10A2.061",
+    "provider": "NASA NSIDC DAAC"
+  }
+}

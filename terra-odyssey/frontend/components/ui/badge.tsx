@@ -8,22 +8,22 @@ const badgeVariants = cva(
     variants: {
       variant: {
         default:
-          "border-slate-700 bg-slate-800 text-slate-200",
+          "border-slate-200 bg-slate-100 text-slate-800",
         secondary:
-          "border-slate-800 bg-slate-900 text-slate-400",
+          "border-slate-200 bg-slate-50 text-slate-600",
         supported:
-          "border-emerald-500/40 bg-emerald-950/60 text-emerald-300",
+          "border-emerald-300 bg-emerald-50 text-emerald-800",
         inconclusive:
-          "border-amber-500/40 bg-amber-950/60 text-amber-300",
+          "border-amber-300 bg-amber-50 text-amber-800",
         ineligible:
-          "border-rose-500/40 bg-rose-950/60 text-rose-300",
+          "border-rose-300 bg-rose-50 text-rose-800",
         exploratory:
-          "border-purple-500/40 bg-purple-950/60 text-purple-300",
+          "border-purple-300 bg-purple-50 text-purple-800",
         regionA:
-          "border-amber-500/60 bg-amber-950/80 text-amber-300",
+          "border-amber-300 bg-amber-50 text-amber-800",
         regionB:
-          "border-cyan-500/60 bg-cyan-950/80 text-cyan-300",
-        outline: "text-slate-300 border-slate-700",
+          "border-cyan-300 bg-cyan-50 text-cyan-800",
+        outline: "text-slate-700 border-slate-300 bg-white",
       },
     },
     defaultVariants: {

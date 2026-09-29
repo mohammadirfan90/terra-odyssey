@@ -1,0 +1,22 @@
+{
+  "dataset_id": "smap_sss",
+  "collection": "SMAP_JPL_L3_SSS",
+  "version": "5.0",
+  "source_type": "satellite_radiometry",
+  "variable": "smap_sss",
+  "units": "PSU",
+  "spatial_support": "global ocean",
+  "temporal_support": "8-day running mean; aggregate monthly",
+  "coverage_start": "2015-04-01",
+  "coverage_end": null,
+  "quality_policy": {
+    "fill_values": ["-9999 sentinel"],
+    "mask_description": "Mask Q/A flag != 0, sea ice fraction > 0.05, and 50 km of coast.",
+    "qa_fields": ["Q_A", "sea_ice_fraction"]
+  },
+  "provenance": {
+    "documentation_urls": ["https://doi.org/10.5067/SMP50-3SPCS"],
+    "doi": "10.5067/SMP50-3SPCS",
+    "provider": "NASA JPL PODAAC"
+  }
+}

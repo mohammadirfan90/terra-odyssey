@@ -36,10 +36,10 @@ export function RangeSlider({
 
   return (
     <div className={cn("flex flex-col space-y-2 w-full", className)}>
-      <div className="flex justify-between items-center text-xs font-mono text-slate-300">
-        <span className="bg-slate-800 px-2 py-0.5 rounded border border-slate-700">{start}</span>
+      <div className="flex justify-between items-center text-xs font-mono text-slate-700">
+        <span className="bg-slate-100 text-slate-800 px-2 py-0.5 rounded border border-slate-200 shadow-xs">{start}</span>
         <span className="text-[10px] text-slate-500 uppercase tracking-widest">{end - start} Year Span</span>
-        <span className="bg-slate-800 px-2 py-0.5 rounded border border-slate-700">{end}</span>
+        <span className="bg-slate-100 text-slate-800 px-2 py-0.5 rounded border border-slate-200 shadow-xs">{end}</span>
       </div>
       <div className="relative h-6 flex items-center">
         <input

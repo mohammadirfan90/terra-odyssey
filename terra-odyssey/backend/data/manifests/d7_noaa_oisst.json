@@ -1,0 +1,34 @@
+{
+  "dataset_id": "noaa_oisst",
+  "alias_id": "D7",
+  "collection": "NOAA_OISST_V2.1",
+  "version": "2.1",
+  "source_type": "blended_satellite_in_situ",
+  "variable": "sst",
+  "units": "degC",
+  "spatial_support": "global 0.25° grid (marine only)",
+  "temporal_support": "monthly mean of daily analyses",
+  "coverage_start": "1981-09-01",
+  "coverage_end": "2024-12-31",
+  "quality_policy": {
+    "fill_values": ["-999.0", "-9.99", "NaN"],
+    "mask_description": "Strict marine-only domain; land pixels and sea-ice flags masked to NaN; physical bounds [-2.5, 45.0] degC.",
+    "qa_fields": ["err"]
+  },
+  "retrieval": {
+    "provider": "NOAA National Centers for Environmental Information (NCEI)",
+    "access_url": "https://www.ncei.noaa.gov/thredds/dodsC/OisstBase/NetCDF/V2.1/AVHRR/",
+    "retrieved_at": "REPLACE_AT_INGEST",
+    "granules": 0,
+    "checksums": []
+  },
+  "provenance": {
+    "documentation_urls": [
+      "https://doi.org/10.25921/RE9P-PT57",
+      "https://www.ncei.noaa.gov/products/optimum-interpolation-sst"
+    ],
+    "doi": "10.25921/RE9P-PT57",
+    "software_version": "2.1",
+    "manifest_hash": null
+  }
+}

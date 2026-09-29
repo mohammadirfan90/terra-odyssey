@@ -13,15 +13,104 @@ export interface DatasetVariable {
   description: string;
 }
 
+export type CapabilityBadge = "Browse" | "View" | "Analyze" | "Compare";
+
+export interface DatasetCapabilities {
+  discoverable: boolean;
+  previewable: boolean;
+  series_supported: boolean;
+  trend_supported: boolean;
+  contrast_supported: boolean;
+  badges: CapabilityBadge[];
+  unsupported_reason?: string | null;
+}
+
+export interface DatasetCatalogItem {
+  dataset_id: string;
+  name: string;
+  collection: string;
+  version: string;
+  topic?: string;
+  provider?: string;
+  concept_id?: string | null;
+  native_resolution?: string | null;
+  license?: string | null;
+  citation_doi?: string | null;
+  gibs_layer?: string | null;
+  source_type: string;
+  variable: string;
+  units: string;
+  spatial_support: string;
+  temporal_support: string;
+  coverage_start: string;
+  coverage_end?: string | null;
+  quality_policy: Record<string, any>;
+  provenance: Record<string, any>;
+  capabilities?: DatasetCapabilities;
+  supported_aggregations?: string[];
+  supported_spatial_aggregations?: string[];
+}
+
+export interface AvailabilityGap {
+  start_date: string;
+  end_date: string;
+  description: string;
+}
+
+export interface EligibleSpan {
+  start_year: number;
+  end_year: number;
+  complete_years: number;
+  is_eligible: boolean;
+}
+
+export interface DatasetAvailabilityResponse {
+  dataset_id: string;
+  name: string;
+  temporal_support: string;
+  coverage_start: string;
+  coverage_end: string;
+  total_years: number;
+  complete_years: number;
+  completeness_pct: number;
+  gaps: AvailabilityGap[];
+  eligible_spans: EligibleSpan[];
+  years_available: number[];
+  gibs_layer?: string | null;
+}
+
+export interface CatalogResponse {
+  datasets: Record<string, DatasetCatalogItem>;
+  defaults: Record<string, any>;
+  supported_estimators: string[];
+  supported_aggregations: string[];
+}
+
 export interface DatasetMetadata {
   dataset_id: string;
   title: string;
   collection: string;
   version: string;
   doi: string;
-  data_type: "reanalysis_model" | "satellite_retrieval";
+  data_type:
+    | "reanalysis_model"
+    | "satellite_retrieval"
+    | "surface_observation_analysis"
+    | "satellite_gravimetry"
+    | "satellite_radiometry"
+    | "derived_index"
+    | "open_source";
   citation_statement: string;
   measurement_principle: string;
+  topic?: string;
+  provider?: string;
+  concept_id?: string | null;
+  native_resolution?: string | null;
+  license?: string | null;
+  gibs_layer?: string | null;
+  capabilities?: DatasetCapabilities;
+  /** Multi-axis taxonomy: ["<Domain>:<Sub-topic>", "<Use Case>", ...] */
+  categories?: string[];
   spatial_resolution: {
     lat_deg: number;
     lon_deg: number;
@@ -79,7 +168,8 @@ export interface JobStatusResponse {
   job_id: string;
   job_status: "submitted" | "running" | "succeeded" | "failed" | "cancel_requested" | "cancelled";
   stage: "validating" | "acquiring" | "normalizing" | "aggregating" | "analyzing" | "publishing";
-  progress: number;
+  progress?: number;
+  progress_pct?: number;
   result_status?: "supported" | "inconclusive" | "ineligible" | null;
   created_at: string;
   updated_at: string;
@@ -122,11 +212,21 @@ export interface MapProvenance {
   family_size: number;
 }
 
+export interface FdrSummary {
+  n_tested: number;
+  n_significant: number;
+  fdr_threshold: number | null;
+  method: string;
+  by_constant: number | null;
+  alpha: number;
+}
+
 export interface StructuredGridMapResponse {
   grid: GridMetadata;
   bands: MapBands;
   legend: LegendMetadata;
   provenance: MapProvenance;
+  fdr_summary?: FdrSummary | null;
 }
 
 export interface TimeSeriesRecord {
@@ -163,8 +263,48 @@ export interface ScientificResultItem {
   caveats?: string[];
 }
 
+export interface PairedContrastSummary {
+  contrast_slope: number;
+  contrast_ci_95: [number, number];
+  contrast_p_value: number;
+  contrast_status: string;
+  region_a_slope?: number | null;
+  region_b_slope?: number | null;
+  units: string;
+  evidence_text: string;
+}
+
+export interface SummaryStats {
+  max_year: number;
+  max_value: number;
+  min_year: number;
+  min_value: number;
+  mean_value: number;
+  std_value: number;
+  baseline_mean: number;
+  baseline_years: string;
+  recent_mean: number;
+  recent_years: string;
+  decadal_shift: number;
+}
+
 export interface EvidencePayload {
   job_id: string;
   result_status: "supported" | "inconclusive" | "ineligible";
   results: ScientificResultItem[];
+  contrast?: PairedContrastSummary | null;
+  headline_text?: string | null;
+  summary_stats?: SummaryStats | null;
+}
+
+export interface UniversalQueryRequest {
+  query: string;
+}
+
+export interface UniversalQueryResponse {
+  answer: string;
+  model: string;
+  provider: "NVIDIA NIM";
+  latency_ms: number;
+  caveat: string;
 }

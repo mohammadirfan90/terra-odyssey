@@ -54,7 +54,11 @@ try {
             $item.Name -like ".env.*" -and $item.Name -ne ".env.example"
         )
 
-        if ($isExcludedDir -or $isPrivateEnvFile) {
+        # Exclude ephemeral investigation runs (keep only reference sample fixture)
+        $isEphemeralInvestigation = ($relPath -like "*data\investigations\inv-*" -or $relPath -like "*data/investigations/inv-*") -and -not ($relPath -like "*inv-b7b17ea47850*")
+        $isLogOrScratch = $item.Extension -eq ".log" -or $item.Name -like "*_log.txt" -or $item.Name -eq ".gibs_cache.json"
+
+        if ($isExcludedDir -or $isPrivateEnvFile -or $isEphemeralInvestigation -or $isLogOrScratch) {
             return
         }
 

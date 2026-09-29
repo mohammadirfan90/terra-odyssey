@@ -1,0 +1,22 @@
+{
+  "dataset_id": "ghrsst_mur_sst",
+  "collection": "MUR-JPL-L4-GLOB-v4.1",
+  "version": "4.1",
+  "source_type": "blended_satellite_in_situ",
+  "variable": "analysed_sst",
+  "units": "degC",
+  "spatial_support": "global 0.01° gap-free ocean grid",
+  "temporal_support": "daily; aggregate monthly",
+  "coverage_start": "2002-06-01",
+  "coverage_end": null,
+  "quality_policy": {
+    "fill_values": ["-32768 land sentinel"],
+    "mask_description": "Apply sea_ice_fraction > 0 mask; preserve analysed_sst uncertainty field if present.",
+    "qa_fields": ["analysis_error", "sea_ice_fraction"]
+  },
+  "provenance": {
+    "documentation_urls": ["https://doi.org/10.5067/GHCMC-4FM02"],
+    "doi": "10.5067/GHCMC-4FM02",
+    "provider": "NASA JPL PODAAC"
+  }
+}

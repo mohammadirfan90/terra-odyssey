@@ -63,7 +63,7 @@
       "additionalProperties": false
     },
     "data_mode": {
-      "enum": ["live", "cached_verified", "demo_sample"]
+      "enum": ["live", "cached_verified", "demo_sample", "synthetic_test"]
     },
     "request": {
       "type": "object",
@@ -84,7 +84,7 @@
         "region_b": {"type": ["object", "array", "null"]},
         "temporal_aggregation": {"type": "string"},
         "spatial_aggregation": {"type": "string"},
-        "execution_mode": {"type": "string", "enum": ["auto", "live", "cached_only", "demo_sample"]},
+        "execution_mode": {"type": "string", "enum": ["auto", "live", "cached_only", "demo_sample", "synthetic_test"]},
         "estimator_family": {"type": "string"},
         "selection_status": {"type": "string", "enum": ["predefined", "exploratory_map_selected"]}
       },

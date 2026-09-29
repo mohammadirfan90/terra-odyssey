@@ -1,0 +1,21 @@
+{
+  "dataset_id": "climate_amo",
+  "collection": "NOAA_AMO",
+  "version": "unsmoothed",
+  "source_type": "surface_observation_analysis",
+  "variable": "amo",
+  "units": "degC anomaly",
+  "spatial_support": "global_index (North Atlantic 0°–70°N)",
+  "temporal_support": "monthly",
+  "coverage_start": "1856-01-01",
+  "coverage_end": null,
+  "quality_policy": {
+    "fill_values": ["none — single scalar per month"],
+    "mask_description": "ENSO signal removed via regression on Niño 3.4 SST.",
+    "qa_fields": []
+  },
+  "provenance": {
+    "documentation_urls": ["https://www.psl.noaa.gov/data/timeseries/AMO/"],
+    "provider": "NOAA Physical Sciences Laboratory"
+  }
+}

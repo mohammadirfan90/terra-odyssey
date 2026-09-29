@@ -1,0 +1,34 @@
+{
+  "dataset_id": "grace_tws",
+  "alias_id": "D8",
+  "collection": "TELLUS_GRAC_L3_JPL_RL06_v04",
+  "version": "RL06.1",
+  "source_type": "satellite_gravimetry",
+  "variable": "lwe_thickness",
+  "units": "cm",
+  "spatial_support": "global 0.5° grid (3° mascon resolution)",
+  "temporal_support": "monthly equivalent water thickness anomaly (2004-2009 baseline)",
+  "coverage_start": "2002-04-01",
+  "coverage_end": "2024-12-31",
+  "quality_policy": {
+    "fill_values": ["-9999.0", "9999.0", "NaN"],
+    "mask_description": "Preserve un-interpolated 11-month observation gap between GRACE and GRACE-FO (2017-07 to 2018-05); apply scaling factor if available; bound within [-1000.0, 1000.0] cm.",
+    "qa_fields": ["uncertainty", "scale_factor"]
+  },
+  "retrieval": {
+    "provider": "NASA Jet Propulsion Laboratory (JPL) / PO.DAAC",
+    "access_url": "https://grace.jpl.nasa.gov/data/get-data/jpl_global_mascons/",
+    "retrieved_at": "REPLACE_AT_INGEST",
+    "granules": 0,
+    "checksums": []
+  },
+  "provenance": {
+    "documentation_urls": [
+      "https://doi.org/10.5067/TEMSC-3JC64",
+      "https://grace.jpl.nasa.gov/data/get-data/jpl_global_mascons/"
+    ],
+    "doi": "10.5067/TEMSC-3JC64",
+    "software_version": "RL06.1",
+    "manifest_hash": null
+  }
+}

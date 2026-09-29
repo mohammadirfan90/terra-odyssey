@@ -1,0 +1,21 @@
+{
+  "dataset_id": "climate_ao",
+  "collection": "NOAA_CPC_AO",
+  "version": "monthly",
+  "source_type": "surface_observation_analysis",
+  "variable": "ao",
+  "units": "dimensionless",
+  "spatial_support": "global_index (Arctic EOF)",
+  "temporal_support": "monthly",
+  "coverage_start": "1950-01-01",
+  "coverage_end": null,
+  "quality_policy": {
+    "fill_values": ["none — single scalar per month"],
+    "mask_description": "EOF of monthly mean 1000 hPa height anomalies poleward of 20°N.",
+    "qa_fields": []
+  },
+  "provenance": {
+    "documentation_urls": ["https://www.cpc.ncep.noaa.gov/products/precip/CWlink/daily_ao_index/ao.shtml"],
+    "provider": "NOAA Climate Prediction Center"
+  }
+}

@@ -86,11 +86,12 @@ export function parseHexToRgb(hex: string): [number, number, number] {
 export function getDivergingColorRgba(
   value: number | null | undefined,
   maxAbsValue: number,
-  palette: "RdBu" | "BrBG" | "PRGn" = "RdBu"
+  palette: "RdBu" | "BrBG" | "PRGn" = "RdBu",
+  baseAlpha = 220,
 ): [number, number, number, number] {
   if (value === null || value === undefined || isNaN(value)) {
-    // Muted dark transparent for masked / missing data
-    return [30, 41, 59, 140];
+    // Transparent for masked / missing data so underlying satellite basemap shows cleanly
+    return [0, 0, 0, 0];
   }
 
   const colors =
@@ -115,5 +116,37 @@ export function getDivergingColorRgba(
   const g = Math.round(g1 + factor * (g2 - g1));
   const b = Math.round(b1 + factor * (b2 - b1));
 
-  return [r, g, b, 230]; // 90% opacity for satellite map backdrop visibility
+  // If very close to 0 (|value| < 3% of max), smoothly fade alpha towards 0 so neutral regions stay transparent
+  const relativeMag = Math.abs(value) / clampedMax;
+  const alphaMultiplier = Math.min(1.0, Math.max(0.2, relativeMag * 3.5));
+  const finalAlpha = Math.round(baseAlpha * alphaMultiplier);
+
+  return [r, g, b, finalAlpha];
 }
+
+/**
+ * Returns a CSS rgb or rgba string for a given slope.
+ */
+export function getDivergingColorCss(
+  value: number | null | undefined,
+  maxAbsValue: number,
+  palette: "RdBu" | "BrBG" | "PRGn" = "RdBu",
+): string {
+  if (value === null || value === undefined || isNaN(value)) {
+    return "rgba(0,0,0,0)";
+  }
+  const [r, g, b] = getDivergingColorRgba(value, maxAbsValue, palette);
+  return `rgb(${r},${g},${b})`;
+}
+
+/**
+ * Returns a CSS linear-gradient string for legend colour bars.
+ */
+export function getPaletteGradientCss(palette: "RdBu" | "BrBG" | "PRGn" = "RdBu"): string {
+  const colors =
+    palette === "BrBG" ? BRBG_COLORS :
+    palette === "PRGn" ? PRGN_COLORS :
+    RDBU_COLORS;
+  return `linear-gradient(to right, ${colors.join(", ")})`;
+}
+

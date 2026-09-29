@@ -1,0 +1,22 @@
+{
+  "dataset_id": "modis_fire",
+  "collection": "MCD64A1",
+  "version": "061",
+  "source_type": "satellite_retrieval",
+  "variable": "Burn_Date",
+  "units": "day-of-year",
+  "spatial_support": "global sinusoidal tiles",
+  "temporal_support": "monthly",
+  "coverage_start": "2000-11-01",
+  "coverage_end": null,
+  "quality_policy": {
+    "fill_values": ["0 = unburned; 1–366 = burn day-of-year"],
+    "mask_description": "QA confidence >= 50 recommended for trend analysis.",
+    "qa_fields": ["QA"]
+  },
+  "provenance": {
+    "documentation_urls": ["https://doi.org/10.5067/MODIS/MCD64A1.061"],
+    "doi": "10.5067/MODIS/MCD64A1.061",
+    "provider": "NASA LP DAAC"
+  }
+}

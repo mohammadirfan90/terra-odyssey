@@ -1,0 +1,22 @@
+{
+  "dataset_id": "gldas_soil_moisture",
+  "collection": "GLDAS_NOAH025_3H_2_1",
+  "version": "2.1",
+  "source_type": "model_reanalysis",
+  "variable": "SoilMoi0_10cm_inst",
+  "units": "kg/m^2",
+  "spatial_support": "global 0.25° land grid",
+  "temporal_support": "3-hourly",
+  "coverage_start": "1948-01-01",
+  "coverage_end": null,
+  "quality_policy": {
+    "fill_values": ["-9999 sentinel"],
+    "mask_description": "Model reanalysis; no QA fields. Marine/ocean grid cells masked.",
+    "qa_fields": []
+  },
+  "provenance": {
+    "documentation_urls": ["https://doi.org/10.5067/342OHQM9AK6Q"],
+    "doi": "10.5067/342OHQM9AK6Q",
+    "provider": "NASA GSFC Hydrological Sciences"
+  }
+}

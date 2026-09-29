@@ -1,0 +1,22 @@
+{
+  "dataset_id": "modis_landcover",
+  "collection": "MCD12Q1",
+  "version": "061",
+  "source_type": "derived_index",
+  "variable": "LC_Type1",
+  "units": "class id",
+  "spatial_support": "global sinusoidal tiles",
+  "temporal_support": "yearly",
+  "coverage_start": "2001-01-01",
+  "coverage_end": "2023-01-01",
+  "quality_policy": {
+    "fill_values": ["255 fill value"],
+    "mask_description": "IGBP class scheme (17 classes). No QA fields — categorical product.",
+    "qa_fields": []
+  },
+  "provenance": {
+    "documentation_urls": ["https://doi.org/10.5067/MODIS/MCD12Q1.061"],
+    "doi": "10.5067/MODIS/MCD12Q1.061",
+    "provider": "NASA LP DAAC"
+  }
+}

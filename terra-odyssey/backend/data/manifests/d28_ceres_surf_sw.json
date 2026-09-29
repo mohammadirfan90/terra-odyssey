@@ -1,0 +1,22 @@
+{
+  "dataset_id": "ceres_surf_sw",
+  "collection": "CERES_SYN1deg_3Hour_Terra-Aqua_Monthly",
+  "version": "Edition 4A",
+  "source_type": "satellite_radiometry",
+  "variable": "sfc_sw_up_all_mon",
+  "units": "W/m^2",
+  "spatial_support": "global 1° grid",
+  "temporal_support": "monthly mean",
+  "coverage_start": "2000-03-01",
+  "coverage_end": null,
+  "quality_policy": {
+    "fill_values": ["-999 sentinel"],
+    "mask_description": "CERES Edition 4A quality flags; obs-only for clear-sky series.",
+    "qa_fields": ["CERES_Quality_Flag"]
+  },
+  "provenance": {
+    "documentation_urls": ["https://doi.org/10.5067/TERRA+AQUA/CERES/SYN1DEGMONTH.004A"],
+    "doi": "10.5067/TERRA+AQUA/CERES/SYN1DEGMONTH.004A",
+    "provider": "NASA Langley ASDC"
+  }
+}

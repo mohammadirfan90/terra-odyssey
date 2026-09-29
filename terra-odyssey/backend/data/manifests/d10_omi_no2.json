@@ -1,0 +1,22 @@
+{
+  "dataset_id": "omi_no2",
+  "collection": "OMNO2",
+  "version": "003",
+  "source_type": "satellite_retrieval",
+  "variable": "ColumnAmountNO2",
+  "units": "mol/m^2",
+  "spatial_support": "global 0.25° swath daily",
+  "temporal_support": "daily",
+  "coverage_start": "2004-10-01",
+  "coverage_end": null,
+  "quality_policy": {
+    "fill_values": ["preserve source fill"],
+    "mask_description": "Cloud fraction < 0.3; orbit swath gaps not interpolated.",
+    "qa_fields": ["CloudFraction", "TerrainReflectivity"]
+  },
+  "provenance": {
+    "documentation_urls": ["https://doi.org/10.5067/Aura/OMI/DATA3008"],
+    "doi": "10.5067/Aura/OMI/DATA3008",
+    "provider": "NASA GSFC"
+  }
+}

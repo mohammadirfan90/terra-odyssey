@@ -52,6 +52,80 @@ class ProblemDetails(BaseModel):
 
 # --- Request Models ---
 
+class UniversalQueryRequest(BaseModel):
+    """Natural-language question submitted to the protected AI gateway."""
+    model_config = ConfigDict(extra="forbid", strict=True)
+
+    query: str = Field(
+        ...,
+        min_length=2,
+        max_length=500,
+        description="Question about Terra Odyssey data, methods, or workflows",
+    )
+
+    @field_validator("query", mode="before")
+    @classmethod
+    def normalize_query(cls, value: Any) -> Any:
+        if isinstance(value, str):
+            return value.strip()
+        return value
+
+
+class UniversalQueryResponse(BaseModel):
+    """Normalized NVIDIA NIM answer returned to the web client."""
+    model_config = ConfigDict(extra="forbid")
+
+    answer: str
+    model: str
+    provider: Literal["NVIDIA NIM"] = "NVIDIA NIM"
+    latency_ms: float = Field(..., ge=0)
+    caveat: str
+
+
+# --- Place search (geocoding) ---
+
+class PlaceSearchResult(BaseModel):
+    """A single normalized place returned by the geocoder."""
+    model_config = ConfigDict(extra="forbid")
+
+    id: str = Field(
+        ...,
+        min_length=1,
+        max_length=120,
+        description="Stable identifier from the upstream source (e.g. OSM type/id).",
+    )
+    name: str = Field(..., min_length=1, max_length=200)
+    kind: str = Field(
+        ...,
+        description="Coarse feature kind: city, country, region, landmark, etc.",
+    )
+    country: Optional[str] = Field(default=None, max_length=80)
+    admin1: Optional[str] = Field(
+        default=None,
+        max_length=120,
+        description="First-order administrative division (state, region, province).",
+    )
+    longitude: float = Field(..., ge=-180.0, le=180.0)
+    latitude: float = Field(..., ge=-90.0, le=90.0)
+    bbox: tuple[float, float, float, float] = Field(
+        ...,
+        description="Bounding box as [minLon, minLat, maxLon, maxLat] in EPSG:4326.",
+    )
+    geojson: Optional[dict[str, Any]] = Field(
+        default=None,
+        description="Optional GeoJSON Polygon or MultiPolygon geometry representing the exact boundary.",
+    )
+    source: str = "nominatim"
+
+
+class PlaceSearchResponse(BaseModel):
+    """Normalized place-search response returned to the web client."""
+    model_config = ConfigDict(extra="forbid")
+
+    query: str = Field(..., min_length=1, max_length=120)
+    results: List[PlaceSearchResult] = Field(default_factory=list)
+    cached: bool = False
+
 class PeriodRequest(BaseModel):
     """Temporal range specification in calendar years."""
     model_config = ConfigDict(extra="forbid", strict=True)
@@ -120,7 +194,7 @@ class InvestigationRequest(BaseModel):
         default="area_weighted",
         description="Spatial aggregation method"
     )
-    execution_mode: Literal["auto", "live", "cached_only", "demo_sample"] = Field(
+    execution_mode: Literal["auto", "live", "cached_only", "demo_sample", "synthetic_test"] = Field(
         default="auto",
         description="Execution mode defining data acquisition behavior"
     )
@@ -171,6 +245,21 @@ class JobStatusResponse(BaseModel):
 
 # --- Catalog & Capability Models ---
 
+class DatasetCapabilities(BaseModel):
+    """Granular product and adapter capabilities."""
+    model_config = ConfigDict(extra="allow")
+
+    discoverable: bool = True
+    previewable: bool = False
+    series_supported: bool = False
+    trend_supported: bool = False
+    contrast_supported: bool = False
+    badges: List[Literal["Browse", "View", "Analyze", "Compare"]] = Field(
+        default_factory=lambda: ["Browse"]
+    )
+    unsupported_reason: Optional[str] = None
+
+
 class DatasetCatalogItem(BaseModel):
     """Catalog metadata for an authoritative NASA dataset."""
     model_config = ConfigDict(extra="allow")
@@ -179,6 +268,13 @@ class DatasetCatalogItem(BaseModel):
     name: str
     collection: str
     version: str
+    topic: str = "Atmosphere"
+    provider: str = "NASA Earth Science"
+    concept_id: Optional[str] = None
+    native_resolution: Optional[str] = None
+    license: Optional[str] = "NASA Open Data Policy"
+    citation_doi: Optional[str] = None
+    gibs_layer: Optional[str] = None
     source_type: str
     variable: str
     units: str
@@ -186,10 +282,49 @@ class DatasetCatalogItem(BaseModel):
     temporal_support: str
     coverage_start: str
     coverage_end: Optional[str] = None
-    quality_policy: Dict[str, Any]
-    provenance: Dict[str, Any]
+    quality_policy: Dict[str, Any] = Field(default_factory=dict)
+    provenance: Dict[str, Any] = Field(default_factory=dict)
+    capabilities: DatasetCapabilities = Field(default_factory=DatasetCapabilities)
+    categories: List[str] = Field(default_factory=list)
     supported_aggregations: List[str] = Field(default_factory=lambda: ["annual_mean", "annual_total", "seasonal"])
     supported_spatial_aggregations: List[str] = Field(default_factory=lambda: ["area_weighted"])
+
+
+class AvailabilityGap(BaseModel):
+    """Documented archive gap or mission transition window."""
+    model_config = ConfigDict(extra="forbid")
+
+    start_date: str
+    end_date: str
+    description: str
+
+
+class EligibleSpan(BaseModel):
+    """Contiguous period meeting the minimum >= 20 complete year requirement."""
+    model_config = ConfigDict(extra="forbid")
+
+    start_year: int
+    end_year: int
+    complete_years: int
+    is_eligible: bool
+
+
+class DatasetAvailabilityResponse(BaseModel):
+    """Granule presence, archive timeline, and scientific trend eligibility."""
+    model_config = ConfigDict(extra="allow")
+
+    dataset_id: str
+    name: str
+    temporal_support: str
+    coverage_start: str
+    coverage_end: str
+    total_years: int
+    complete_years: int
+    completeness_pct: float
+    gaps: List[AvailabilityGap] = Field(default_factory=list)
+    eligible_spans: List[EligibleSpan] = Field(default_factory=list)
+    years_available: List[int] = Field(default_factory=list)
+    gibs_layer: Optional[str] = None
 
 
 class CatalogResponse(BaseModel):
@@ -272,6 +407,34 @@ class StructuredGridMapResponse(BaseModel):
     provenance: MapProvenance
 
 
+# --- Paired Contrast & Evidence Models ---
+
+class PairedContrastSummary(BaseModel):
+    """Summary of paired regional difference contrast test."""
+    model_config = ConfigDict(extra="allow")
+
+    contrast_slope: float
+    contrast_ci_95: List[float]
+    contrast_p_value: float
+    contrast_status: str
+    region_a_slope: Optional[float] = None
+    region_b_slope: Optional[float] = None
+    units: str
+    evidence_text: str
+
+
+class EvidencePayload(BaseModel):
+    """Evidence payload returned by /api/investigations/{job_id}/evidence."""
+    model_config = ConfigDict(extra="allow")
+
+    job_id: str
+    result_status: Optional[str] = None
+    results: List[Dict[str, Any]]
+    contrast: Optional[PairedContrastSummary] = None
+    headline_text: Optional[str] = None
+    summary_stats: Optional[Dict[str, Any]] = None
+
+
 # --- Complete Investigation Record Models ---
 
 class ArtifactItem(BaseModel):
@@ -297,7 +460,7 @@ class InvestigationRecordModel(BaseModel):
     created_at: str
     published_at: str
     job: Dict[str, Any]
-    data_mode: Literal["live", "cached_verified", "demo_sample"]
+    data_mode: Literal["live", "cached_verified", "demo_sample", "synthetic_test"]
     request: Dict[str, Any]
     resolved_configuration: Dict[str, Any]
     resolved_configuration_hash: str
@@ -310,3 +473,62 @@ class InvestigationRecordModel(BaseModel):
     software: SoftwareMetadata
     selection_history: List[Dict[str, Any]] = Field(default_factory=list)
     citations: List[str] = Field(default_factory=list)
+
+
+# --- Study Plot Persistence Models (SQLite) ---
+
+class StudyPlotCreate(BaseModel):
+    """Payload to create or update a persistent study region plot in SQLite."""
+    model_config = ConfigDict(extra="ignore")
+
+    plot_id: Optional[str] = Field(
+        default=None,
+        description="Unique identifier for the plot; generated if omitted"
+    )
+    name: str = Field(
+        default="Custom Study Region",
+        description="Human-readable name or label for the study region"
+    )
+    is_active: bool = Field(
+        default=True,
+        description="Whether this plot is currently the active region"
+    )
+    geometry_type: str = Field(
+        default="Polygon",
+        description="GeoJSON geometry type (Polygon, LineString, etc.)"
+    )
+    coordinates: List[Any] = Field(
+        ...,
+        description="GeoJSON coordinates array"
+    )
+    bbox: List[float] = Field(
+        ...,
+        min_length=4,
+        max_length=4,
+        description="Bounding box [minLon, minLat, maxLon, maxLat]"
+    )
+    measurements: Dict[str, Any] = Field(
+        default_factory=dict,
+        description="Geodesic measurements: areaKm2, areaHa, perimeterKm, centroid, bounds"
+    )
+    dataset_id: Optional[str] = Field(
+        default=None,
+        description="Optional dataset ID associated with this study region"
+    )
+
+
+class StudyPlotResponse(BaseModel):
+    """Persisted study region record returned from SQLite."""
+    model_config = ConfigDict(extra="ignore")
+
+    plot_id: str
+    name: str
+    is_active: bool
+    geometry_type: str
+    coordinates: List[Any]
+    bbox: List[float]
+    measurements: Dict[str, Any]
+    dataset_id: Optional[str] = None
+    created_at: str
+    updated_at: str
+

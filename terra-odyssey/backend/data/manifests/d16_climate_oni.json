@@ -1,0 +1,21 @@
+{
+  "dataset_id": "climate_oni",
+  "collection": "NOAA_CPC_ONI",
+  "version": "v6",
+  "source_type": "surface_observation_analysis",
+  "variable": "oni",
+  "units": "degC anomaly",
+  "spatial_support": "global_index (5°N–5°S, 120°W–170°W Niño 3.4)",
+  "temporal_support": "monthly 3-month rolling mean",
+  "coverage_start": "1950-01-01",
+  "coverage_end": null,
+  "quality_policy": {
+    "fill_values": ["none — single scalar per month"],
+    "mask_description": "Index is computed from OISST.v2 SST anomalies against 30-year base climatology.",
+    "qa_fields": []
+  },
+  "provenance": {
+    "documentation_urls": ["https://origin.cpc.ncep.noaa.gov/products/analysis_monitoring/ensostuff/ONI_v5.php"],
+    "provider": "NOAA Climate Prediction Center"
+  }
+}

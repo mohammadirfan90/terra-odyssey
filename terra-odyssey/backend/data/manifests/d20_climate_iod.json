@@ -1,0 +1,21 @@
+{
+  "dataset_id": "climate_iod",
+  "collection": "NOAA_IOD_DMI",
+  "version": "monthly",
+  "source_type": "surface_observation_analysis",
+  "variable": "iod_dmi",
+  "units": "degC anomaly",
+  "spatial_support": "global_index (tropical Indian Ocean dipole)",
+  "temporal_support": "monthly",
+  "coverage_start": "1870-01-01",
+  "coverage_end": null,
+  "quality_policy": {
+    "fill_values": ["none — single scalar per month"],
+    "mask_description": "DMI = SST anomaly (50°E–70°E, 10°S–10°N) − (90°E–110°E, 10°S–0°).",
+    "qa_fields": []
+  },
+  "provenance": {
+    "documentation_urls": ["https://stateoftheocean.osmc.noaa.gov/sur/ind/index.php"],
+    "provider": "NOAA Climate Prediction Center"
+  }
+}

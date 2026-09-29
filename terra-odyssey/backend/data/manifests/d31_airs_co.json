@@ -1,0 +1,22 @@
+{
+  "dataset_id": "airs_co",
+  "collection": "AIRS2RET",
+  "version": "7",
+  "source_type": "satellite_retrieval",
+  "variable": "CO_VMR_A",
+  "units": "ppmv",
+  "spatial_support": "global 1° grid",
+  "temporal_support": "monthly mean",
+  "coverage_start": "2002-09-01",
+  "coverage_end": null,
+  "quality_policy": {
+    "fill_values": ["-9999 sentinel"],
+    "mask_description": "Use only Quality_Retr = 0 (best) for trend analysis; cloudy scenes flagged.",
+    "qa_fields": ["Quality_Retr"]
+  },
+  "provenance": {
+    "documentation_urls": ["https://doi.org/10.5067/HO0V7BX6QG9Z"],
+    "doi": "10.5067/HO0V7BX6QG9Z",
+    "provider": "NASA JPL / GES DISC"
+  }
+}

@@ -189,3 +189,58 @@ def test_rfc9457_error_formatting():
     assert r_unknown.status_code == 404
     assert r_unknown.headers["content-type"] == "application/problem+json"
     assert r_unknown.json()["code"] == "http_404"
+
+
+def test_catalog_earth_system_topics(client):
+    """Assert all Earth system domains (Atmosphere, Oceans, Land, etc.) are present."""
+    response = client.get("/api/catalog")
+    assert response.status_code == 200
+    datasets = response.json()["datasets"]
+
+    # Check domains
+    topics = {d.get("topic") for d in datasets.values()}
+    assert "Atmosphere" in topics
+    assert "Land" in topics
+    assert ("Biosphere" in topics or "Ecosystems" in topics)
+    assert ("Ocean" in topics or "Oceans" in topics)
+    assert "Cryosphere" in topics
+    assert ("Hydrology" in topics or "Terrestrial Water" in topics)
+    assert "Radiation" in topics
+
+    # Check capabilities and badges
+    m2 = datasets["merra2_t2m"]
+    assert m2["capabilities"]["trend_supported"] is True
+    assert "Analyze" in m2["capabilities"]["badges"]
+
+    gpm = datasets["gpm_imerg_precipitation"]
+    assert gpm["capabilities"]["trend_supported"] is True
+    assert gpm["capabilities"]["series_supported"] is True
+    assert gpm["capabilities"]["contrast_supported"] is True
+    assert "Analyze" in gpm["capabilities"]["badges"]
+    assert "Compare" in gpm["capabilities"]["badges"]
+    assert gpm["capabilities"]["unsupported_reason"] is None
+
+
+def test_dataset_availability_endpoint(client):
+    """Assert /api/catalog/{id}/availability returns accurate spans and eligibility."""
+    # 1. MERRA-2
+    resp_m2 = client.get("/api/catalog/merra2_t2m/availability")
+    assert resp_m2.status_code == 200
+    avail_m2 = resp_m2.json()
+    assert avail_m2["dataset_id"] == "merra2_t2m"
+    assert avail_m2["total_years"] >= 45
+    assert avail_m2["eligible_spans"][0]["is_eligible"] is True
+    assert avail_m2["eligible_spans"][0]["complete_years"] >= 20
+
+    # 2. GRACE with documented mission gap
+    resp_grace = client.get("/api/catalog/grace_tws/availability")
+    assert resp_grace.status_code == 200
+    avail_grace = resp_grace.json()
+    assert avail_grace["dataset_id"] == "grace_tws"
+    assert len(avail_grace["gaps"]) > 0
+    assert "2017-07-01" in avail_grace["gaps"][0]["start_date"]
+
+    # 3. Unknown dataset returns error (400 UnsupportedDatasetError)
+    resp_bad = client.get("/api/catalog/unknown_dataset/availability")
+    assert resp_bad.status_code == 400
+    assert resp_bad.json()["code"] == "unsupported_dataset"

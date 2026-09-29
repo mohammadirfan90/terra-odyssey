@@ -1,0 +1,34 @@
+{
+  "dataset_id": "nsidc_sea_ice",
+  "alias_id": "D6",
+  "collection": "G02135",
+  "version": "4.0",
+  "source_type": "satellite_retrieval",
+  "variable": "extent",
+  "units": "10^6 km^2",
+  "spatial_support": "Northern and Southern hemisphere polar oceans",
+  "temporal_support": "monthly mean of passive microwave retrievals",
+  "coverage_start": "1978-11-01",
+  "coverage_end": "2024-12-31",
+  "quality_policy": {
+    "fill_values": ["-9999.0", "NaN"],
+    "mask_description": "Validate 15% concentration threshold; strictly separate Arctic from Antarctic series; mask unphysical negative extents.",
+    "qa_fields": []
+  },
+  "retrieval": {
+    "provider": "National Snow and Ice Data Center (NSIDC) / NOAA NCEI",
+    "access_url": "https://masie_web.apps.nsidc.org/pub/DATASETS/NOAA/G02135/",
+    "retrieved_at": "REPLACE_AT_INGEST",
+    "granules": 0,
+    "checksums": []
+  },
+  "provenance": {
+    "documentation_urls": [
+      "https://doi.org/10.7265/N5K072F8",
+      "https://nsidc.org/data/g02135/versions/4"
+    ],
+    "doi": "10.7265/N5K072F8",
+    "software_version": "4.0",
+    "manifest_hash": null
+  }
+}

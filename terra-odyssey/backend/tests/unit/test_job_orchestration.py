@@ -4,7 +4,11 @@ import json
 from pathlib import Path
 import pytest
 
-from backend.errors import InvalidGeometryError
+from backend.errors import (
+    DataUnavailableError,
+    InvalidGeometryError,
+    UnsupportedDatasetError,
+)
 from backend.stepper import run_pipeline
 from backend.store import JobStore
 from backend.worker import enqueue_job, get_queue, reset_queue
@@ -241,3 +245,131 @@ async def test_bounded_queue_worker(tmp_path):
     item = await queue.get()
     assert item[0] == job["job_id"]
     queue.task_done()
+
+
+def test_unsupported_dataset_rejected(tmp_path):
+    """Submitting a dataset without trend capabilities raises UnsupportedDatasetError.
+
+    Uses SMAP L4 soil moisture (descriptive-only dataset where trend_supported=False)
+    as the unsupported dataset now that GISTEMP v4 is fully active in Phase 7.
+    """
+    db_file = tmp_path / "test_unsupported.db"
+    artifacts_dir = tmp_path / "artifacts"
+    store = JobStore(db_file)
+
+    req = {
+        "dataset_id": "smap_soil_moisture",
+        "variable": "sm_rootzone",
+        "period": {"start_year": 2015, "end_year": 2024},
+        "region_a": [-120.0, 35.0, -115.0, 40.0],
+        "execution_mode": "auto",
+    }
+    job = store.create_job(req)
+
+    with pytest.raises(UnsupportedDatasetError) as exc_info:
+        run_pipeline(
+            job_id=job["job_id"],
+            request_data=req,
+            artifacts_base_dir=artifacts_dir,
+            store_db_path=db_file,
+        )
+    assert "cannot be analyzed" in str(exc_info.value)
+
+
+def test_modis_lst_requires_cached_data(tmp_path):
+    """MODIS LST (Phase 5) is now analysis-capable but raises DataUnavailableError
+    when no cached LP DAAC granules exist locally (correct — never synthetic fallback).
+    """
+    db_file = tmp_path / "test_modis_no_cache.db"
+    artifacts_dir = tmp_path / "artifacts"
+    store = JobStore(db_file)
+
+    req = {
+        "dataset_id": "d3_modis_lst",
+        "variable": "LST_Day_1km",
+        "period": {"start_year": 2000, "end_year": 2024},
+        "region_a": [-120.0, 35.0, -115.0, 40.0],
+        "execution_mode": "auto",
+    }
+    job = store.create_job(req)
+
+    with pytest.raises(DataUnavailableError) as exc_info:
+        run_pipeline(
+            job_id=job["job_id"],
+            request_data=req,
+            artifacts_base_dir=artifacts_dir,
+            store_db_path=db_file,
+        )
+    # Must NOT silently fall back to synthetic data
+    assert exc_info.value.retryable is False
+    assert "MODIS" in str(exc_info.value) or "LST" in str(exc_info.value) or "not active" in str(exc_info.value)
+
+
+def test_gpm_imerg_pipeline_execution(tmp_path):
+    """Assert activated GPM IMERG Final precipitation executes through pipeline."""
+    db_file = tmp_path / "test_gpm_pipeline.db"
+    artifacts_dir = tmp_path / "artifacts"
+    store = JobStore(db_file)
+
+    req = {
+        "dataset_id": "gpm_imerg_precipitation",
+        "variable": "precipitationCal",
+        "period": {"start_year": 2000, "end_year": 2024},
+        "region_a": [-120.0, 35.0, -115.0, 40.0],
+        "temporal_aggregation": "annual_total",
+        "spatial_aggregation": "area_weighted",
+        "execution_mode": "demo_sample",
+    }
+    job = store.create_job(req)
+
+    result = run_pipeline(
+        job_id=job["job_id"],
+        request_data=req,
+        artifacts_base_dir=artifacts_dir,
+        store_db_path=db_file,
+    )
+
+    assert result["job_status"] == "succeeded"
+    art_dir = Path(result["artifacts_dir"])
+    assert (art_dir / "investigation_record.json").is_file()
+    assert (art_dir / "region_time_series.csv").is_file()
+
+
+def test_auto_mode_no_silent_synthetic_fallback(tmp_path, monkeypatch):
+    """When real data acquisition fails in auto mode, raise DataUnavailableError instead of silent synthetic fallback."""
+    db_file = tmp_path / "test_no_fallback.db"
+    artifacts_dir = tmp_path / "artifacts"
+    store = JobStore(db_file)
+
+    req = {
+        "dataset_id": "merra2_t2m",
+        "variable": "T2M",
+        "period": {"start_year": 2000, "end_year": 2024},
+        "region_a": [-120.0, 35.0, -115.0, 40.0],
+        "execution_mode": "auto",
+    }
+    job = store.create_job(req)
+
+    # Monkeypatch Merra2AcquisitionManager to simulate download/network failure
+    def mock_fail(*args, **kwargs):
+        raise RuntimeError("Simulated network timeout from NASA endpoint")
+
+    monkeypatch.setattr(
+        "backend.stepper.Merra2AcquisitionManager.acquire_regional_record",
+        mock_fail,
+    )
+    monkeypatch.setattr(
+        "backend.stepper.Merra2AcquisitionManager.find_cached_granule",
+        lambda *args, **kwargs: None,
+    )
+
+    with pytest.raises(DataUnavailableError) as exc_info:
+        run_pipeline(
+            job_id=job["job_id"],
+            request_data=req,
+            artifacts_base_dir=artifacts_dir,
+            store_db_path=db_file,
+        )
+    assert "Real NASA inputs unavailable" in str(exc_info.value)
+    assert exc_info.value.retryable is True
+

@@ -1,0 +1,22 @@
+{
+  "dataset_id": "smap_soil_moisture",
+  "collection": "SPL4SMGP",
+  "version": "007",
+  "source_type": "model_reanalysis",
+  "variable": "sm_rootzone",
+  "units": "m^3/m^3",
+  "spatial_support": "global 9 km EASE-Grid 2.0",
+  "temporal_support": "3-hourly assimilated geophysical product",
+  "coverage_start": "2015-03-31",
+  "coverage_end": null,
+  "quality_policy": {
+    "fill_values": ["-9999 sentinel"],
+    "mask_description": "Mask frozen soil and snow-covered cells; preserve TB-based quality flags.",
+    "qa_fields": ["tb_qual_flag", "surface_flag"]
+  },
+  "provenance": {
+    "documentation_urls": ["https://doi.org/10.5067/6SQ1214CVV8T"],
+    "doi": "10.5067/6SQ1214CVV8T",
+    "provider": "NASA NSIDC DAAC"
+  }
+}

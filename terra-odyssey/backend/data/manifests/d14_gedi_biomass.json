@@ -1,0 +1,23 @@
+{
+  "dataset_id": "gedi_biomass",
+  "collection": "GEDI_L4A_AGB",
+  "version": "2.1",
+  "source_type": "satellite_lidar",
+  "variable": "agbd",
+  "units": "Mg/ha",
+  "spatial_support": "global 52°S–52°N (ISS orbital coverage)",
+  "temporal_support": "campaign (2019-04 to 2023-03)",
+  "coverage_start": "2019-04-18",
+  "coverage_end": "2023-03-16",
+  "quality_policy": {
+    "fill_values": ["-9999 sentinel"],
+    "mask_description": "l4_quality_flag == 0 (Good); degrade/l4a_degrade_flag filtered.",
+    "qa_fields": ["l4_quality_flag", "degrade_flag"]
+  },
+  "provenance": {
+    "documentation_urls": ["https://doi.org/10.3334/ORNLDAAC/2017"],
+    "doi": "10.3334/ORNLDAAC/2017",
+    "provider": "NASA / University of Maryland",
+    "requires_earthdata_login": true
+  }
+}

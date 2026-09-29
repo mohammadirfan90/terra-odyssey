@@ -9,12 +9,23 @@ import {
 } from "@/lib/charts/d3-time-series";
 import { CoverageBars } from "./CoverageBars";
 
-interface LinkedTimeSeriesChartProps {
+export interface BackendTrendEvidence {
+  slope_per_decade: number;
+  slope_se_per_decade?: number;
+  ci_95?: [number, number];
+  p_value?: number;
+  status?: string;
+}
+
+export interface LinkedTimeSeriesChartProps {
   data: TimeSeriesDatum[];
   unit: string;
   variableName: string;
   regionAName?: string;
   regionBName?: string;
+  backendTrendA?: BackendTrendEvidence;
+  backendTrendB?: BackendTrendEvidence;
+  backendTrendDiff?: BackendTrendEvidence;
 }
 
 export const LinkedTimeSeriesChart: React.FC<LinkedTimeSeriesChartProps> = ({
@@ -23,6 +34,9 @@ export const LinkedTimeSeriesChart: React.FC<LinkedTimeSeriesChartProps> = ({
   variableName,
   regionAName = "Region A",
   regionBName = "Region B",
+  backendTrendA,
+  backendTrendB,
+  backendTrendDiff,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [hoveredYear, setHoveredYear] = useState<number | null>(null);
@@ -172,7 +186,7 @@ export const LinkedTimeSeriesChart: React.FC<LinkedTimeSeriesChartProps> = ({
           </p>
         </div>
 
-        <div className="flex items-center gap-4 text-xs font-mono">
+        <div className="flex flex-wrap items-center gap-4 text-xs font-mono">
           {/* Region A */}
           <div className="flex items-center gap-1.5">
             <span
@@ -180,11 +194,16 @@ export const LinkedTimeSeriesChart: React.FC<LinkedTimeSeriesChartProps> = ({
               style={{ backgroundColor: CHART_COLORS.regionA }}
             />
             <span className="text-amber-300 font-semibold">{regionAName}</span>
-            {trendA && (
+            {backendTrendA ? (
+              <span className="text-slate-300 text-[11px] font-mono">
+                ({backendTrendA.slope_per_decade > 0 ? "+" : ""}{backendTrendA.slope_per_decade.toFixed(2)}
+                {backendTrendA.slope_se_per_decade !== undefined ? ` ± ${backendTrendA.slope_se_per_decade.toFixed(2)}` : ""} {unit}/dec)
+              </span>
+            ) : trendA ? (
               <span className="text-slate-400 text-[11px]">
                 ({(trendA.slope_per_year * 10).toFixed(2)} {unit}/dec)
               </span>
-            )}
+            ) : null}
           </div>
 
           {/* Region B */}
@@ -195,11 +214,16 @@ export const LinkedTimeSeriesChart: React.FC<LinkedTimeSeriesChartProps> = ({
                 style={{ backgroundColor: CHART_COLORS.regionB }}
               />
               <span className="text-cyan-300 font-semibold">{regionBName}</span>
-              {trendB && (
+              {backendTrendB ? (
+                <span className="text-slate-300 text-[11px] font-mono">
+                  ({backendTrendB.slope_per_decade > 0 ? "+" : ""}{backendTrendB.slope_per_decade.toFixed(2)}
+                  {backendTrendB.slope_se_per_decade !== undefined ? ` ± ${backendTrendB.slope_se_per_decade.toFixed(2)}` : ""} {unit}/dec)
+                </span>
+              ) : trendB ? (
                 <span className="text-slate-400 text-[11px]">
                   ({(trendB.slope_per_year * 10).toFixed(2)} {unit}/dec)
                 </span>
-              )}
+              ) : null}
             </div>
           )}
 
@@ -210,11 +234,16 @@ export const LinkedTimeSeriesChart: React.FC<LinkedTimeSeriesChartProps> = ({
                 className="w-3 h-1 border-t-2 border-slate-400"
               />
               <span className="text-slate-300 font-semibold">Diff (A - B)</span>
-              {trendDiff && (
+              {backendTrendDiff ? (
+                <span className="text-slate-300 text-[11px] font-mono">
+                  ({backendTrendDiff.slope_per_decade > 0 ? "+" : ""}{backendTrendDiff.slope_per_decade.toFixed(2)}
+                  {backendTrendDiff.slope_se_per_decade !== undefined ? ` ± ${backendTrendDiff.slope_se_per_decade.toFixed(2)}` : ""} {unit}/dec)
+                </span>
+              ) : trendDiff ? (
                 <span className="text-slate-400 text-[11px]">
                   ({(trendDiff.slope_per_year * 10).toFixed(2)} {unit}/dec)
                 </span>
-              )}
+              ) : null}
             </div>
           )}
         </div>
