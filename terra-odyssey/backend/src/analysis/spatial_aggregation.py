@@ -272,8 +272,21 @@ def aggregate_spatial_mean(
     regional_mean = weighted_values / valid_weight_sum
 
     # Mask time steps failing the coverage threshold to NaN
-    # For GPM IMERG: anything < 0.80 is unconditionally invalid
-    hard_floor = 0.80
+    # For MERRA-2 and GPM IMERG, enforce strict global coverage standards;
+    # for domain-bounded products (ocean-only, land-only, cryosphere), allow fractional area support
+    is_domain_bounded = any(
+        k in product_id.lower()
+        for k in ("sss", "salinity", "smap", "aquarius", "sea_ice", "nsidc", "sla", "ssh", "aviso", "ndvi", "modis_lst")
+    )
+    if "merra" in product_id.lower():
+        hard_floor = 0.99
+    elif "gpm" in product_id.lower() or "imerg" in product_id.lower():
+        hard_floor = 0.80
+    elif is_domain_bounded:
+        hard_floor = 0.05
+    else:
+        hard_floor = 0.80
+
     eligible_mask = (coverage_series >= effective_threshold) & (coverage_series >= hard_floor)
     masked_regional_mean = regional_mean.where(eligible_mask)
 

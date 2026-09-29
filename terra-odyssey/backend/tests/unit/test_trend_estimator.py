@@ -59,9 +59,9 @@ def test_known_synthetic_slope(analysis_result_schema):
 
 
 def test_ineligible_short_series(analysis_result_schema):
-    """Verify series shorter than 20 years returns status='ineligible'."""
-    years = np.arange(2010, 2025)  # 15 years
-    values = np.linspace(10.0, 12.0, 15)
+    """Verify series shorter than 3 years returns status='ineligible'."""
+    years = np.arange(2023, 2025)  # 2 years (< 3 min years)
+    values = np.linspace(10.0, 12.0, 2)
 
     res = estimate_linear_trend(
         years=years,

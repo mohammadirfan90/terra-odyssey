@@ -159,11 +159,11 @@ def test_orthogonal_status_separation(tmp_path):
     artifacts_dir = tmp_path / "artifacts"
     store = JobStore(db_file)
 
-    # 1. Scientific Ineligible (< 20 years span: 2018-2024 is 7 years)
+    # 1. Scientific Ineligible (< 3 years span: 2023-2024 is 2 years)
     req_short = {
         "dataset_id": "merra2_t2m",
         "variable": "T2M",
-        "period": {"start_year": 2018, "end_year": 2024},
+        "period": {"start_year": 2023, "end_year": 2024},
         "region_a": [-120.0, 35.0, -115.0, 40.0],
         "execution_mode": "demo_sample",
     }

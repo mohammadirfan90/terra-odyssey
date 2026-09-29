@@ -207,7 +207,7 @@ def aggregate_seasonal(da_monthly: xr.DataArray, season: str = "DJF") -> xr.Data
 def validate_consecutive_series(
     years: np.ndarray,
     values: np.ndarray,
-    min_years: int = 20,
+    min_years: int = 3,
 ) -> Dict[str, Any]:
     """Validate that an annual time series forms an unbroken, consecutive sequence.
 

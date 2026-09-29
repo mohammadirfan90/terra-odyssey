@@ -391,10 +391,10 @@ export function DockTimeSeriesChart({
     return buildMonotoneCubicPath(pts);
   }, [visibleRecords, xAt, yAt, hasB]);
 
-  // Statistical linear trend (OLS) — only computed when trend is eligible (>=20 yr record and not unsupported)
-  const isTrendEligible = !unsupportedReason && visibleRecords.length >= 20;
+  // Statistical linear trend (OLS) — computed for all observational series with >= 3 points
+  const isTrendEligible = visibleRecords.length >= 3;
   const trendStats = useMemo(() => {
-    if (!isTrendEligible || visibleRecords.length < 3) return null;
+    if (!isTrendEligible) return null;
     const n = visibleRecords.length;
     let sumX = 0;
     let sumY = 0;

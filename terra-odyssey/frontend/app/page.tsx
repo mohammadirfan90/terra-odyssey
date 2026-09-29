@@ -409,13 +409,17 @@ export default function WorkspacePage() {
         ? parseInt(d.coverage_end.slice(0, 4), 10)
         : d.temporal_bounds?.end_year ?? 2024;
       if (startYr != null && endYr != null && !isNaN(startYr) && !isNaN(endYr)) {
-        const clampedStart = Math.max(startYr, period.start_year);
-        const clampedEnd = Math.min(endYr, period.end_year);
-        if (clampedStart !== period.start_year || clampedEnd !== period.end_year) {
+        const isDisjoint = period.start_year > endYr || period.end_year < startYr;
+        const hasPastEnd = Boolean(d.coverage_end && endYr < 2024);
+        if (isDisjoint || hasPastEnd) {
+          targetPeriod = { start_year: startYr, end_year: endYr };
+        } else {
           targetPeriod = {
-            start_year: clampedStart > clampedEnd ? startYr : clampedStart,
-            end_year: clampedStart > clampedEnd ? endYr : clampedEnd,
+            start_year: Math.max(startYr, period.start_year),
+            end_year: Math.min(endYr, period.end_year),
           };
+        }
+        if (targetPeriod.start_year !== period.start_year || targetPeriod.end_year !== period.end_year) {
           store.setPeriod(targetPeriod);
           setPeriod(targetPeriod);
         }

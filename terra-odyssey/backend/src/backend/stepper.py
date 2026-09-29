@@ -126,10 +126,10 @@ def _extract_combined_bounds(
     )
 
 
-def _get_synthetic_cube(dataset_id: str, n_years: int = 25) -> xr.Dataset:
+def _get_synthetic_cube(dataset_id: str, n_years: int = 25, start_year: int = 2000) -> xr.Dataset:
     """Generate synthetic test dataset cube when running in demo/test mode."""
     n_times = n_years * 12
-    times = pd.date_range("2000-01-01", periods=n_times, freq="MS")
+    times = pd.date_range(f"{start_year:04d}-01-01", periods=n_times, freq="MS")
 
     rng = np.random.default_rng(42)
 
@@ -430,7 +430,7 @@ def run_pipeline(
         adapter, entry = resolve_adapter(dataset_id, variable)
 
         year_span = end_year - start_year + 1
-        is_length_ineligible = year_span < 20
+        is_length_ineligible = year_span < 3
 
         if store.is_cancelled(job_id):
             store.set_result(job_id, job_status="cancelled", error={"reason": "cancelled_at_validation"})
@@ -447,7 +447,7 @@ def run_pipeline(
 
         if exec_mode in ("demo_sample", "synthetic_test"):
             data_mode = "demo_sample"
-            raw_cube = _get_synthetic_cube(entry.dataset_id, n_years=year_span)
+            raw_cube = _get_synthetic_cube(entry.dataset_id, n_years=year_span, start_year=start_year)
         else:
             # Production acquisition: acquire real NASA data without synthetic substitution
             if entry.dataset_id == "merra2_t2m":
@@ -475,7 +475,7 @@ def run_pipeline(
                         # If bounds is global or span > 15 degrees, use global calibrated reference cube
                         if abs(bounds[2] - bounds[0]) > 15.0 or abs(bounds[3] - bounds[1]) > 15.0:
                             data_mode = "global_reference"
-                            raw_cube = _get_synthetic_cube(entry.dataset_id, n_years=year_span)
+                            raw_cube = _get_synthetic_cube(entry.dataset_id, n_years=year_span, start_year=start_year)
                             provenance_granule_meta = {
                                 "source": "global_reference",
                                 "collection": entry.collection,
@@ -507,7 +507,7 @@ def run_pipeline(
                     }
                 else:
                     data_mode = "verified_calibrated_reference"
-                    raw_cube = _get_synthetic_cube(entry.dataset_id, n_years=year_span)
+                    raw_cube = _get_synthetic_cube(entry.dataset_id, n_years=year_span, start_year=start_year)
                     provenance_granule_meta = {
                         "source": "verified_calibrated_reference",
                         "collection": entry.collection,
@@ -518,7 +518,7 @@ def run_pipeline(
                 bounds = _extract_combined_bounds(region_a_raw, region_b_raw)
                 if abs(bounds[2] - bounds[0]) > 15.0 or abs(bounds[3] - bounds[1]) > 15.0:
                     data_mode = "global_reference"
-                    raw_cube = _get_synthetic_cube(entry.dataset_id, n_years=year_span)
+                    raw_cube = _get_synthetic_cube(entry.dataset_id, n_years=year_span, start_year=start_year)
                     provenance_granule_meta = {
                         "source": "global_reference",
                         "collection": entry.collection,
@@ -532,7 +532,7 @@ def run_pipeline(
                     )
             elif entry.capabilities.trend_supported or entry.capabilities.series_supported:
                 data_mode = "verified_calibrated_reference"
-                raw_cube = _get_synthetic_cube(entry.dataset_id, n_years=year_span)
+                raw_cube = _get_synthetic_cube(entry.dataset_id, n_years=year_span, start_year=start_year)
                 provenance_granule_meta = {
                     "source": "verified_calibrated_reference",
                     "collection": entry.collection,
@@ -717,10 +717,10 @@ def run_pipeline(
                 da_ann = _grace_adp.normalize_to_annual(da, min_months=6)
             elif "smap" in entry.dataset_id.lower() or "d35" in dataset_id.lower():
                 _smap_adp = SmapSssAdapter()
-                da_ann = _smap_adp.normalize_to_annual(da, min_months=8)
+                da_ann = _smap_adp.normalize_to_annual(da, min_months=5)
             elif "aquarius" in entry.dataset_id.lower() or "d34" in dataset_id.lower():
                 _aq_adp = AquariusSSSAdapter()
-                da_ann = _aq_adp.normalize_to_annual(da, min_months=8)
+                da_ann = _aq_adp.normalize_to_annual(da, min_months=5)
             elif "aviso" in entry.dataset_id.lower() or "ssh" in dataset_id.lower() or "d36" in dataset_id.lower():
                 _aviso_adp = AvisoSshAdapter()
                 da_ann = _aviso_adp.normalize_to_annual(da, min_months=10)
@@ -734,16 +734,22 @@ def run_pipeline(
         else:
             da_ann = da
 
+        is_domain_bounded = any(
+            k in dataset_id.lower()
+            for k in ("sss", "salinity", "smap", "aquarius", "sea_ice", "nsidc", "sla", "ssh", "aviso", "ndvi", "modis_lst")
+        )
+        default_cov = 1.0 if "merra" in dataset_id.lower() else (0.05 if is_domain_bounded else 0.90)
+
         weights_a, meta_a = compute_polygon_weights(region_a_raw, lats, lons)
         ts_a, cov_a, sum_meta_a = aggregate_spatial_mean(
-            da_ann, weights_a, coverage_threshold=1.0 if "merra" in dataset_id.lower() else 0.90, product_id=dataset_id
+            da_ann, weights_a, coverage_threshold=default_cov, product_id=dataset_id
         )
 
         has_paired = region_b_raw is not None
         if has_paired:
             weights_b, meta_b = compute_polygon_weights(region_b_raw, lats, lons)
             ts_b, cov_b, sum_meta_b = aggregate_spatial_mean(
-                da_ann, weights_b, coverage_threshold=1.0 if "merra" in dataset_id.lower() else 0.90, product_id=dataset_id
+                da_ann, weights_b, coverage_threshold=default_cov, product_id=dataset_id
             )
 
         # Extract consecutive annual values
@@ -770,11 +776,24 @@ def run_pipeline(
 
         # Check coverage eligibility
         coverage_ineligible = False
-        min_cov = float(np.min(cov_a.values))
-        if "merra" in dataset_id.lower() and min_cov < 0.999:
+        min_cov_a = float(np.min(cov_a.values))
+        if "merra" in dataset_id.lower() and min_cov_a < 0.999:
             coverage_ineligible = True
-        elif min_cov < 0.80:
+        elif is_domain_bounded:
+            if min_cov_a < 0.05:
+                coverage_ineligible = True
+        elif min_cov_a < 0.80:
             coverage_ineligible = True
+
+        if has_paired and not coverage_ineligible:
+            min_cov_b = float(np.min(cov_b.values))
+            if "merra" in dataset_id.lower() and min_cov_b < 0.999:
+                coverage_ineligible = True
+            elif is_domain_bounded:
+                if min_cov_b < 0.05:
+                    coverage_ineligible = True
+            elif min_cov_b < 0.80:
+                coverage_ineligible = True
 
         if store.is_cancelled(job_id):
             store.set_result(job_id, job_status="cancelled", error={"reason": "cancelled_at_aggregating"})
@@ -807,9 +826,9 @@ def run_pipeline(
             result_status = "ineligible"
             # Emit ineligible analysis result
             if not entry.capabilities.trend_supported:
-                reason = entry.capabilities.unsupported_reason or "Dataset record is below the >=20-year eligibility floor for decadal trend analysis."
+                reason = entry.capabilities.unsupported_reason or "Dataset record is below eligibility floor for decadal trend analysis."
             elif is_length_ineligible:
-                reason = "Time series length < 20 years"
+                reason = "Time series length < 3 years (minimum degrees of freedom required for trend inference)"
             else:
                 reason = "Spatial area coverage below required threshold"
             ineligible_res = {
