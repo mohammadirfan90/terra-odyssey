@@ -19,7 +19,6 @@ import {
   AlertCircle,
   Loader2,
   RotateCcw,
-  Sparkles,
   TrendingUp,
   ZoomIn,
 } from "lucide-react";
@@ -596,6 +595,22 @@ export function DockTimeSeriesChart({
                 <div className="h-full w-full bg-cyan-500" />
               </div>
             </div>
+          ) : unsupportedReason ? (
+            /* ── State 2b: Dataset doesn't support time-series analysis ── */
+            <div className="relative z-10 flex h-full w-full flex-col items-center justify-center p-3 text-center">
+              <div className="mb-1.5 flex h-7 w-7 items-center justify-center rounded-full border border-amber-200 bg-amber-50 text-amber-700">
+                <AlertCircle className="h-4 w-4" />
+              </div>
+              <div className="text-[11px] font-semibold text-[var(--text-primary)]">
+                Time-series analysis not available for this dataset
+              </div>
+              <div className="mt-0.5 max-w-[320px] text-[9.5px] text-[var(--text-secondary)]">
+                {unsupportedReason}
+              </div>
+              <div className="mt-2 font-mono text-[8.5px] uppercase tracking-wider text-[var(--text-muted)]">
+                Browse & View modes still work for this dataset.
+              </div>
+            </div>
           ) : isError && empty ? (
             /* ── State 2: Error ─────────────────────────────────────────── */
             <div className="relative z-10 flex h-full w-full flex-col items-center justify-center p-3 text-center">
@@ -625,7 +640,6 @@ export function DockTimeSeriesChart({
                     onClick={onRunDefault}
                     className="flex items-center gap-1 rounded-lg border border-[var(--border-default)] bg-[var(--bg-surface-2)] px-2 py-1 text-[9.5px] font-medium text-[var(--text-secondary)] transition hover:bg-[var(--bg-surface-2)]"
                   >
-                    <Sparkles className="h-2.5 w-2.5 text-amber-500" />
                     Entire Earth (Global)
                   </button>
                 )}
@@ -633,23 +647,6 @@ export function DockTimeSeriesChart({
             </div>
           ) : empty ? (
             /* ── State 3: Ready / Idle ──────────────────────────────────── */
-            unsupportedReason ? (
-              /* ── State 3b: Dataset doesn't support time-series analysis ── */
-              <div className="relative z-10 flex h-full w-full flex-col items-center justify-center p-3 text-center">
-                <div className="mb-1.5 flex h-7 w-7 items-center justify-center rounded-full border border-amber-200 bg-amber-50 text-amber-700">
-                  <AlertCircle className="h-4 w-4" />
-                </div>
-                <div className="text-[11px] font-semibold text-[var(--text-primary)]">
-                  Time-series analysis not available for this dataset
-                </div>
-                <div className="mt-0.5 max-w-[300px] text-[9.5px] text-[var(--text-secondary)]">
-                  {unsupportedReason}
-                </div>
-                <div className="mt-2 font-mono text-[8.5px] uppercase tracking-wider text-[var(--text-muted)]">
-                  Browse & View modes still work for this dataset.
-                </div>
-              </div>
-            ) : (
             <div className="relative z-10 flex h-full w-full flex-col items-center justify-center p-3 text-center">
               <div className="mb-1.5 flex h-7 w-7 items-center justify-center rounded-full border border-cyan-200 bg-cyan-50 text-cyan-700">
                 <TrendingUp className="h-4 w-4" />
@@ -666,12 +663,10 @@ export function DockTimeSeriesChart({
                   onClick={onRunDefault}
                   className="mt-2.5 flex items-center gap-1 rounded-lg border border-cyan-300 bg-cyan-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-cyan-800 transition hover:bg-cyan-100"
                 >
-                  <Sparkles className="h-3 w-3 text-cyan-600" />
                   Analyze Entire Earth
                 </button>
               )}
             </div>
-            )
           ) : (
             /* ── State 4: Interactive Precision SVG & HTML Layer ───────── */
             <>

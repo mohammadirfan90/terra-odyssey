@@ -10,7 +10,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Check, ChevronDown, Sigma, Sparkles, X } from "lucide-react";
+import { Check, ChevronDown, Sigma, SlidersHorizontal, X } from "lucide-react";
 import { useCatalog } from "@/lib/api/client";
 import { cn } from "@/lib/utils";
 import type { CustomVariable } from "@/lib/state/investigation";
@@ -81,7 +81,7 @@ export function VariableSection({
             <div className="truncate text-[11px] font-semibold text-slate-100">
               {customVariable ? (
                 <span className="inline-flex items-center gap-1">
-                  <Sparkles className="h-2.5 w-2.5 text-amber-300" aria-hidden="true" />
+                  <SlidersHorizontal className="h-2.5 w-2.5 text-amber-300" aria-hidden="true" />
                   Custom: {customVariable.name}
                 </span>
               ) : (
@@ -170,7 +170,7 @@ export function VariableSection({
               )}
             >
               <span className="inline-flex items-center gap-1.5">
-                <Sparkles className="h-3 w-3" aria-hidden="true" />
+                <SlidersHorizontal className="h-3 w-3" aria-hidden="true" />
                 Custom variable…
               </span>
               <ChevronDown
@@ -199,7 +199,7 @@ export function VariableSection({
       {customVariable && !open ? (
         <div className="flex items-center justify-between gap-1.5 rounded-lg border border-amber-500/30 bg-amber-500/10 px-2 py-1.5">
           <span className="truncate text-[10px] text-amber-200">
-            <Sparkles className="mr-1 inline h-2.5 w-2.5" aria-hidden="true" />
+            <SlidersHorizontal className="mr-1 inline h-2.5 w-2.5" aria-hidden="true" />
             Custom: {customVariable.name}
           </span>
           <button

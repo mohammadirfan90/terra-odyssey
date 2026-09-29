@@ -26,7 +26,7 @@ import {
   Scale,
   ShieldCheck,
   Sigma,
-  Sparkles,
+  SlidersHorizontal,
   Square,
   TrendingUp,
 } from "lucide-react";
@@ -391,7 +391,7 @@ const ROWS: {
 }[] = [
   { kind: "dataset", label: "Datasets", accent: "cyan", Icon: Database },
   { kind: "variable", label: "Variables", accent: "purple", Icon: Sigma },
-  { kind: "custom", label: "Custom", accent: "amber", Icon: Sparkles },
+  { kind: "custom", label: "Custom", accent: "amber", Icon: SlidersHorizontal },
   { kind: "region", label: "Regions", accent: "emerald", Icon: Square },
   { kind: "clear", label: "Clears", accent: "rose", Icon: Eraser },
 ];

@@ -361,7 +361,11 @@ export function ActivityDock({
             errorMessage={errorMessage}
             onRetry={onRetry}
             onRunDefault={onRunDefault}
-            unsupportedReason={activeDataset?.capabilities?.unsupported_reason ?? null}
+            unsupportedReason={
+              activeDataset?.capabilities?.trend_supported === false
+                ? (activeDataset?.capabilities?.unsupported_reason || "Quantitative trend analysis is not available for this product.")
+                : (activeDataset?.capabilities?.unsupported_reason ?? null)
+            }
             unit={activeVariable?.canonical_unit ?? "°C"}
             variableTitle={activeVariable?.long_name ?? activeDataset?.primary_variable}
             variableKey={snapshot.selectedVariable}

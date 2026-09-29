@@ -174,6 +174,13 @@ export default function WorkspacePage() {
       targetDataset = selectedDataset,
       targetVar = selectedVariable,
     ) => {
+      const targetMeta = datasets?.find((d) => d.dataset_id === targetDataset);
+      if (targetMeta && targetMeta.capabilities && !targetMeta.capabilities.trend_supported) {
+        setActiveJobId(null);
+        setInvestigationError(null);
+        return;
+      }
+
       const runKey = `${targetDataset}|${targetVar}|${targetPeriod.start_year}-${targetPeriod.end_year}|${targetRegionA.join(",")}|${targetRegionB ? targetRegionB.join(",") : ""}`;
       if (runKey === lastRunKeyRef.current && activeJobId) {
         return;
@@ -205,7 +212,7 @@ export default function WorkspacePage() {
         setInvestigationError(err?.message || "Investigation failed to submit");
       }
     },
-    [createInvestigation, period, regionA, regionB, selectedDataset, selectedVariable, activeJobId, markInitialized],
+    [createInvestigation, datasets, period, regionA, regionB, selectedDataset, selectedVariable, activeJobId, markInitialized],
   );
 
   // Hydrate region A from a previously persisted study plot (if any), but
@@ -599,15 +606,21 @@ export default function WorkspacePage() {
         onSelectDataset={handleSelectDataset}
         series={seriesQuery.data ?? null}
         seriesLoading={isJobRunning || seriesQuery.isLoading}
-        seriesError={isJobFailed || (isJobSucceeded && seriesQuery.isError)}
+        seriesError={
+          activeDatasetObj?.capabilities?.trend_supported === false
+            ? false
+            : (isJobFailed || (isJobSucceeded && seriesQuery.isError))
+        }
         evidence={evidenceQuery.data ?? null}
         jobStatus={statusQuery.data?.job_status ?? (createInvestigation.isPending ? "submitted" : "idle")}
         stage={statusQuery.data?.stage}
         progress={statusQuery.data?.progress ?? statusQuery.data?.progress_pct}
         errorMessage={
-          investigationError ||
-          (statusQuery.data?.error?.message as string) ||
-          (seriesQuery.error ? "Failed to load series" : undefined)
+          activeDatasetObj?.capabilities?.trend_supported === false
+            ? undefined
+            : (investigationError ||
+              (statusQuery.data?.error?.message as string) ||
+              (seriesQuery.error ? "Failed to load series" : undefined))
         }
         onRetry={() => runInvestigation()}
         onRunDefault={() => {

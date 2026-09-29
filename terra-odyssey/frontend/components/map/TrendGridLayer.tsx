@@ -24,7 +24,7 @@ import {
   Info,
   Eye,
   EyeOff,
-  Sparkles,
+  Filter,
   Grid,
   Sliders,
   CheckCircle2,
@@ -412,7 +412,7 @@ export function TrendGridLayer({
                 )}
                 title="Only show cells passing the False Discovery Rate significance threshold"
               >
-                <Sparkles className="h-2.5 w-2.5 text-emerald-600" />
+                <Filter className="h-2.5 w-2.5 text-emerald-600" />
                 <span>{significantOnly ? "Sig. Only (Active)" : "Sig. Only"}</span>
               </button>
 
