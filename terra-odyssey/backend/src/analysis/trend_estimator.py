@@ -4,7 +4,8 @@ Implements rigorous trend detection for climate time series:
 1. Centered year coordinate: x = year - mean(year) for float64 numerical stability.
 2. statsmodels OLS with explicit Newey-West HAC robust covariance:
    - Kernel: Bartlett
-   - Autoregressive lag: maxlags=2 (explicit, no automatic bandwidth)
+   - Lag policy: min(2, n-2) to stay safe for short series; ACTUAL effective lag
+     is always recorded in output (not a fixed label of 2).
    - Small-sample correction: n / (n - k)
    - Reference distribution: Two-sided Student-t with df = n - 2
 3. Decoupled numerical fit and evidence adjudication stages.
@@ -12,6 +13,15 @@ Implements rigorous trend detection for climate time series:
 5. SciPy Theil-Sen estimator as an outlier-resistant point-estimate sensitivity diagnostic.
 6. Geometry hashing in analysis_id and configuration_hash to prevent collision across regions.
 7. Strict schema serialization conforming to schemas/analysis-result.schema.json.
+
+Eligibility policy
+------------------
+The minimum series length for inferential trend estimation is governed by
+``TREND_MIN_YEARS`` defined in ``analysis.aggregation`` (default 20 years).
+This module enforces that policy and will not produce a ``supported`` status
+for a series shorter than the declared minimum.  Exploratory results cannot
+claim FDR-multiplicity control without a valid adjusted p-value and full
+family metadata — attempting to do so raises ``ValueError``.
 """
 
 from __future__ import annotations
@@ -23,7 +33,65 @@ import numpy as np
 import scipy.stats as stats
 import statsmodels.api as sm
 
-from .aggregation import validate_consecutive_series
+from .aggregation import validate_consecutive_series, TREND_MIN_YEARS
+
+
+def _validate_fit_inputs(
+    years: np.ndarray,
+    values: np.ndarray,
+) -> None:
+    """Validate inputs before any numerical OLS fit.
+
+    Raises
+    ------
+    ValueError
+        On any of: mismatched lengths, non-1D arrays, non-integer years,
+        non-finite values (inf or NaN in values), duplicate years, unsorted
+        years, or insufficient residual degrees of freedom.
+    """
+    if years.ndim != 1 or values.ndim != 1:
+        raise ValueError(
+            f"years and values must be 1-D; got shapes {years.shape} and {values.shape}."
+        )
+    if len(years) != len(values):
+        raise ValueError(
+            f"years ({len(years)}) and values ({len(values)}) must have the same length."
+        )
+    if not np.issubdtype(years.dtype, np.integer):
+        if not np.all(years == years.astype(int)):
+            raise ValueError(
+                "years must be integer-valued; coercing float to int would change the time coordinate."
+            )
+
+    # Reject positive/negative infinity – only NaN is an admissible missing value
+    inf_mask = np.isinf(values)
+    if np.any(inf_mask):
+        raise ValueError(
+            f"{int(np.sum(inf_mask))} infinite value(s) found in values; "
+            "only NaN is an admissible missing-value sentinel."
+        )
+
+    # Check year ordering
+    if len(years) > 1:
+        diffs = np.diff(years)
+        if np.any(diffs <= 0):
+            raise ValueError(
+                "years must be strictly increasing (no duplicates, no reverse order)."
+            )
+
+    # Count finite non-NaN values for DoF check
+    finite_mask = ~np.isnan(values)
+    n_valid = int(np.sum(finite_mask))
+    if n_valid < 2:
+        raise ValueError(
+            f"Only {n_valid} finite non-NaN value(s); at least 2 are required to fit a line."
+        )
+    # Two parameters (intercept + slope) → residual DoF = n_valid - 2 ≥ 1 → n_valid ≥ 3
+    if n_valid < 3:
+        raise ValueError(
+            f"Only {n_valid} finite non-NaN value(s); OLS requires ≥ 3 for one residual degree of freedom."
+        )
+
 
 
 def fit_ols_hac_trend(
@@ -38,16 +106,19 @@ def fit_ols_hac_trend(
     years : np.ndarray
         Array of integer years.
     values : np.ndarray
-        Array of corresponding annual values (floats).
+        Array of corresponding annual values (floats).  NaN marks missing;
+        +/-inf is rejected by ``_validate_fit_inputs`` before this function
+        is called.
     confidence_level : float
         Confidence level for CI (default: 0.95).
 
     Returns
     -------
     dict
-        Numerical estimation results and diagnostics.
+        Numerical estimation results and diagnostics, including the *actual*
+        effective HAC lag used (may be < 2 for short series).
     """
-    valid_mask = ~np.isnan(values)
+    valid_mask = ~np.isnan(values)   # inf already rejected upstream
     y = values[valid_mask]
     t = years[valid_mask]
     n = len(t)
@@ -57,6 +128,7 @@ def fit_ols_hac_trend(
     model = sm.OLS(y, X).fit()
 
     effective_maxlags = min(2, max(0, n - 2))
+
     robust = model.get_robustcov_results(
         cov_type="HAC",
         maxlags=effective_maxlags,
@@ -136,9 +208,11 @@ def fit_ols_hac_trend(
         "df": df,
         "ci_lower_decade": ci_lower_decade,
         "ci_upper_decade": ci_upper_decade,
+        "effective_maxlags": effective_maxlags,   # D4: actual lag used, not label
         "lag_sensitivities": lag_sensitivities,
         "theil_sen": theil_sen_diag,
     }
+
 
 
 def adjudicate_trend_evidence(
@@ -147,15 +221,44 @@ def adjudicate_trend_evidence(
     adjusted_p_value: Optional[float] = None,
     fdr_level: float = 0.05,
     confidence_level: float = 0.95,
+    family_id: Optional[str] = None,
+    family_size: Optional[int] = None,
+    hypothesis_id: Optional[str] = None,
+    multiplicity_method: Optional[str] = None,
 ) -> Dict[str, Any]:
-    """Adjudicate statistical status separating numerical fit from multiplicity decision logic."""
+    """Adjudicate statistical status separating numerical fit from multiplicity decision logic.
+
+    For ``exploratory_map_selected`` results, an adjusted p-value and the
+    full family metadata (family_id, family_size, hypothesis_id,
+    multiplicity_method) are **required**.  If any are missing, the function
+    raises ``ValueError`` to prevent a raw p-value from being silently
+    treated as a multiplicity-adjusted result.
+    """
     alpha = 1.0 - confidence_level
 
     if selection_status == "exploratory_map_selected":
-        decision_p = adjusted_p_value if adjusted_p_value is not None else raw_p_value
+        # D2: guard — refuse to fall back to raw p-value
+        missing = []
+        if adjusted_p_value is None:
+            missing.append("adjusted_p_value")
+        if family_id is None:
+            missing.append("family_id")
+        if family_size is None:
+            missing.append("family_size")
+        if hypothesis_id is None:
+            missing.append("hypothesis_id")
+        if multiplicity_method is None:
+            missing.append("multiplicity_method")
+        if missing:
+            raise ValueError(
+                f"exploratory_map_selected result is missing required multiplicity metadata: "
+                f"{missing}.  Pass adjusted_p_value and full family metadata, or change "
+                f"selection_status to 'predefined' if this is a predefined hypothesis."
+            )
+        decision_p = float(adjusted_p_value)
         is_supported = bool(decision_p < fdr_level)
     else:
-        decision_p = raw_p_value
+        decision_p = float(raw_p_value)
         is_supported = bool(decision_p < alpha)
 
     status = "supported" if is_supported else "inconclusive"
@@ -164,6 +267,7 @@ def adjudicate_trend_evidence(
         "decision_p_value": decision_p,
         "is_supported": is_supported,
     }
+
 
 
 def estimate_linear_trend(
@@ -259,12 +363,16 @@ def estimate_linear_trend(
     years = np.asarray(years, dtype=int)
     values = np.asarray(values, dtype=np.float64)
 
+    # D6 + D7: validate before any numerical work
+    _validate_fit_inputs(years, values)
+
     # Compute stable geometry hash to prevent analysis_id collisions
     geom_bytes = json.dumps(geometry, sort_keys=True).encode("utf-8")
     geom_hash = hashlib.sha256(geom_bytes).hexdigest()[:8]
 
-    # Validate consecutive series completeness (minimum 3 consecutive complete years)
-    validity = validate_consecutive_series(years, values, min_years=3)
+    # Validate consecutive series completeness (minimum TREND_MIN_YEARS consecutive years)
+    validity = validate_consecutive_series(years, values, min_years=TREND_MIN_YEARS)
+
     start_year = int(years[0]) if len(years) > 0 else 0
     end_year = int(years[-1]) if len(years) > 0 else 0
     span_years = end_year - start_year
@@ -365,22 +473,29 @@ def estimate_linear_trend(
         adjusted_p_value=adjusted_p_value,
         fdr_level=fdr_level if fdr_level is not None else 0.05,
         confidence_level=confidence_level,
+        family_id=family_id,
+        family_size=family_size,
+        hypothesis_id=hypothesis_id,
+        multiplicity_method=multiplicity_method,
     )
+
     status = adj["status"]
     decision_p = adj["decision_p_value"]
 
+    ci_pct = int(round(confidence_level * 100))
     if status == "supported":
         interp_text = (
             f"Statistically supported linear trend of {fit['slope_per_decade']:+.3f} {unit_per_decade} "
-            f"(95% CI [{fit['ci_lower_decade']:+.3f}, {fit['ci_upper_decade']:+.3f}], "
-            f"decision p={decision_p:.4e}) over {start_year}–{end_year} ({span_years}-year span)."
+            f"({ci_pct}% CI [{fit['ci_lower_decade']:+.3f}, {fit['ci_upper_decade']:+.3f}], "
+            f"decision p={decision_p:.4e}) over {start_year}\u2013{end_year} ({span_years}-year span)."
         )
     else:
         interp_text = (
             f"Trend of {fit['slope_per_decade']:+.3f} {unit_per_decade} is not statistically detected "
-            f"(95% CI [{fit['ci_lower_decade']:+.3f}, {fit['ci_upper_decade']:+.3f}], "
+            f"({ci_pct}% CI [{fit['ci_lower_decade']:+.3f}, {fit['ci_upper_decade']:+.3f}], "
             f"decision p={decision_p:.4e}). Note: Lack of statistical detection does not prove zero physical change."
         )
+
 
     caveats = [
         "OLS trend with Newey-West HAC covariance accounts for serial autocorrelation.",
@@ -397,14 +512,20 @@ def estimate_linear_trend(
             f"Region/pair was selected after exploratory map scan; multiplicity controlled via {multiplicity_method or 'FDR'}."
         )
 
+    # D3: derive coverage strictly from validator, never hard-code 1.0 / []
     coverage_dict = {
         "valid_periods": int(fit["n"]),
-        "expected_periods": int(span_years + 1),
-        "valid_fraction": 1.0,
-        "missing_periods": [],
+        "expected_periods": validity["expected_count"],
+        "valid_fraction": (
+            float(fit["n"] / validity["expected_count"])
+            if validity["expected_count"] > 0
+            else 0.0
+        ),
+        "missing_periods": [str(y) for y in validity["missing_years"]],
     }
     if spatial_coverage is not None:
         coverage_dict["spatial_coverage"] = spatial_coverage
+
 
     return {
         "analysis_id": analysis_id,
@@ -449,13 +570,14 @@ def estimate_linear_trend(
             "hypothesis_id": hypothesis_id,
             "diagnostics": {
                 "kernel": "bartlett",
-                "maxlags": 2,
+                "maxlags": fit["effective_maxlags"],  # D4: actual lag, not always 2
                 "degrees_of_freedom": fit["df"],
                 "t_statistic": float(fit["t_stat"]),
                 "slope_se_per_decade": float(fit["slope_se_per_decade"]),
                 "lag_sensitivities": fit["lag_sensitivities"],
                 "theil_sen": fit["theil_sen"],
             },
+
         },
         "provenance": {
             "manifest_hash": manifest_hash,

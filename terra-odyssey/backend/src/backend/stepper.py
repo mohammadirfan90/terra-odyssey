@@ -28,6 +28,7 @@ from analysis.aggregation import (
     aggregate_annual_temperature,
     aggregate_seasonal,
     validate_consecutive_series,
+    TREND_MIN_YEARS,
 )
 from analysis.multiplicity import adjudicate_contrast_family, adjust_pvalues
 from analysis.paired_contrast import estimate_paired_contrast
@@ -430,7 +431,9 @@ def run_pipeline(
         adapter, entry = resolve_adapter(dataset_id, variable)
 
         year_span = end_year - start_year + 1
-        is_length_ineligible = year_span < 3
+        # D9: eligibility gate aligned with TREND_MIN_YEARS (20) policy constant
+        is_length_ineligible = year_span < TREND_MIN_YEARS
+
 
         if store.is_cancelled(job_id):
             store.set_result(job_id, job_status="cancelled", error={"reason": "cancelled_at_validation"})
@@ -472,21 +475,14 @@ def run_pipeline(
                         data_mode = "cached_verified"
                     except Exception as exc:
                         logger.warning("[%s] Real data acquisition failed: %s", job_id, exc)
-                        # If bounds is global or span > 15 degrees, use global calibrated reference cube
-                        if abs(bounds[2] - bounds[0]) > 15.0 or abs(bounds[3] - bounds[1]) > 15.0:
-                            data_mode = "global_reference"
-                            raw_cube = _get_synthetic_cube(entry.dataset_id, n_years=year_span, start_year=start_year)
-                            provenance_granule_meta = {
-                                "source": "global_reference",
-                                "collection": entry.collection,
-                                "version": entry.version,
-                                "sha256": "0" * 64,
-                            }
-                        else:
-                            raise DataUnavailableError(
-                                f"Real NASA inputs unavailable for {entry.name} in period {start_year}-{end_year}: {exc}.",
-                                retryable=True,
-                            ) from exc
+                        # D8: never fall back to synthetic in production; fail closed
+                        raise DataUnavailableError(
+                            f"Real NASA inputs unavailable for {entry.name} in period "
+                            f"{start_year}-{end_year}: {exc}.  "
+                            f"Provide cached granules or enable Earthdata live access.",
+                            retryable=True,
+                        ) from exc
+
                 else:
                     raise DataUnavailableError(
                         f"No cached granules found for {entry.name} in period {start_year}-{end_year}.",
@@ -506,45 +502,29 @@ def run_pipeline(
                         "sha256": _compute_sha256(cached),
                     }
                 else:
-                    data_mode = "verified_calibrated_reference"
-                    raw_cube = _get_synthetic_cube(entry.dataset_id, n_years=year_span, start_year=start_year)
-                    provenance_granule_meta = {
-                        "source": "verified_calibrated_reference",
-                        "collection": entry.collection,
-                        "version": entry.version,
-                        "sha256": "0" * 64,
-                    }
-            elif entry.dataset_id in ("d3_modis_lst", "d4_modis_ndvi") or "modis" in entry.dataset_id.lower():
-                bounds = _extract_combined_bounds(region_a_raw, region_b_raw)
-                if abs(bounds[2] - bounds[0]) > 15.0 or abs(bounds[3] - bounds[1]) > 15.0:
-                    data_mode = "global_reference"
-                    raw_cube = _get_synthetic_cube(entry.dataset_id, n_years=year_span, start_year=start_year)
-                    provenance_granule_meta = {
-                        "source": "global_reference",
-                        "collection": entry.collection,
-                        "version": entry.version,
-                        "sha256": "0" * 64,
-                    }
-                else:
+                    # D8: no cache, no live acquisition success → fail closed
                     raise DataUnavailableError(
-                        f"No cached LP DAAC granules found for {entry.name} in region {bounds}. Local granules required — synthetic fallback not permitted.",
+                        f"No cached GPM IMERG granules found for period {start_year}-{end_year}. "
+                        f"Provide cached granules or enable Earthdata live access.",
                         retryable=False,
                     )
-            elif entry.capabilities.trend_supported or entry.capabilities.series_supported:
-                data_mode = "verified_calibrated_reference"
-                raw_cube = _get_synthetic_cube(entry.dataset_id, n_years=year_span, start_year=start_year)
-                provenance_granule_meta = {
-                    "source": "verified_calibrated_reference",
-                    "collection": entry.collection,
-                    "version": entry.version,
-                    "sha256": "0" * 64,
-                }
-            else:
-                reason = entry.capabilities.unsupported_reason or f"Quantitative trend acquisition not active for dataset '{entry.name}'."
+
+            elif entry.dataset_id in ("d3_modis_lst", "d4_modis_ndvi") or "modis" in entry.dataset_id.lower():
+                # D8: large-region MODIS must fail closed — no synthetic substitution
                 raise DataUnavailableError(
-                    reason,
+                    f"No cached LP DAAC granules found for {entry.name} in the requested region/period. "
+                    f"Local granules are required; synthetic fallback is not permitted in production.",
                     retryable=False,
                 )
+            elif entry.capabilities.trend_supported or entry.capabilities.series_supported:
+                # D8: generic trend-capable datasets with no real data → fail closed
+                reason = (
+                    entry.capabilities.unsupported_reason
+                    or f"Quantitative trend acquisition not active for dataset '{entry.name}'.  "
+                       f"Provide cached granules or enable Earthdata live access."
+                )
+                raise DataUnavailableError(reason, retryable=False)
+
 
         if store.is_cancelled(job_id):
             store.set_result(job_id, job_status="cancelled", error={"reason": "cancelled_at_acquiring"})
@@ -909,11 +889,23 @@ def run_pipeline(
             analysis_results.append(single_res)
             result_status = single_res["status"]
 
-        if data_mode == "demo_sample":
-            demo_caveat = "Analysis executed using synthetic demonstration sample data. For verified scientific findings, provide cached NASA granules or live Earthdata access."
+        # Add synthetic/demonstration caveat for ANY non-verified execution mode
+        synthetic_modes = {"demo_sample", "verified_calibrated_reference", "global_reference"}
+        if data_mode in synthetic_modes:
+            mode_label = {
+                "demo_sample": "synthetic demonstration sample",
+                "verified_calibrated_reference": "synthetic reference",
+                "global_reference": "synthetic global reference",
+            }.get(data_mode, "synthetic")
+            synth_caveat = (
+                f"Analysis executed using {mode_label} data (not verified NASA granules). "
+                f"Results are illustrative only. For verified scientific findings, provide "
+                f"cached NASA granules or enable Earthdata live access."
+            )
             for r in analysis_results:
-                if "caveats" in r and demo_caveat not in r["caveats"]:
-                    r["caveats"].append(demo_caveat)
+                if "caveats" in r and synth_caveat not in r["caveats"]:
+                    r["caveats"].append(synth_caveat)
+
 
         if store.is_cancelled(job_id):
             store.set_result(job_id, job_status="cancelled", error={"reason": "cancelled_at_analyzing"})

@@ -6,12 +6,38 @@ import pytest
 import xarray as xr
 
 from analysis.aggregation import (
+    GRID_CELL_MIN_YEARS,
+    TREND_MIN_YEARS,
     aggregate_annual_precipitation,
     aggregate_annual_temperature,
     aggregate_seasonal,
     get_partial_year_diagnostic,
     validate_consecutive_series,
 )
+
+
+def test_policy_constants():
+    """TREND_MIN_YEARS and GRID_CELL_MIN_YEARS must hold their documented values."""
+    assert TREND_MIN_YEARS == 20, (
+        "TREND_MIN_YEARS changed from 20. Update this test only with documented scientific justification."
+    )
+    assert GRID_CELL_MIN_YEARS == 10, (
+        "GRID_CELL_MIN_YEARS changed from 10. Update this test only with documented scientific justification."
+    )
+    assert TREND_MIN_YEARS > GRID_CELL_MIN_YEARS, (
+        "Regional threshold must be stricter than grid-cell threshold."
+    )
+
+
+def test_validate_consecutive_default_uses_trend_min_years():
+    """validate_consecutive_series default must use TREND_MIN_YEARS, not 3."""
+    # Series of exactly TREND_MIN_YEARS - 1 years must be ineligible with default threshold
+    n = TREND_MIN_YEARS - 1
+    years = np.arange(2000, 2000 + n, dtype=int)
+    values = np.linspace(10.0, 12.0, n)
+    res = validate_consecutive_series(years, values)  # no explicit min_years
+    assert res["is_eligible"] is False
+    assert "below minimum inferential threshold" in res["reason"]
 
 
 def create_monthly_temperature_series(

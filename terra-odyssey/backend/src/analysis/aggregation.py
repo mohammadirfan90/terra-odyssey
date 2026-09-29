@@ -7,6 +7,18 @@ Enforces non-negotiable scientific rules:
 3. Explicit seasonal boundary aggregation (DJF assigns Dec y-1 to year y).
 4. Consecutive annual sequence validation requiring at least 20 continuous years
    for inferential trend estimation without collapsing time gaps.
+
+Policy constants (authoritative project-wide thresholds)
+---------------------------------------------------------
+TREND_MIN_YEARS : int
+    Minimum consecutive complete annual observations required for regional
+    inferential trend estimation.  Based on climate-science practice of
+    requiring at least two decades to distinguish a linear trend from
+    natural multi-year variability.  Default: 20.
+GRID_CELL_MIN_YEARS : int
+    Minimum consecutive complete years for spatial-grid-cell trend eligibility.
+    Shorter than regional minimum because grid cells are used primarily for
+    spatial pattern visualization, not single-cell inference.  Default: 10.
 """
 
 from __future__ import annotations
@@ -15,6 +27,13 @@ from typing import Any, Dict, List, Optional
 import numpy as np
 import pandas as pd
 import xarray as xr
+
+# ---------------------------------------------------------------------------
+# Authoritative project-wide eligibility policy constants.
+# All analysis modules MUST import and use these; never hard-code the numbers.
+# ---------------------------------------------------------------------------
+TREND_MIN_YEARS: int = 20   # regional inferential trend
+GRID_CELL_MIN_YEARS: int = 10  # spatial-grid cell trend (display, not single-cell inference)
 
 
 def aggregate_annual_temperature(da_monthly: xr.DataArray) -> xr.DataArray:
@@ -207,14 +226,16 @@ def aggregate_seasonal(da_monthly: xr.DataArray, season: str = "DJF") -> xr.Data
 def validate_consecutive_series(
     years: np.ndarray,
     values: np.ndarray,
-    min_years: int = 3,
+    min_years: int = TREND_MIN_YEARS,
 ) -> Dict[str, Any]:
     """Validate that an annual time series forms an unbroken, consecutive sequence.
 
     Scientific constraints:
     - Never collapse non-consecutive years into consecutive indices.
-    - Require at least `min_years` (default 20) consecutive complete annual observations
-      for inferential trend detection.
+    - Require at least `min_years` consecutive complete annual observations
+      for inferential trend detection.  The project-wide default is
+      ``TREND_MIN_YEARS`` (20 years).  Pass ``GRID_CELL_MIN_YEARS`` (10) for
+      spatial grid-cell eligibility.
 
     Parameters
     ----------
@@ -223,7 +244,8 @@ def validate_consecutive_series(
     values : np.ndarray
         Array of corresponding annual values (floats).
     min_years : int
-        Minimum number of consecutive complete years required (default: 20).
+        Minimum number of consecutive complete years required.
+        Default: ``TREND_MIN_YEARS`` (20).
 
     Returns
     -------
@@ -255,14 +277,19 @@ def validate_consecutive_series(
             "reason": "All annual values are NaN.",
         }
 
-    start_year = int(valid_years[0])
-    end_year = int(valid_years[-1])
-    expected_full_range = list(range(start_year, end_year + 1))
+    # D3 fix: use the DECLARED input endpoints (years[0], years[-1]) as the
+    # expected period, not the first/last valid year.  A missing endpoint year
+    # must appear in missing_years and cause the series to be non-consecutive.
+    declared_start = int(years[0])
+    declared_end = int(years[-1])
+    expected_full_range = list(range(declared_start, declared_end + 1))
     expected_count = len(expected_full_range)
-    missing_years = sorted(list(set(expected_full_range) - set(valid_years)))
+    missing_years = sorted(list(set(expected_full_range) - set(valid_years.tolist())))
 
-    # Check continuity: difference between adjacent years must all be 1
-    is_consecutive = (valid_count == expected_count) and bool(np.all(np.diff(valid_years) == 1))
+
+    # Check continuity across the full declared range
+    is_consecutive = (len(missing_years) == 0)
+
     meets_min_years = valid_count >= min_years
 
     if not is_consecutive:
@@ -277,7 +304,8 @@ def validate_consecutive_series(
         "valid_count": valid_count,
         "expected_count": expected_count,
         "missing_years": missing_years,
-        "start_year": start_year,
-        "end_year": end_year,
+        "start_year": declared_start,
+        "end_year": declared_end,
         "reason": reason,
     }
+
