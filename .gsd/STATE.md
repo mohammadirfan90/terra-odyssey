@@ -1,5 +1,5 @@
 ---
-updated: 2026-09-27T17:40:00+06:00
+updated: 2026-09-29T17:05:00+06:00
 milestone: v0.2.0-trends
 status: IN_PROGRESS
 ---
@@ -15,6 +15,23 @@ status: IN_PROGRESS
 **Phase 1 Verification:** [.gsd/TRENDS_PHASE_1_VERIFICATION.md](TRENDS_PHASE_1_VERIFICATION.md)
 **Phase 2 Verification:** [.gsd/TRENDS_PHASE_2_VERIFICATION.md](TRENDS_PHASE_2_VERIFICATION.md)
 **Phase 3 Verification:** [.gsd/phases/3/VERIFICATION.md](phases/3/VERIFICATION.md)
+
+---
+### Dataset Pipeline Hardening & Error Elimination Across All Catalogs:
+1. **Full Trend-Supported Pipeline Resolution**:
+   - Implemented `ClimateIndexAdapter` covering all 7 teleconnection patterns (`climate_oni`, `climate_nao`, `climate_amo`, `climate_pdo`, `climate_iod`, `climate_ao`, `climate_mei`).
+   - Aligned canonical variable names in `stepper.py` for `airs_precip` (`precip` / `precipitation`), `merra2_precip` (`PRECTOT` / `PRECTOTCORR`), `ghrsst_mur_sst` (`analysed_sst` / `sea_surface_temperature`), and `aviso_ssh` (`sla` / `adt`).
+   - All trend-supported datasets now execute and return `supported` or `inconclusive` without query interruptions.
+2. **Truthful Handling of Short-Record Products (< 20 Years)**:
+   - For short records (`smap_sss`, `aquarius_sss`), pipeline executes observed annual mean time series without error.
+   - Stage 5 strictly assigns `result_status = "ineligible"` adhering to NASA's >=20-year decadal trend floor rule.
+   - Frontend renders the observed time series curve accompanied by an informative badge (`Observed Series Only · Decadal Trend Ineligible (<20 yr record)`) rather than blocking error alerts.
+3. **Quality & Packaging**:
+   - Backend pytest suite: **249/249 passed (100% green)**.
+   - Frontend TypeScript: **0 errors**.
+   - Frontend ESLint: **0 errors**.
+   - Next.js Turbopack build: **Compiled successfully**.
+   - Archive packaged into `terra-odyssey.zip`.
 
 ---
 ### Interactive Plot Selection & Targeted Section Trend Analysis:
