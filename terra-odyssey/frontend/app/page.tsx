@@ -182,7 +182,12 @@ export default function WorkspacePage() {
       }
 
       const targetMeta = datasets?.find((d) => d.dataset_id === targetDataset);
-      if (targetMeta && targetMeta.capabilities && !targetMeta.capabilities.trend_supported) {
+      if (
+        targetMeta &&
+        targetMeta.capabilities &&
+        !targetMeta.capabilities.trend_supported &&
+        !targetMeta.capabilities.series_supported
+      ) {
         setActiveJobId(null);
         setInvestigationError(null);
         return;
@@ -394,8 +399,13 @@ export default function WorkspacePage() {
       store.setSelectedVariable(d.primary_variable);
       store.setCustomVariable(null);
 
-      const isSupported = d.capabilities ? d.capabilities.trend_supported : true;
-      if (isSupported) {
+      const canAnalyze = d.capabilities
+        ? (d.capabilities.trend_supported || d.capabilities.series_supported)
+        : true;
+
+      setInvestigationError(null);
+
+      if (canAnalyze) {
         markInitialized();
         runInvestigation(
           bboxOf(regionA),
@@ -405,10 +415,7 @@ export default function WorkspacePage() {
           d.primary_variable,
         );
       } else {
-        setInvestigationError(
-          d.capabilities?.unsupported_reason ||
-            `Quantitative trend analysis for '${d.title}' is scheduled in an upcoming phase.`,
-        );
+        setActiveJobId(null);
       }
     },
     [regionA, regionB, period, runInvestigation, markInitialized],
@@ -669,24 +676,21 @@ export default function WorkspacePage() {
       </main>
 
       <ActivityDock
+        datasets={datasets}
         onSelectDataset={handleSelectDataset}
         series={seriesQuery.data ?? null}
         seriesLoading={isJobRunning || seriesQuery.isLoading}
         seriesError={
-          activeDatasetObj?.capabilities?.trend_supported === false
-            ? false
-            : (isJobFailed || (isJobSucceeded && seriesQuery.isError))
+          isJobFailed || (isJobSucceeded && seriesQuery.isError)
         }
         evidence={evidenceQuery.data ?? null}
         jobStatus={statusQuery.data?.job_status ?? (createInvestigation.isPending ? "submitted" : "idle")}
         stage={statusQuery.data?.stage}
         progress={statusQuery.data?.progress ?? statusQuery.data?.progress_pct}
         errorMessage={
-          activeDatasetObj?.capabilities?.trend_supported === false
-            ? undefined
-            : (investigationError ||
-              (statusQuery.data?.error?.message as string) ||
-              (seriesQuery.error ? "Failed to load series" : undefined))
+          investigationError ||
+          (statusQuery.data?.error?.message as string) ||
+          (seriesQuery.error ? "Failed to load series" : undefined)
         }
         onRetry={() => runInvestigation()}
         onRunDefault={() => {

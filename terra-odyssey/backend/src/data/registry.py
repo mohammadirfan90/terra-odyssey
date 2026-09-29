@@ -39,6 +39,7 @@ from data.adapters.d33_ghrsst_mur import GhrsstMurAdapter
 from data.adapters.d34_aquarius_sss import AquariusSSSAdapter
 from data.adapters.d35_smap_sss import SmapSssAdapter
 from data.adapters.d36_aviso_ssh import AvisoSshAdapter
+from data.adapters.climate_index import ClimateIndexAdapter
 
 logger = logging.getLogger("terra_odyssey.data.registry")
 
@@ -709,7 +710,7 @@ _REGISTRY: List[DatasetRegistryEntry] = [
         coverage_start="1950-01-01",
         coverage_end=None,
         manifest_name="d16_climate_oni.json",
-        adapter_class=None,
+        adapter_class=ClimateIndexAdapter,
         capabilities=DatasetCapabilities(
             discoverable=True,
             previewable=False,
@@ -745,7 +746,7 @@ _REGISTRY: List[DatasetRegistryEntry] = [
         coverage_start="1950-01-01",
         coverage_end=None,
         manifest_name="d17_climate_nao.json",
-        adapter_class=None,
+        adapter_class=ClimateIndexAdapter,
         capabilities=DatasetCapabilities(
             discoverable=True,
             previewable=False,
@@ -781,7 +782,7 @@ _REGISTRY: List[DatasetRegistryEntry] = [
         coverage_start="1856-01-01",
         coverage_end=None,
         manifest_name="d18_climate_amo.json",
-        adapter_class=None,
+        adapter_class=ClimateIndexAdapter,
         capabilities=DatasetCapabilities(
             discoverable=True,
             previewable=False,
@@ -817,7 +818,7 @@ _REGISTRY: List[DatasetRegistryEntry] = [
         coverage_start="1900-01-01",
         coverage_end=None,
         manifest_name="d19_climate_pdo.json",
-        adapter_class=None,
+        adapter_class=ClimateIndexAdapter,
         capabilities=DatasetCapabilities(
             discoverable=True,
             previewable=False,
@@ -853,7 +854,7 @@ _REGISTRY: List[DatasetRegistryEntry] = [
         coverage_start="1870-01-01",
         coverage_end=None,
         manifest_name="d20_climate_iod.json",
-        adapter_class=None,
+        adapter_class=ClimateIndexAdapter,
         capabilities=DatasetCapabilities(
             discoverable=True,
             previewable=False,
@@ -889,7 +890,7 @@ _REGISTRY: List[DatasetRegistryEntry] = [
         coverage_start="1950-01-01",
         coverage_end=None,
         manifest_name="d21_climate_ao.json",
-        adapter_class=None,
+        adapter_class=ClimateIndexAdapter,
         capabilities=DatasetCapabilities(
             discoverable=True,
             previewable=False,
@@ -925,7 +926,7 @@ _REGISTRY: List[DatasetRegistryEntry] = [
         coverage_start="1979-01-01",
         coverage_end=None,
         manifest_name="d22_climate_mei.json",
-        adapter_class=None,
+        adapter_class=ClimateIndexAdapter,
         capabilities=DatasetCapabilities(
             discoverable=True,
             previewable=False,
@@ -1481,7 +1482,7 @@ def resolve_adapter(dataset_id: str, variable: str) -> tuple[Any, DatasetRegistr
             invalid_params=[{"name": "variable", "value": variable, "supported": entry.supported_variables}],
         )
 
-    if not entry.capabilities.trend_supported:
+    if not (entry.capabilities.trend_supported or entry.capabilities.series_supported):
         reason = entry.capabilities.unsupported_reason or "Quantitative trend analysis is not yet activated for this product."
         raise UnsupportedDatasetError(
             f"Dataset '{entry.name}' is discoverable but cannot be analyzed: {reason}",

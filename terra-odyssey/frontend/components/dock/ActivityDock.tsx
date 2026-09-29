@@ -39,6 +39,7 @@ import type { DatasetMetadata, EvidencePayload, TimeSeriesPayload } from "@/lib/
 
 export interface ActivityDockProps {
   onSelectDataset: (dataset: DatasetMetadata) => void;
+  datasets?: DatasetMetadata[];
   series: TimeSeriesPayload | null | undefined;
   seriesLoading?: boolean;
   seriesError?: boolean;
@@ -59,6 +60,7 @@ export interface ActivityDockProps {
 
 export function ActivityDock({
   onSelectDataset,
+  datasets: propDatasets,
   series,
   seriesLoading = false,
   seriesError = false,
@@ -76,7 +78,8 @@ export function ActivityDock({
   className,
 }: ActivityDockProps) {
   const snapshot = useInvestigationState();
-  const { data: datasets } = useCatalog();
+  const { data: catalogDatasets } = useCatalog();
+  const datasets = propDatasets ?? catalogDatasets;
   const log = useActivityLog();
   const prevSnapshotRef = useRef<typeof snapshot | null>(null);
 

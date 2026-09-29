@@ -577,6 +577,17 @@ export function DockTimeSeriesChart({
             </button>
           ) : null}
 
+          {/* Informative badge for short-record observed series */}
+          {unsupportedReason && !empty && (
+            <div
+              className="absolute left-2 top-2 z-20 inline-flex items-center gap-1.5 rounded-md border border-amber-200 bg-amber-50/95 px-2 py-0.5 text-[9.5px] font-semibold text-amber-900 backdrop-blur-sm shadow-sm"
+              title={unsupportedReason}
+            >
+              <AlertCircle className="h-3 w-3 text-amber-600 flex-shrink-0" />
+              <span>Observed Series Only · Decadal Trend Ineligible (&lt;20 yr record)</span>
+            </div>
+          )}
+
           {/* ── State 1: Computing / Loading Telemetry ─────────────────── */}
           {computing ? (
             <div className="relative z-10 flex h-full w-full flex-col items-center justify-center p-3 text-center">
@@ -610,7 +621,7 @@ export function DockTimeSeriesChart({
                 Analysis cleared. Select a NASA Earth Observation dataset and variable from Mission Controls to begin investigation.
               </div>
             </div>
-          ) : unsupportedReason ? (
+          ) : empty && unsupportedReason ? (
             /* ── State 2b: Dataset doesn't support time-series analysis ── */
             <div className="relative z-10 flex h-full w-full flex-col items-center justify-center p-3 text-center">
               <div className="mb-1.5 flex h-7 w-7 items-center justify-center rounded-full border border-amber-200 bg-amber-50 text-amber-700">

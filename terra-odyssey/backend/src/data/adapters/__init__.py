@@ -22,6 +22,7 @@ from .d33_ghrsst_mur import GhrsstMurAdapter
 from .d34_aquarius_sss import AquariusSSSAdapter
 from .d35_smap_sss import SmapSssAdapter
 from .d36_aviso_ssh import AvisoSshAdapter
+from .climate_index import ClimateIndexAdapter
 
 __all__ = [
     "Merra2Adapter",
@@ -41,4 +42,5 @@ __all__ = [
     "AquariusSSSAdapter",
     "SmapSssAdapter",
     "AvisoSshAdapter",
+    "ClimateIndexAdapter",
 ]
