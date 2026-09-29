@@ -391,9 +391,10 @@ export function DockTimeSeriesChart({
     return buildMonotoneCubicPath(pts);
   }, [visibleRecords, xAt, yAt, hasB]);
 
-  // Statistical linear trend (OLS) — used for trend line + tooltip fitted value
+  // Statistical linear trend (OLS) — only computed when trend is eligible (>=20 yr record and not unsupported)
+  const isTrendEligible = !unsupportedReason && visibleRecords.length >= 20;
   const trendStats = useMemo(() => {
-    if (visibleRecords.length < 3) return null;
+    if (!isTrendEligible || visibleRecords.length < 3) return null;
     const n = visibleRecords.length;
     let sumX = 0;
     let sumY = 0;
@@ -429,7 +430,7 @@ export function DockTimeSeriesChart({
       intercept,
       slopePerYear,
     };
-  }, [visibleRecords, xAt, yAt]);
+  }, [visibleRecords, xAt, yAt, isTrendEligible]);
 
   // Min / max / last annotation derivation (visible window only)
   const annotations = useMemo(() => {
@@ -577,16 +578,6 @@ export function DockTimeSeriesChart({
             </button>
           ) : null}
 
-          {/* Informative badge for short-record observed series */}
-          {unsupportedReason && !empty && (
-            <div
-              className="absolute left-2 top-2 z-20 inline-flex items-center gap-1.5 rounded-md border border-amber-200 bg-amber-50/95 px-2 py-0.5 text-[9.5px] font-semibold text-amber-900 backdrop-blur-sm shadow-sm"
-              title={unsupportedReason}
-            >
-              <AlertCircle className="h-3 w-3 text-amber-600 flex-shrink-0" />
-              <span>Observed Series Only · Decadal Trend Ineligible (&lt;20 yr record)</span>
-            </div>
-          )}
 
           {/* ── State 1: Computing / Loading Telemetry ─────────────────── */}
           {computing ? (
@@ -854,6 +845,17 @@ export function DockTimeSeriesChart({
 
               {/* 2. Top-Left Scientific Legend & Axis Metadata Header */}
               <div className="pointer-events-none absolute left-2 right-2 top-1.5 flex flex-wrap items-center gap-1.5 text-[8.5px] font-mono">
+                {/* Informative chip for short-record / trend-ineligible observed series */}
+                {unsupportedReason && (
+                  <div
+                    className="flex max-w-full items-center gap-1 rounded border border-amber-300 bg-amber-50/95 px-1.5 py-0.5 text-amber-900 font-bold shadow-2xs"
+                    title={unsupportedReason}
+                  >
+                    <AlertCircle className="h-2.5 w-2.5 text-amber-600 flex-shrink-0" />
+                    <span className="truncate">Observed Series Only · Decadal Trend Ineligible (&lt;20 yr record)</span>
+                  </div>
+                )}
+
                 {/* Y-Axis Variable Title Badge */}
                 <div className="flex max-w-full items-center gap-1 truncate rounded bg-[var(--bg-surface-2)]/95 px-1.5 py-0.5 border border-[var(--border-default)] text-[var(--text-primary)]">
                   <span className="font-sans font-bold text-[var(--text-muted)] uppercase tracking-wider text-[7.5px]">Axis:</span>

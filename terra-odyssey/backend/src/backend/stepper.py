@@ -47,6 +47,9 @@ from data.adapters.d6_nsidc_seaice import NsidcSeaIceAdapter
 from data.adapters.d7_noaa_oisst import NoaaOisstAdapter
 from data.adapters.d8_grace_tws import GraceTwsAdapter
 from data.adapters.d9_ceres_ebaf import CeresEbafAdapter
+from data.adapters.d34_aquarius_sss import AquariusSSSAdapter
+from data.adapters.d35_smap_sss import SmapSssAdapter
+from data.adapters.d36_aviso_ssh import AvisoSshAdapter
 from data.registry import find_entry, resolve_adapter
 from .errors import (
     DataUnavailableError,
@@ -347,6 +350,10 @@ def _get_synthetic_cube(dataset_id: str, n_years: int = 25) -> xr.Dataset:
         cube = np.zeros((n_times, len(lats), len(lons)), dtype=np.float64)
         for t in range(n_times):
             cube[t, :, :] = base_sss + trend_rate * time_vals[t] + seasonal[t] + rng.normal(0, 0.08, size=(len(lats), len(lons)))
+        if "smap" in dataset_id.lower():
+            cube[times < "2015-01-01", :, :] = np.nan
+        elif "aquarius" in dataset_id.lower():
+            cube[(times < "2011-01-01") | (times > "2015-12-31"), :, :] = np.nan
         return xr.Dataset(
             data_vars={
                 "sss": (("time", "lat", "lon"), cube, {"units": "PSU", "long_name": "sea surface salinity"}),
@@ -644,6 +651,24 @@ def run_pipeline(
             da = ceres_adp.convert_units(da)
             units = "W/m^2"
             unit_per_decade = "W/m^2/decade"
+        elif "smap" in entry.dataset_id.lower() or "d35" in dataset_id.lower():
+            smap_adp = SmapSssAdapter()
+            da = smap_adp.quality_mask(da)
+            da = smap_adp.convert_units(da)
+            units = "PSU"
+            unit_per_decade = "PSU/decade"
+        elif "aquarius" in entry.dataset_id.lower() or "d34" in dataset_id.lower():
+            aq_adp = AquariusSSSAdapter()
+            da = aq_adp.quality_mask(da)
+            da = aq_adp.convert_units(da)
+            units = "PSU"
+            unit_per_decade = "PSU/decade"
+        elif "aviso" in entry.dataset_id.lower() or "ssh" in dataset_id.lower() or "d36" in dataset_id.lower():
+            aviso_adp = AvisoSshAdapter()
+            da = aviso_adp.quality_mask(da)
+            da = aviso_adp.convert_units(da)
+            units = "m"
+            unit_per_decade = "m/decade"
         else:
             units = entry.units
             unit_per_decade = f"{units}/decade"
@@ -690,11 +715,22 @@ def run_pipeline(
             elif "grace" in entry.dataset_id.lower() or "d8" in dataset_id.lower():
                 _grace_adp = GraceTwsAdapter()
                 da_ann = _grace_adp.normalize_to_annual(da, min_months=6)
+            elif "smap" in entry.dataset_id.lower() or "d35" in dataset_id.lower():
+                _smap_adp = SmapSssAdapter()
+                da_ann = _smap_adp.normalize_to_annual(da, min_months=8)
+            elif "aquarius" in entry.dataset_id.lower() or "d34" in dataset_id.lower():
+                _aq_adp = AquariusSSSAdapter()
+                da_ann = _aq_adp.normalize_to_annual(da, min_months=8)
+            elif "aviso" in entry.dataset_id.lower() or "ssh" in dataset_id.lower() or "d36" in dataset_id.lower():
+                _aviso_adp = AvisoSshAdapter()
+                da_ann = _aviso_adp.normalize_to_annual(da, min_months=10)
             elif "ceres" in entry.dataset_id.lower() or "d9" in dataset_id.lower():
                 _ceres_adp = CeresEbafAdapter()
                 da_ann = _ceres_adp.normalize_to_annual(da, min_months=10)
-            else:
+            elif "precip" in entry.dataset_id.lower() or "precipitation" in entry.dataset_id.lower() or temporal_agg == "annual_total":
                 da_ann = aggregate_annual_precipitation(da)
+            else:
+                da_ann = aggregate_annual_temperature(da)
         else:
             da_ann = da
 
@@ -791,10 +827,10 @@ def run_pipeline(
                 "effect": {"estimate": 0.0, "unit_per_decade": unit_per_decade, "fitted_change": 0.0},
                 "uncertainty": {"lower": 0.0, "upper": 0.0, "level": 0.95, "method": "ols_hac_newey_west"},
                 "coverage": {
-                    "valid_periods": len(years_a),
+                    "valid_periods": int(np.sum(~np.isnan(vals_a))),
                     "expected_periods": year_span,
-                    "valid_fraction": min(1.0, len(years_a) / max(1, year_span)),
-                    "missing_periods": [],
+                    "valid_fraction": min(1.0, float(np.sum(~np.isnan(vals_a))) / max(1, year_span)),
+                    "missing_periods": [str(int(y)) for y, v in zip(years_a, vals_a) if np.isnan(v)],
                     "spatial_coverage": sum_meta_a,
                 },
                 "method": {
@@ -888,6 +924,8 @@ def run_pipeline(
             })
         else:
             ts_df = pd.DataFrame({"year": years_a, "region_a_value": vals_a})
+        ts_df = ts_df.dropna(subset=["region_a_value"]).copy()
+        ts_df["year"] = ts_df["year"].astype(int)
         ts_df.to_csv(csv_file, index=False)
 
         series_json_file = staging_dir / "series.json"

@@ -90,6 +90,7 @@ export default function WorkspacePage() {
     selectedVariable,
     customVariable,
     period,
+    setPeriod,
     regionA,
     setRegionA,
     regionB,
@@ -399,6 +400,27 @@ export default function WorkspacePage() {
       store.setSelectedVariable(d.primary_variable);
       store.setCustomVariable(null);
 
+      // Clamp analysis period to dataset coverage window if specified
+      let targetPeriod = period;
+      const startYr = d.coverage_start
+        ? parseInt(d.coverage_start.slice(0, 4), 10)
+        : d.temporal_bounds?.start_year;
+      const endYr = d.coverage_end
+        ? parseInt(d.coverage_end.slice(0, 4), 10)
+        : d.temporal_bounds?.end_year ?? 2024;
+      if (startYr != null && endYr != null && !isNaN(startYr) && !isNaN(endYr)) {
+        const clampedStart = Math.max(startYr, period.start_year);
+        const clampedEnd = Math.min(endYr, period.end_year);
+        if (clampedStart !== period.start_year || clampedEnd !== period.end_year) {
+          targetPeriod = {
+            start_year: clampedStart > clampedEnd ? startYr : clampedStart,
+            end_year: clampedStart > clampedEnd ? endYr : clampedEnd,
+          };
+          store.setPeriod(targetPeriod);
+          setPeriod(targetPeriod);
+        }
+      }
+
       const canAnalyze = d.capabilities
         ? (d.capabilities.trend_supported || d.capabilities.series_supported)
         : true;
@@ -410,7 +432,7 @@ export default function WorkspacePage() {
         runInvestigation(
           bboxOf(regionA),
           regionB ? bboxOf(regionB) : null,
-          period,
+          targetPeriod,
           d.dataset_id,
           d.primary_variable,
         );
@@ -418,7 +440,7 @@ export default function WorkspacePage() {
         setActiveJobId(null);
       }
     },
-    [regionA, regionB, period, runInvestigation, markInitialized],
+    [regionA, regionB, period, runInvestigation, markInitialized, setPeriod],
   );
 
   const handlePlotComplete = useCallback(

@@ -111,6 +111,8 @@ export interface DatasetMetadata {
   capabilities?: DatasetCapabilities;
   /** Multi-axis taxonomy: ["<Domain>:<Sub-topic>", "<Use Case>", ...] */
   categories?: string[];
+  coverage_start?: string;
+  coverage_end?: string | null;
   spatial_resolution: {
     lat_deg: number;
     lon_deg: number;
