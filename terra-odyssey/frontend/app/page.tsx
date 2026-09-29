@@ -30,6 +30,7 @@ import {
 import { polygonAreaSqM, polygonPerimeterM } from "@/lib/map/draw-shapes";
 import {
   markUndone,
+  pushActivity,
   useActivityLog,
   type ActivityEntry,
   type ActivityKind,
@@ -89,6 +90,7 @@ export default function WorkspacePage() {
     selectedVariable,
     customVariable,
     period,
+    setPeriod,
     regionA,
     setRegionA,
     regionB,
@@ -174,8 +176,19 @@ export default function WorkspacePage() {
       targetDataset = selectedDataset,
       targetVar = selectedVariable,
     ) => {
+      if (!targetDataset || !targetVar) {
+        setActiveJobId(null);
+        setInvestigationError(null);
+        return;
+      }
+
       const targetMeta = datasets?.find((d) => d.dataset_id === targetDataset);
-      if (targetMeta && targetMeta.capabilities && !targetMeta.capabilities.trend_supported) {
+      if (
+        targetMeta &&
+        targetMeta.capabilities &&
+        !targetMeta.capabilities.trend_supported &&
+        !targetMeta.capabilities.series_supported
+      ) {
         setActiveJobId(null);
         setInvestigationError(null);
         return;
@@ -243,11 +256,11 @@ export default function WorkspacePage() {
       prevPeriodRef.current.end_year !== period.end_year
     ) {
       prevPeriodRef.current = period;
-      if (hasInitializedRef.current) {
+      if (hasInitializedRef.current && selectedDataset && selectedVariable) {
         runInvestigation(bboxOf(regionA), regionB ? bboxOf(regionB) : null, period);
       }
     }
-  }, [period, regionA, regionB, runInvestigation]);
+  }, [period, regionA, regionB, runInvestigation, selectedDataset, selectedVariable]);
 
   // Year cursor → map date coupling (display-only). When the user selects a
   // year on the chart or evidence panel, the basemap day jumps to mid-year
@@ -279,12 +292,16 @@ export default function WorkspacePage() {
       prevVarRef.current = selectedVariable;
       prevRegionARef.current = regionA.bbox.join(",");
 
+      // If no dataset is selected, do NOT run an investigation or force a fallback
+      if (!selectedDataset) {
+        return;
+      }
+
       // First change after page-load flips the "user has initiated" gate
-      // and supplies a fallback dataset when the user drew a region or changed dataset.
+      // when the user selected a dataset.
       if (!hasInitializedRef.current) {
         hasInitializedRef.current = true;
         setHasInitialized(true);
-        ensureDatasetSelected();
       }
 
       const store = getInvestigationStore();
@@ -383,24 +400,51 @@ export default function WorkspacePage() {
       store.setSelectedVariable(d.primary_variable);
       store.setCustomVariable(null);
 
-      const isSupported = d.capabilities ? d.capabilities.trend_supported : true;
-      if (isSupported) {
+      // Clamp analysis period to dataset coverage window if specified
+      let targetPeriod = period;
+      const startYr = d.coverage_start
+        ? parseInt(d.coverage_start.slice(0, 4), 10)
+        : d.temporal_bounds?.start_year;
+      const endYr = d.coverage_end
+        ? parseInt(d.coverage_end.slice(0, 4), 10)
+        : d.temporal_bounds?.end_year ?? 2024;
+      if (startYr != null && endYr != null && !isNaN(startYr) && !isNaN(endYr)) {
+        const isDisjoint = period.start_year > endYr || period.end_year < startYr;
+        const hasPastEnd = Boolean(d.coverage_end && endYr < 2024);
+        if (isDisjoint || hasPastEnd) {
+          targetPeriod = { start_year: startYr, end_year: endYr };
+        } else {
+          targetPeriod = {
+            start_year: Math.max(startYr, period.start_year),
+            end_year: Math.min(endYr, period.end_year),
+          };
+        }
+        if (targetPeriod.start_year !== period.start_year || targetPeriod.end_year !== period.end_year) {
+          store.setPeriod(targetPeriod);
+          setPeriod(targetPeriod);
+        }
+      }
+
+      const canAnalyze = d.capabilities
+        ? (d.capabilities.trend_supported || d.capabilities.series_supported)
+        : true;
+
+      setInvestigationError(null);
+
+      if (canAnalyze) {
         markInitialized();
         runInvestigation(
           bboxOf(regionA),
           regionB ? bboxOf(regionB) : null,
-          period,
+          targetPeriod,
           d.dataset_id,
           d.primary_variable,
         );
       } else {
-        setInvestigationError(
-          d.capabilities?.unsupported_reason ||
-            `Quantitative trend analysis for '${d.title}' is scheduled in an upcoming phase.`,
-        );
+        setActiveJobId(null);
       }
     },
-    [regionA, regionB, period, runInvestigation, markInitialized],
+    [regionA, regionB, period, runInvestigation, markInitialized, setPeriod],
   );
 
   const handlePlotComplete = useCallback(
@@ -417,20 +461,61 @@ export default function WorkspacePage() {
     [period, runInvestigation, setRegionA, setRegionB, markInitialized],
   );
 
-  const handleClearShapes = useCallback(() => {
-    clearAllPlots().catch(() => {});
-    setRegionA({ bbox: DEFAULT_REGION_A_BBOX, name: DEFAULT_REGION_NAME });
+  const handleClearAnalysis = useCallback(() => {
+    // 1. Reset all investigation store properties atomically (unloads dataset & variable)
+    const store = getInvestigationStore();
+    store.clearInvestigation();
+
+    // 2. Clear active job, error banner, and initiation flags
+    setActiveJobId(null);
+    setInvestigationError(null);
+    hasInitializedRef.current = false;
+    setHasInitialized(false);
     setRegionAName(DEFAULT_REGION_NAME);
-    setRegionB(null);
     setHasPendingRegion(false);
-    const { dataset, variable } = ensureDatasetSelected();
-    markInitialized();
-    runInvestigation(DEFAULT_REGION_A_BBOX, null, period, dataset, variable);
+    setEvidenceCardOpen(false);
+
+    // 3. Reset internal tracking refs to empty
+    lastRunKeyRef.current = "";
+    prevDatasetRef.current = "";
+    prevVarRef.current = "";
+    prevRegionARef.current = DEFAULT_REGION_A_BBOX.join(",");
+
+    // 4. Clear all persistent study plots from storage and active plot
+    clearAllPlots().catch(() => {});
+    setActivePlot(null);
+
+    // 5. Dispatch events to clear map layers and drawing metrics
     window.dispatchEvent(new CustomEvent("terra-odyssey:clear-shapes"));
     window.dispatchEvent(
       new CustomEvent("terra-odyssey:active-plot-changed", { detail: { plot: null } }),
     );
-  }, [period, runInvestigation, setRegionA, setRegionAName, setRegionB, markInitialized, setHasPendingRegion]);
+    window.dispatchEvent(
+      new CustomEvent("terra-odyssey:live-drawing-metrics", { detail: null }),
+    );
+
+    // 6. Log activity entry
+    pushActivity({
+      kind: "clear",
+      label: "Analysis cleared",
+      prevLabel: "No dataset loaded · workspace empty",
+      accent: "rose",
+      undo: () => {},
+    });
+  }, [setRegionAName, setHasPendingRegion]);
+
+  const handleClearShapes = useCallback(() => {
+    clearAllPlots().catch(() => {});
+    setActivePlot(null);
+    setRegionA({ bbox: DEFAULT_REGION_A_BBOX, name: DEFAULT_REGION_NAME });
+    setRegionAName(DEFAULT_REGION_NAME);
+    setRegionB(null);
+    setHasPendingRegion(false);
+    window.dispatchEvent(new CustomEvent("terra-odyssey:clear-shapes"));
+    window.dispatchEvent(
+      new CustomEvent("terra-odyssey:active-plot-changed", { detail: { plot: null } }),
+    );
+  }, [setRegionA, setRegionAName, setRegionB, setHasPendingRegion]);
 
   useEffect(() => {
     const onClear = () => {
@@ -438,13 +523,21 @@ export default function WorkspacePage() {
       setRegionAName(DEFAULT_REGION_NAME);
       setRegionB(null);
       setHasPendingRegion(false);
-      const { dataset, variable } = ensureDatasetSelected();
-      markInitialized();
-      runInvestigation(DEFAULT_REGION_A_BBOX, null, period, dataset, variable);
+      const store = getInvestigationStore();
+      const currentDataset = store.state.selectedDataset;
+      const currentVar = store.state.selectedVariable;
+      if (currentDataset && currentVar && hasInitializedRef.current) {
+        runInvestigation(DEFAULT_REGION_A_BBOX, null, period, currentDataset, currentVar);
+      }
     };
     window.addEventListener("terra-odyssey:clear-shapes", onClear);
     return () => window.removeEventListener("terra-odyssey:clear-shapes", onClear);
-  }, [period, runInvestigation, setRegionA, setRegionAName, setRegionB, markInitialized, setHasPendingRegion]);
+  }, [period, runInvestigation, setRegionA, setRegionAName, setRegionB, setHasPendingRegion]);
+
+  useEffect(() => {
+    window.addEventListener("terra-odyssey:clear-analysis", handleClearAnalysis);
+    return () => window.removeEventListener("terra-odyssey:clear-analysis", handleClearAnalysis);
+  }, [handleClearAnalysis]);
 
   // Region Card CTAs surfaced from inside the map component.
   useEffect(() => {
@@ -463,7 +556,9 @@ export default function WorkspacePage() {
       setRegionAName(targetName);
       setRegionB(null);
 
-      const { dataset, variable } = ensureDatasetSelected();
+      const dataset = store.state.selectedDataset;
+      const variable = store.state.selectedVariable;
+      if (!dataset || !variable) return;
       markInitialized();
       runInvestigation(targetBbox, null, period, dataset, variable);
     };
@@ -483,7 +578,9 @@ export default function WorkspacePage() {
       setRegionAName(targetName);
       setRegionB(null);
 
-      const { dataset, variable } = ensureDatasetSelected();
+      const dataset = store.state.selectedDataset;
+      const variable = store.state.selectedVariable;
+      if (!dataset || !variable) return;
       markInitialized();
       runInvestigation(detail.bbox, null, period, dataset, variable);
     };
@@ -497,7 +594,9 @@ export default function WorkspacePage() {
       setRegionAName(DEFAULT_REGION_NAME);
       setRegionB(null);
 
-      const { dataset, variable } = ensureDatasetSelected();
+      const dataset = store.state.selectedDataset;
+      const variable = store.state.selectedVariable;
+      if (!dataset || !variable) return;
       markInitialized();
       runInvestigation(DEFAULT_REGION_A_BBOX, null, period, dataset, variable);
     };
@@ -537,7 +636,7 @@ export default function WorkspacePage() {
             regionA={bboxOf(regionA)}
             regionB={regionB ? bboxOf(regionB) : null}
             bottomOffset={16}
-            hasUserInitiated={hasInitialized}
+            hasUserInitiated={hasInitialized && Boolean(selectedDataset)}
             onMapInstanceChange={publishMap}
             onUpdateRegions={(a, b) => {
               setRegionA({ bbox: a, name: "Drawn region" });
@@ -588,7 +687,7 @@ export default function WorkspacePage() {
 
         {/* Right-Side Floating Scientific Evidence Card */}
         <FloatingEvidenceCard
-          open={evidenceCardOpen && hasInitialized}
+          open={evidenceCardOpen && hasInitialized && Boolean(selectedDataset)}
           onClose={() => setEvidenceCardOpen(false)}
           evidence={evidenceQuery.data ?? null}
           series={seriesQuery.data ?? null}
@@ -603,24 +702,21 @@ export default function WorkspacePage() {
       </main>
 
       <ActivityDock
+        datasets={datasets}
         onSelectDataset={handleSelectDataset}
         series={seriesQuery.data ?? null}
         seriesLoading={isJobRunning || seriesQuery.isLoading}
         seriesError={
-          activeDatasetObj?.capabilities?.trend_supported === false
-            ? false
-            : (isJobFailed || (isJobSucceeded && seriesQuery.isError))
+          isJobFailed || (isJobSucceeded && seriesQuery.isError)
         }
         evidence={evidenceQuery.data ?? null}
         jobStatus={statusQuery.data?.job_status ?? (createInvestigation.isPending ? "submitted" : "idle")}
         stage={statusQuery.data?.stage}
         progress={statusQuery.data?.progress ?? statusQuery.data?.progress_pct}
         errorMessage={
-          activeDatasetObj?.capabilities?.trend_supported === false
-            ? undefined
-            : (investigationError ||
-              (statusQuery.data?.error?.message as string) ||
-              (seriesQuery.error ? "Failed to load series" : undefined))
+          investigationError ||
+          (statusQuery.data?.error?.message as string) ||
+          (seriesQuery.error ? "Failed to load series" : undefined)
         }
         onRetry={() => runInvestigation()}
         onRunDefault={() => {
@@ -631,6 +727,7 @@ export default function WorkspacePage() {
           markInitialized();
           runInvestigation(DEFAULT_REGION_A_BBOX, null, DEFAULT_PERIOD, dataset, variable);
         }}
+        onClearAnalysis={handleClearAnalysis}
         collapsed={dockCollapsed}
         onToggleCollapse={() => setDockCollapsed((c) => !c)}
         evidenceCardOpen={evidenceCardOpen}

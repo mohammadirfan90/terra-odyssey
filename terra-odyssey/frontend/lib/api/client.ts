@@ -603,6 +603,8 @@ export function useCatalog() {
                 gibs_layer: item.gibs_layer,
                 capabilities: item.capabilities,
                 categories: item.categories ?? [],
+                coverage_start: item.coverage_start,
+                coverage_end: item.coverage_end,
                 data_type: item.source_type === "model_reanalysis" ? "reanalysis_model" : "satellite_retrieval",
                 citation_statement: item.provenance?.provider || "NASA Earth Observation System",
                 measurement_principle: item.spatial_support || "Satellite retrieval",

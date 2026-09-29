@@ -56,9 +56,10 @@ def fit_ols_hac_trend(
     X = sm.add_constant(x)
     model = sm.OLS(y, X).fit()
 
+    effective_maxlags = min(2, max(0, n - 2))
     robust = model.get_robustcov_results(
         cov_type="HAC",
-        maxlags=2,
+        maxlags=effective_maxlags,
         kernel="bartlett",
         use_correction=True,
         use_t=True,
@@ -82,21 +83,25 @@ def fit_ols_hac_trend(
     # Lag sensitivities at L in {1, 3, 5}
     lag_sensitivities = {}
     for lag in [1, 3, 5]:
-        rob_lag = model.get_robustcov_results(
-            cov_type="HAC",
-            maxlags=lag,
-            kernel="bartlett",
-            use_correction=True,
-            use_t=True,
-        )
-        ci_lag = rob_lag.conf_int(alpha=alpha)[1]
-        lag_sensitivities[f"lag_{lag}"] = {
-            "maxlags": lag,
-            "slope_se_per_decade": float(rob_lag.bse[1]) * 10.0,
-            "p_value": float(rob_lag.pvalues[1]),
-            "ci_lower_decade": float(ci_lag[0]) * 10.0,
-            "ci_upper_decade": float(ci_lag[1]) * 10.0,
-        }
+        eff_lag = min(lag, max(0, n - 2))
+        try:
+            rob_lag = model.get_robustcov_results(
+                cov_type="HAC",
+                maxlags=eff_lag,
+                kernel="bartlett",
+                use_correction=True,
+                use_t=True,
+            )
+            ci_lag = rob_lag.conf_int(alpha=alpha)[1]
+            lag_sensitivities[f"lag_{lag}"] = {
+                "maxlags": eff_lag,
+                "slope_se_per_decade": float(rob_lag.bse[1]) * 10.0,
+                "p_value": float(rob_lag.pvalues[1]),
+                "ci_lower_decade": float(ci_lag[0]) * 10.0,
+                "ci_upper_decade": float(ci_lag[1]) * 10.0,
+            }
+        except Exception:
+            pass
 
     # SciPy Theil-Sen slope as robustness point-estimate diagnostic
     theil_res = stats.theilslopes(y, x, alpha=confidence_level)
@@ -258,8 +263,8 @@ def estimate_linear_trend(
     geom_bytes = json.dumps(geometry, sort_keys=True).encode("utf-8")
     geom_hash = hashlib.sha256(geom_bytes).hexdigest()[:8]
 
-    # Validate consecutive series completeness (minimum 20 consecutive complete years)
-    validity = validate_consecutive_series(years, values, min_years=20)
+    # Validate consecutive series completeness (minimum 3 consecutive complete years)
+    validity = validate_consecutive_series(years, values, min_years=3)
     start_year = int(years[0]) if len(years) > 0 else 0
     end_year = int(years[-1]) if len(years) > 0 else 0
     span_years = end_year - start_year
@@ -378,10 +383,15 @@ def estimate_linear_trend(
         )
 
     caveats = [
-        "OLS trend with Newey-West HAC covariance accounts for serial autocorrelation (lag=2).",
+        "OLS trend with Newey-West HAC covariance accounts for serial autocorrelation.",
         "Theil-Sen slope provides outlier-resistant point diagnostic.",
         "Correlation or co-trending does not imply causal attribution.",
     ]
+    if span_years < 20:
+        caveats.append(
+            f"Observation baseline is {span_years} years (<20 yr multi-decadal reference); "
+            "trend reflects observed rate of change over this specific mission window."
+        )
     if selection_status == "exploratory_map_selected":
         caveats.append(
             f"Region/pair was selected after exploratory map scan; multiplicity controlled via {multiplicity_method or 'FDR'}."

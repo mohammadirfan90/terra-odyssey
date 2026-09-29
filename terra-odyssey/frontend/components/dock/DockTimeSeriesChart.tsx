@@ -43,6 +43,7 @@ export interface DockTimeSeriesChartProps {
   unit?: string;
   variableTitle?: string;
   variableKey?: string;
+  selectedDataset?: string;
   regionAName?: string;
   regionBName?: string;
   startYear?: number;
@@ -121,6 +122,7 @@ export function DockTimeSeriesChart({
   unit = "°C",
   variableTitle = "Surface Air Temperature",
   variableKey = "T2M",
+  selectedDataset,
   regionAName = "Region A",
   regionBName = "Region B",
   startYear = 2001,
@@ -389,9 +391,10 @@ export function DockTimeSeriesChart({
     return buildMonotoneCubicPath(pts);
   }, [visibleRecords, xAt, yAt, hasB]);
 
-  // Statistical linear trend (OLS) — used for trend line + tooltip fitted value
+  // Statistical linear trend (OLS) — computed for all observational series with >= 3 points
+  const isTrendEligible = visibleRecords.length >= 3;
   const trendStats = useMemo(() => {
-    if (visibleRecords.length < 3) return null;
+    if (!isTrendEligible) return null;
     const n = visibleRecords.length;
     let sumX = 0;
     let sumY = 0;
@@ -427,7 +430,7 @@ export function DockTimeSeriesChart({
       intercept,
       slopePerYear,
     };
-  }, [visibleRecords, xAt, yAt]);
+  }, [visibleRecords, xAt, yAt, isTrendEligible]);
 
   // Min / max / last annotation derivation (visible window only)
   const annotations = useMemo(() => {
@@ -575,6 +578,7 @@ export function DockTimeSeriesChart({
             </button>
           ) : null}
 
+
           {/* ── State 1: Computing / Loading Telemetry ─────────────────── */}
           {computing ? (
             <div className="relative z-10 flex h-full w-full flex-col items-center justify-center p-3 text-center">
@@ -595,7 +599,20 @@ export function DockTimeSeriesChart({
                 <div className="h-full w-full bg-cyan-500" />
               </div>
             </div>
-          ) : unsupportedReason ? (
+          ) : !selectedDataset ? (
+            /* ── State 2a: No Dataset Loaded / Empty Clean State ─────── */
+            <div className="relative z-10 flex h-full w-full flex-col items-center justify-center p-3 text-center">
+              <div className="mb-1.5 flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-slate-50 text-slate-400">
+                <TrendingUp className="h-4 w-4 text-slate-400" />
+              </div>
+              <div className="text-[11px] font-semibold text-[var(--text-primary)]">
+                No Dataset Loaded
+              </div>
+              <div className="mt-0.5 max-w-[290px] text-[9.5px] text-[var(--text-secondary)]">
+                Analysis cleared. Select a NASA Earth Observation dataset and variable from Mission Controls to begin investigation.
+              </div>
+            </div>
+          ) : empty && unsupportedReason ? (
             /* ── State 2b: Dataset doesn't support time-series analysis ── */
             <div className="relative z-10 flex h-full w-full flex-col items-center justify-center p-3 text-center">
               <div className="mb-1.5 flex h-7 w-7 items-center justify-center rounded-full border border-amber-200 bg-amber-50 text-amber-700">
@@ -828,6 +845,17 @@ export function DockTimeSeriesChart({
 
               {/* 2. Top-Left Scientific Legend & Axis Metadata Header */}
               <div className="pointer-events-none absolute left-2 right-2 top-1.5 flex flex-wrap items-center gap-1.5 text-[8.5px] font-mono">
+                {/* Informative chip for short-record / trend-ineligible observed series */}
+                {unsupportedReason && (
+                  <div
+                    className="flex max-w-full items-center gap-1 rounded border border-amber-300 bg-amber-50/95 px-1.5 py-0.5 text-amber-900 font-bold shadow-2xs"
+                    title={unsupportedReason}
+                  >
+                    <AlertCircle className="h-2.5 w-2.5 text-amber-600 flex-shrink-0" />
+                    <span className="truncate">Observed Series Only · Decadal Trend Ineligible (&lt;20 yr record)</span>
+                  </div>
+                )}
+
                 {/* Y-Axis Variable Title Badge */}
                 <div className="flex max-w-full items-center gap-1 truncate rounded bg-[var(--bg-surface-2)]/95 px-1.5 py-0.5 border border-[var(--border-default)] text-[var(--text-primary)]">
                   <span className="font-sans font-bold text-[var(--text-muted)] uppercase tracking-wider text-[7.5px]">Axis:</span>

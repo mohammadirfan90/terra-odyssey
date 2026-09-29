@@ -122,6 +122,21 @@ class SmapSssAdapter:
         out.attrs["long_name"] = "Sea surface salinity"
         return out
 
+    def normalize_to_annual(self, da: xr.DataArray, min_months: int = 8) -> xr.DataArray:
+        """Normalize monthly SSS series to annual means with minimum valid month threshold."""
+        if "time" not in da.dims:
+            return da
+
+        def _calc_annual_mean(group: xr.DataArray) -> xr.DataArray:
+            valid_count = (~np.isnan(group)).sum(dim="time")
+            mean_val = group.mean(dim="time", skipna=True)
+            return xr.where(valid_count >= min_months, mean_val, np.nan)
+
+        annual = da.groupby("time.year").map(_calc_annual_mean)
+        annual.attrs = dict(da.attrs)
+        annual.attrs["temporal_support"] = f"annual mean (minimum {min_months} valid months)"
+        return annual
+
     def process(self, dataset_or_path: Union[str, Path, xr.Dataset]) -> xr.DataArray:
         da = self.decode(dataset_or_path)
         self.validate(da)

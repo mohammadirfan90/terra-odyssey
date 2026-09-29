@@ -485,18 +485,17 @@ export function FloatingEvidenceCard({
                 <span aria-hidden="true">·</span>
                 {invRegionA?.name ? (
                   <span
-                    className="inline-flex items-center gap-1 rounded border border-cyan-300 bg-cyan-50/90 px-1.5 py-0.5 font-bold text-cyan-900 shadow-2xs"
+                    className="inline-flex max-w-[180px] items-center rounded border border-cyan-300 bg-cyan-50/90 px-1.5 py-0.5 font-semibold text-cyan-900 shadow-2xs"
                     title={`Analysis bounded specifically to: ${invRegionA.name}`}
                   >
-                    <span className="h-1.5 w-1.5 rounded-full bg-cyan-600" />
-                    <span className="truncate max-w-[110px]">Section: {invRegionA.name}</span>
+                    <span className="truncate">{invRegionA.name}</span>
                   </span>
                 ) : (
                   <span
-                    className="inline-flex items-center gap-1 rounded border border-slate-200 bg-slate-100/90 px-1.5 py-0.5 font-medium text-slate-700 shadow-2xs"
+                    className="inline-flex items-center rounded border border-slate-200 bg-slate-100/90 px-1.5 py-0.5 font-medium text-slate-700 shadow-2xs"
                     title="Analysis covering the entire global Earth domain"
                   >
-                    <span>Entire Earth (Global)</span>
+                    <span className="truncate">Entire Earth (Global)</span>
                   </span>
                 )}
                 <span aria-hidden="true">·</span>
