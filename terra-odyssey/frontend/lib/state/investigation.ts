@@ -79,6 +79,7 @@ export interface InvestigationState extends InvestigationSnapshot {
   setSelectedYear: (yr: number | null) => void;
   setHasPendingRegion: (v: boolean) => void;
   setRegionAutoRun: (v: boolean) => void;
+  clearInvestigation: () => void;
 }
 
 export interface InvestigationStore {
@@ -95,6 +96,7 @@ export interface InvestigationStore {
   setSelectedYear: (yr: number | null) => void;
   setHasPendingRegion: (v: boolean) => void;
   setRegionAutoRun: (v: boolean) => void;
+  clearInvestigation: () => void;
 }
 
 /**
@@ -117,6 +119,7 @@ function compose(snapshot: InvestigationSnapshot, s: InvestigationStore): Invest
     setSelectedYear: s.setSelectedYear,
     setHasPendingRegion: s.setHasPendingRegion,
     setRegionAutoRun: s.setRegionAutoRun,
+    clearInvestigation: s.clearInvestigation,
   };
 }
 
@@ -204,6 +207,13 @@ const setters = {
   setRegionAutoRun(v: boolean) {
     if (currentState.regionAutoRun === v) return;
     currentState = { ...currentState, regionAutoRun: v };
+    notify();
+  },
+  clearInvestigation() {
+    currentState = {
+      ...initialState,
+      mapType: currentState.mapType,
+    };
     notify();
   },
 };

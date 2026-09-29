@@ -1475,9 +1475,11 @@ export default function EarthTrendMap({
           {/* Quick toggle: Global vs Analyze */}
           {isSectionTargeted ? (
             <div className="flex items-center gap-1.5">
-              <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200/80 rounded px-1.5 py-0.2">
-                <span className="h-1.5 w-1.5 rounded-full bg-emerald-600 shrink-0" />
-                Section Active
+              <span
+                className="inline-flex items-center text-[10px] font-semibold text-emerald-700 rounded px-1.5 py-0.5 ring-1 ring-inset ring-emerald-200/80"
+                title="Analysis is currently scoped to the selected section"
+              >
+                Section active
               </span>
               <button
                 type="button"

@@ -1613,6 +1613,28 @@ pre,
   outline-offset: 2px;
   border-radius: 4px;
 }
+
+/* Text selection — must stay legible in both themes and against any text color,
+   including the light-slate `--text-secondary` used in the methodology &
+   caveats block (where the previous cyan/cyan pairing hid the highlighted text). */
+::selection {
+  background-color: rgb(14 165 233); /* sky-500 */
+  color: #ffffff;
+  text-shadow: none;
+}
+::-moz-selection {
+  background-color: rgb(14 165 233);
+  color: #ffffff;
+  text-shadow: none;
+}
+:root[data-theme="light"] ::selection {
+  background-color: rgb(14 165 233);
+  color: #ffffff;
+}
+:root[data-theme="light"] ::-moz-selection {
+  background-color: rgb(14 165 233);
+  color: #ffffff;
+}
 @media (prefers-reduced-motion: reduce) {
   :where(button, a, [role="button"]):focus-visible {
     transition: none !important;

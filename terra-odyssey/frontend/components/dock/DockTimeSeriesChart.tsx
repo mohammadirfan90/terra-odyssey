@@ -43,6 +43,7 @@ export interface DockTimeSeriesChartProps {
   unit?: string;
   variableTitle?: string;
   variableKey?: string;
+  selectedDataset?: string;
   regionAName?: string;
   regionBName?: string;
   startYear?: number;
@@ -121,6 +122,7 @@ export function DockTimeSeriesChart({
   unit = "°C",
   variableTitle = "Surface Air Temperature",
   variableKey = "T2M",
+  selectedDataset,
   regionAName = "Region A",
   regionBName = "Region B",
   startYear = 2001,
@@ -593,6 +595,19 @@ export function DockTimeSeriesChart({
               </div>
               <div className="mt-2 h-1 w-32 overflow-hidden rounded-full bg-[var(--bg-elevated)]">
                 <div className="h-full w-full bg-cyan-500" />
+              </div>
+            </div>
+          ) : !selectedDataset ? (
+            /* ── State 2a: No Dataset Loaded / Empty Clean State ─────── */
+            <div className="relative z-10 flex h-full w-full flex-col items-center justify-center p-3 text-center">
+              <div className="mb-1.5 flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-slate-50 text-slate-400">
+                <TrendingUp className="h-4 w-4 text-slate-400" />
+              </div>
+              <div className="text-[11px] font-semibold text-[var(--text-primary)]">
+                No Dataset Loaded
+              </div>
+              <div className="mt-0.5 max-w-[290px] text-[9.5px] text-[var(--text-secondary)]">
+                Analysis cleared. Select a NASA Earth Observation dataset and variable from Mission Controls to begin investigation.
               </div>
             </div>
           ) : unsupportedReason ? (

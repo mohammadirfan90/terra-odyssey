@@ -178,7 +178,21 @@ export function TrendGridLayer({
 
   // ── Mount / update MapLibre sources & layers ────────────────────────────────
   useEffect(() => {
-    if (!map || !isMapLoaded || !geojson) return;
+    if (!map || !isMapLoaded) return;
+
+    if (!geojson) {
+      if (hasLayersRef.current) {
+        try {
+          if (map.getLayer(STIPPLE_LAYER_ID)) map.removeLayer(STIPPLE_LAYER_ID);
+          if (map.getLayer(HOVER_OUTLINE_LAYER_ID)) map.removeLayer(HOVER_OUTLINE_LAYER_ID);
+          if (map.getLayer(BORDER_LAYER_ID)) map.removeLayer(BORDER_LAYER_ID);
+          if (map.getLayer(FILL_LAYER_ID)) map.removeLayer(FILL_LAYER_ID);
+          if (map.getSource(SOURCE_ID)) map.removeSource(SOURCE_ID);
+        } catch {}
+        hasLayersRef.current = false;
+      }
+      return;
+    }
 
     const addOrUpdateSource = () => {
       const existing = map.getSource(SOURCE_ID) as GeoJSONSource | undefined;
@@ -316,7 +330,7 @@ export function TrendGridLayer({
         if (map.getLayer(BORDER_LAYER_ID)) map.removeLayer(BORDER_LAYER_ID);
         if (map.getLayer(FILL_LAYER_ID)) map.removeLayer(FILL_LAYER_ID);
         if (map.getSource(SOURCE_ID)) map.removeSource(SOURCE_ID);
-      } catch (_) {}
+      } catch {}
       hasLayersRef.current = false;
     };
   }, [map, isMapLoaded, geojson]);

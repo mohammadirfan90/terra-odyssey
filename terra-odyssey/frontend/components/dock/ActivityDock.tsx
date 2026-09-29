@@ -53,6 +53,7 @@ export interface ActivityDockProps {
   onToggleCollapse?: () => void;
   evidenceCardOpen?: boolean;
   onToggleEvidenceCard?: () => void;
+  onClearAnalysis?: () => void;
   className?: string;
 }
 
@@ -71,6 +72,7 @@ export function ActivityDock({
   onToggleCollapse,
   evidenceCardOpen = true,
   onToggleEvidenceCard,
+  onClearAnalysis,
   className,
 }: ActivityDockProps) {
   const snapshot = useInvestigationState();
@@ -168,6 +170,14 @@ export function ActivityDock({
     window.dispatchEvent(new CustomEvent("terra-odyssey:clear-shapes"));
   };
 
+  const handleClearAnalysis = () => {
+    if (onClearAnalysis) {
+      onClearAnalysis();
+    } else {
+      window.dispatchEvent(new CustomEvent("terra-odyssey:clear-analysis"));
+    }
+  };
+
   const isComputing = jobStatus === "submitted" || jobStatus === "running";
 
   // Primary slope summary for collapsed bar & badge
@@ -228,40 +238,46 @@ export function ActivityDock({
           <div className="flex min-w-0 items-center gap-1.5 text-[10.5px]">
             <AgencyLogo agency={activeDataset?.provider || "NASA"} size={16} />
             <span className="truncate font-semibold text-[var(--text-primary)]">
-              {activeDataset?.title ?? snapshot.selectedDataset}
+              {activeDataset?.title ?? (snapshot.selectedDataset || "No dataset loaded")}
             </span>
-            <span className="text-[var(--text-muted)]">·</span>
-            <span className="truncate text-[var(--text-secondary)]">
-              {activeVariable?.long_name ?? snapshot.selectedVariable}
-            </span>
+            {snapshot.selectedVariable ? (
+              <>
+                <span className="text-[var(--text-muted)]">·</span>
+                <span className="truncate text-[var(--text-secondary)]">
+                  {activeVariable?.long_name ?? snapshot.selectedVariable}
+                </span>
+              </>
+            ) : null}
           </div>
 
           <span className="hidden h-3 w-px bg-[var(--border-default)] sm:inline" />
 
           {/* Stat summary */}
-          {contrastSummary ? (
-            <div className="hidden items-center gap-1.5 font-mono text-[10px] sm:flex text-[var(--text-primary)]">
-              <span className="font-sans font-bold text-[8.5px] uppercase tracking-wider text-purple-500">Contrast Δβ:</span>
-              <span className="font-bold">
-                {contrastSummary.contrast_slope > 0 ? "+" : ""}{contrastSummary.contrast_slope.toFixed(2)} {contrastSummary.units}
-              </span>
-              <span className="px-1 py-0.2 text-[8px] font-bold text-purple-500 uppercase">
-                {contrastSummary.contrast_status === "opposite_trend_pair" ? "Opposite Pair" : "Paired"}
-              </span>
-            </div>
-          ) : slopeVal != null ? (
-            <div className="hidden items-center gap-1 font-mono text-[10px] sm:flex">
-              <span className="text-[var(--text-muted)]">Trend:</span>
-              <span
-                className={cn(
-                  "font-bold",
-                  slopeVal > 0 ? "text-rose-500" : "text-[var(--accent)]",
-                )}
-              >
-                {slopeVal > 0 ? "+" : ""}
-                {slopeVal.toFixed(3)} {slopeUnit}
-              </span>
-            </div>
+          {snapshot.selectedDataset ? (
+            contrastSummary ? (
+              <div className="hidden items-center gap-1.5 font-mono text-[10px] sm:flex text-[var(--text-primary)]">
+                <span className="font-sans font-bold text-[8.5px] uppercase tracking-wider text-purple-500">Contrast Δβ:</span>
+                <span className="font-bold">
+                  {contrastSummary.contrast_slope > 0 ? "+" : ""}{contrastSummary.contrast_slope.toFixed(2)} {contrastSummary.units}
+                </span>
+                <span className="px-1 py-0.2 text-[8px] font-bold text-purple-500 uppercase">
+                  {contrastSummary.contrast_status === "opposite_trend_pair" ? "Opposite Pair" : "Paired"}
+                </span>
+              </div>
+            ) : slopeVal != null ? (
+              <div className="hidden items-center gap-1 font-mono text-[10px] sm:flex">
+                <span className="text-[var(--text-muted)]">Trend:</span>
+                <span
+                  className={cn(
+                    "font-bold",
+                    slopeVal > 0 ? "text-rose-500" : "text-[var(--accent)]",
+                  )}
+                >
+                  {slopeVal > 0 ? "+" : ""}
+                  {slopeVal.toFixed(3)} {slopeUnit}
+                </span>
+              </div>
+            ) : null
           ) : null}
         </div>
 
@@ -333,11 +349,13 @@ export function ActivityDock({
           <span className="font-mono text-[8.5px] uppercase text-[var(--text-secondary)]">
             {isComputing
               ? `Processing: ${stage ?? "Analyzing"}`
-              : series?.data?.length
+              : snapshot.selectedDataset && series?.data?.length
                 ? `${series.data.length} Records Loaded`
-                : "Awaiting Query"}
+                : snapshot.selectedDataset
+                  ? "Awaiting Query"
+                  : "No Dataset Loaded"}
           </span>
-          {contrastSummary && (
+          {contrastSummary && snapshot.selectedDataset && (
             <>
               <span className="text-[var(--text-muted)]">·</span>
               <span className="inline-flex items-center gap-1 px-1.5 py-0.2 font-mono text-[8.5px] font-bold text-purple-500">
@@ -360,12 +378,13 @@ export function ActivityDock({
             stage={stage}
             errorMessage={errorMessage}
             onRetry={onRetry}
-            onRunDefault={onRunDefault}
+            onRunDefault={snapshot.selectedDataset ? onRunDefault : undefined}
             unsupportedReason={
-              activeDataset?.capabilities?.trend_supported === false
+              snapshot.selectedDataset && activeDataset?.capabilities?.trend_supported === false
                 ? (activeDataset?.capabilities?.unsupported_reason || "Quantitative trend analysis is not available for this product.")
-                : (activeDataset?.capabilities?.unsupported_reason ?? null)
+                : (snapshot.selectedDataset ? (activeDataset?.capabilities?.unsupported_reason ?? null) : null)
             }
+            selectedDataset={snapshot.selectedDataset}
             unit={activeVariable?.canonical_unit ?? "°C"}
             variableTitle={activeVariable?.long_name ?? activeDataset?.primary_variable}
             variableKey={snapshot.selectedVariable}
@@ -418,10 +437,10 @@ export function ActivityDock({
               <span className="h-3 w-px bg-[var(--border-default)]" aria-hidden="true" />
               <button
                 type="button"
-                onClick={handleClearShapes}
+                onClick={handleClearAnalysis}
                 className="flex h-6 min-w-0 flex-1 items-center justify-center rounded-md typo-micro font-bold uppercase tracking-wider text-rose-500 transition hover:bg-rose-500/10"
-                aria-label="Clear drawn shapes and reset"
-                title="Clear analysis: removes drawn regions, resets to Entire Earth, and re-runs the investigation"
+                aria-label="Clear analysis and unload dataset"
+                title="Clear analysis: unloads dataset, clears active job, and resets study regions"
               >
                 <span className="truncate">Clear analysis</span>
               </button>
@@ -441,24 +460,28 @@ export function ActivityDock({
                     "typo-micro max-w-[60%] truncate font-bold uppercase tracking-wider",
                     activeDataset?.data_type === "reanalysis_model"
                       ? "text-emerald-500"
-                      : "text-[var(--accent)]",
+                      : activeDataset
+                        ? "text-[var(--accent)]"
+                        : "text-[var(--text-muted)]",
                   )}
-                  title={`Data type: ${activeDataset?.data_type ?? "unknown"}`}
+                  title={`Data type: ${activeDataset?.data_type ?? "none"}`}
                 >
                   <span className="truncate">
-                    {activeDataset?.data_type === "reanalysis_model"
-                      ? "Reanalysis"
-                      : activeDataset?.data_type === "satellite_retrieval"
-                        ? "Satellite"
-                        : activeDataset?.data_type === "surface_observation_analysis"
-                          ? "In-Situ"
-                          : activeDataset?.data_type === "satellite_gravimetry"
-                            ? "Gravimetry"
-                            : activeDataset?.data_type === "satellite_radiometry"
-                              ? "Radiometry"
-                              : activeDataset?.data_type === "derived_index"
-                                ? "Derived"
-                                : "Open Data"}
+                    {activeDataset ? (
+                      activeDataset.data_type === "reanalysis_model"
+                        ? "Reanalysis"
+                        : activeDataset.data_type === "satellite_retrieval"
+                          ? "Satellite"
+                          : activeDataset.data_type === "surface_observation_analysis"
+                            ? "In-Situ"
+                            : activeDataset.data_type === "satellite_gravimetry"
+                              ? "Gravimetry"
+                              : activeDataset.data_type === "satellite_radiometry"
+                                ? "Radiometry"
+                                : activeDataset.data_type === "derived_index"
+                                  ? "Derived"
+                                  : "Open Data"
+                    ) : "None"}
                   </span>
                 </span>
               </div>
