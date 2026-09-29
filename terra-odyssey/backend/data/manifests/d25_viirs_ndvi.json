@@ -1,0 +1,22 @@
+{
+  "dataset_id": "viirs_ndvi",
+  "collection": "VNP13A3",
+  "version": "061",
+  "source_type": "derived_index",
+  "variable": "NDVI",
+  "units": "dimensionless",
+  "spatial_support": "global sinusoidal tiles",
+  "temporal_support": "monthly composite",
+  "coverage_start": "2012-01-01",
+  "coverage_end": null,
+  "quality_policy": {
+    "fill_values": ["-3000 sentinel"],
+    "mask_description": "Pixel reliability rank; only use _1_km_monthly_VI_Quality bit 0 (Good).",
+    "qa_fields": ["_1_km_monthly_VI_Quality"]
+  },
+  "provenance": {
+    "documentation_urls": ["https://doi.org/10.5067/VIIRS/VNP13A3.061"],
+    "doi": "10.5067/VIIRS/VNP13A3.061",
+    "provider": "NASA LP DAAC"
+  }
+}

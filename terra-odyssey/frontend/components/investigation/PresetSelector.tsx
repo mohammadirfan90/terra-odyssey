@@ -3,7 +3,7 @@
 import React from "react";
 import type { CandidatePreset } from "@/lib/api/types";
 import { Badge } from "@/components/ui/badge";
-import { Sparkles } from "lucide-react";
+import { Compass } from "lucide-react";
 
 interface PresetSelectorProps {
   presets: CandidatePreset[];
@@ -15,7 +15,7 @@ export function PresetSelector({ presets, activePresetId, onSelectPreset }: Pres
   return (
     <div className="flex flex-col space-y-2">
       <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-slate-300">
-        <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+        <Compass className="w-3.5 h-3.5 text-cyan-400" />
         <span>Predefined Candidate Contrast Pairs</span>
       </div>
 

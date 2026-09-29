@@ -1,0 +1,22 @@
+{
+  "dataset_id": "amsr2_swe",
+  "collection": "AU_SI12",
+  "version": "1",
+  "source_type": "satellite_retrieval",
+  "variable": "SWE",
+  "units": "mm",
+  "spatial_support": "Northern Hemisphere land",
+  "temporal_support": "daily",
+  "coverage_start": "2012-07-02",
+  "coverage_end": null,
+  "quality_policy": {
+    "fill_values": ["SWE_QF != 0 filtered"],
+    "mask_description": "Mask dense vegetation (forest fraction > 0.5), melt, and wet snow per AU_SI12 quality flags.",
+    "qa_fields": ["SWE_QF"]
+  },
+  "provenance": {
+    "documentation_urls": ["https://doi.org/10.5067/RLUMMBVGPSI1"],
+    "doi": "10.5067/RLUMMBVGPSI1",
+    "provider": "NASA NSIDC DAAC"
+  }
+}

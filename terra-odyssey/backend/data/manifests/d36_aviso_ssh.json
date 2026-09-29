@@ -1,0 +1,22 @@
+{
+  "dataset_id": "aviso_ssh",
+  "collection": "SEALEVEL_GLO_PHY_L4_MY_008_047",
+  "version": "DT2021",
+  "source_type": "satellite_altimetry",
+  "variable": "sla",
+  "units": "m",
+  "spatial_support": "global ocean",
+  "temporal_support": "monthly mean",
+  "coverage_start": "1993-01-01",
+  "coverage_end": null,
+  "quality_policy": {
+    "fill_values": ["-32768 sentinel"],
+    "mask_description": "Apply DUACS quality flags; clip |sla| < 5 m to remove gross outliers.",
+    "qa_fields": ["err_sla", "flag"]
+  },
+  "provenance": {
+    "documentation_urls": ["https://doi.org/10.48670/moi-00148"],
+    "doi": "10.48670/moi-00148",
+    "provider": "CNES / NASA PODAAC"
+  }
+}

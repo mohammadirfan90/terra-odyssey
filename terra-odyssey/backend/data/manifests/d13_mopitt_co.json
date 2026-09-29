@@ -1,0 +1,22 @@
+{
+  "dataset_id": "mopitt_co",
+  "collection": "MOP03JM",
+  "version": "009",
+  "source_type": "satellite_retrieval",
+  "variable": "CO_total_column",
+  "units": "mol/cm^2",
+  "spatial_support": "global swath",
+  "temporal_support": "daily",
+  "coverage_start": "2000-03-03",
+  "coverage_end": null,
+  "quality_policy": {
+    "fill_values": ["-9999 sentinel"],
+    "mask_description": "Retrieval anomaly and surface type filters applied per MOP03J quality flags.",
+    "qa_fields": ["RetrFlag", "SurfaceType"]
+  },
+  "provenance": {
+    "documentation_urls": ["https://doi.org/10.5067/TERRA/MOPITT/MOP03JM.009"],
+    "doi": "10.5067/TERRA/MOPITT/MOP03JM.009",
+    "provider": "NASA NCAR"
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "dataset_id": "ceres_ebaf",
+  "alias_id": "D9",
+  "collection": "CERES_EBAF_Ed4.2.1",
+  "version": "Ed4.2.1",
+  "source_type": "satellite_retrieval",
+  "variable": "toa_net",
+  "units": "W/m^2",
+  "spatial_support": "global 1.0° latitude × 1.0° longitude equal-angle grid",
+  "temporal_support": "monthly mean top-of-atmosphere radiative flux",
+  "coverage_start": "2000-03-01",
+  "coverage_end": "2024-12-31",
+  "quality_policy": {
+    "fill_values": ["-999.0", "9999.0", "NaN"],
+    "mask_description": "Downward positive sign convention for net flux; mask non-physical fluxes outside [-50, 50] W/m^2 for net, [0, 450] W/m^2 for reflected shortwave, [50, 400] W/m^2 for emitted longwave.",
+    "qa_fields": []
+  },
+  "retrieval": {
+    "provider": "NASA Langley Atmospheric Science Data Center (ASDC)",
+    "access_url": "https://ceres.larc.nasa.gov/data/",
+    "retrieved_at": "REPLACE_AT_INGEST",
+    "granules": 0,
+    "checksums": []
+  },
+  "provenance": {
+    "documentation_urls": [
+      "https://doi.org/10.5067/TERRA+AQUA/CERES/EBAF_L3B004.2",
+      "https://ceres.larc.nasa.gov/data/"
+    ],
+    "doi": "10.5067/TERRA+AQUA/CERES/EBAF_L3B004.2",
+    "software_version": "Ed4.2.1",
+    "manifest_hash": null
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "dataset_id": "merra2_precip",
+  "collection": "M2T1NXFLX",
+  "version": "5.12.4",
+  "source_type": "model_reanalysis",
+  "variable": "PRECTOT",
+  "units": "mm/month",
+  "spatial_support": "global 0.5° × 0.625° grid",
+  "temporal_support": "monthly mean",
+  "coverage_start": "1980-01-01",
+  "coverage_end": null,
+  "quality_policy": {
+    "fill_values": ["preserve source fill value"],
+    "mask_description": "Validate source fill and coordinate metadata; no MODIS-style retrieval QA exists for precipitation flux.",
+    "qa_fields": []
+  },
+  "provenance": {
+    "documentation_urls": ["https://doi.org/10.5067/0J5VGD2HNNOO"],
+    "doi": "10.5067/0J5VGD2HNNOO",
+    "provider": "NASA GMAO / GES DISC"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "dataset_id": "oco2_xco2",
+  "collection": "OCO2_L2_Lite_XCO2",
+  "version": "11.2",
+  "source_type": "satellite_retrieval",
+  "variable": "xco2",
+  "units": "ppm",
+  "spatial_support": "global land + ocean sunlit tracks (swath)",
+  "temporal_support": "daily",
+  "coverage_start": "2014-09-06",
+  "coverage_end": null,
+  "quality_policy": {
+    "fill_values": ["-9999 sentinel"],
+    "mask_description": "xco2_quality_flag == 0 (Good) only; clouds and glint flagged.",
+    "qa_fields": ["xco2_quality_flag"]
+  },
+  "provenance": {
+    "documentation_urls": ["https://doi.org/10.5067/EZ2B7F8X4Z9Q"],
+    "doi": "10.5067/EZ2B7F8X4Z9Q",
+    "provider": "NASA JPL"
+  }
+}

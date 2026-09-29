@@ -103,6 +103,26 @@ class InvestigationNotFoundError(TerraOdysseyError):
     retryable = False
 
 
+class UnsupportedDatasetError(TerraOdysseyError):
+    """Raised when an unreviewed or unsupported dataset/variable combination is requested for analysis."""
+
+    status_code = 400
+    code = "unsupported_dataset"
+    title = "Unsupported Dataset or Variable"
+    type_uri = "https://terra-odyssey.local/errors/unsupported-dataset"
+    retryable = False
+
+
+class InsufficientDataError(TerraOdysseyError):
+    """Raised when available observations fail coverage or completeness requirements."""
+
+    status_code = 422
+    code = "insufficient_data"
+    title = "Insufficient Observations"
+    type_uri = "https://terra-odyssey.local/errors/insufficient-data"
+    retryable = False
+
+
 class InvestigationConflictError(TerraOdysseyError):
     """Raised when source release or manifest has mutated, requiring explicit snapshot rerun."""
 
@@ -111,6 +131,46 @@ class InvestigationConflictError(TerraOdysseyError):
     title = "Investigation State Conflict"
     type_uri = "https://terra-odyssey.local/errors/investigation-conflict"
     retryable = False
+
+
+class AIConfigurationError(TerraOdysseyError):
+    """Raised when the server-side NVIDIA NIM configuration is absent or invalid."""
+
+    status_code = 503
+    code = "ai_not_configured"
+    title = "AI assistance is not configured"
+    type_uri = "https://terra-odyssey.local/errors/ai-not-configured"
+    retryable = False
+
+
+class AIRateLimitError(TerraOdysseyError):
+    """Raised when NVIDIA NIM asks the client to retry after back-pressure."""
+
+    status_code = 429
+    code = "ai_rate_limited"
+    title = "AI assistance is temporarily rate limited"
+    type_uri = "https://terra-odyssey.local/errors/ai-rate-limited"
+    retryable = True
+
+
+class AIServiceUnavailableError(TerraOdysseyError):
+    """Raised when the NVIDIA NIM service cannot be reached or is unavailable."""
+
+    status_code = 503
+    code = "ai_service_unavailable"
+    title = "AI assistance is temporarily unavailable"
+    type_uri = "https://terra-odyssey.local/errors/ai-service-unavailable"
+    retryable = True
+
+
+class AIUpstreamResponseError(TerraOdysseyError):
+    """Raised when NVIDIA NIM returns a response the gateway cannot safely use."""
+
+    status_code = 502
+    code = "ai_upstream_response_invalid"
+    title = "AI assistance returned an invalid response"
+    type_uri = "https://terra-odyssey.local/errors/ai-upstream-response-invalid"
+    retryable = True
 
 
 def register_error_handlers(app: FastAPI) -> None:

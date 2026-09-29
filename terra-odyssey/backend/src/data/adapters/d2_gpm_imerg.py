@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 import httpx
 import numpy as np
+import pandas as pd
 import xarray as xr
 
 
@@ -163,6 +164,34 @@ class GpmImergAdapter:
         accumulation.attrs["calendar_days"] = days_in_month
         return accumulation
 
+    def calculate_cube_accumulation(self, da: xr.DataArray) -> xr.DataArray:
+        """Convert multi-month cube of mm/hr rate to mm/month accumulation using exact calendar hours."""
+        if "time" not in da.dims and "time" not in da.coords:
+            raise ValueError("DataArray must contain a 'time' coordinate or dimension.")
+
+        times = pd.DatetimeIndex(da["time"].values)  # type: ignore[arg-type]
+        hours = np.array(
+            [float(calendar.monthrange(t.year, t.month)[1] * 24.0) for t in times],
+            dtype=np.float64,
+        )
+
+        hours_da = xr.DataArray(hours, coords={"time": da["time"]}, dims=["time"])
+        accum = da * hours_da
+        accum.name = da.name or self.VARIABLE
+        accum.attrs = dict(da.attrs)
+        accum.attrs["units"] = "mm/month"
+        accum.attrs["long_name"] = "Monthly accumulated precipitation"
+        accum.attrs["source_type"] = self.SOURCE_TYPE
+        return accum
+
+    def aggregate_annual_precipitation(
+        self,
+        monthly_accum_da: xr.DataArray,
+        strict_12_months: bool = True,
+    ) -> xr.DataArray:
+        """Sum monthly accumulations into annual totals (mm/year) strictly requiring 12/12 complete calendar months."""
+        return aggregate_annual_precipitation(monthly_accum_da, strict_12_months=strict_12_months)
+
     def process(
         self, dataset_or_path: Union[str, Path, xr.Dataset], year: int, month: int
     ) -> xr.DataArray:
@@ -186,3 +215,47 @@ class GpmImergAdapter:
             "documentation": f"https://doi.org/{self.DOI}",
             "scientific_note": "GPM IMERG Final is a multi-satellite precipitation estimate combining microwave, infrared, and gauge calibration.",
         }
+
+
+def aggregate_annual_precipitation(
+    monthly_accum_da: xr.DataArray,
+    strict_12_months: bool = True,
+) -> xr.DataArray:
+    """Compute annual precipitation total accumulation strictly enforcing 12/12 completeness.
+
+    Mathematical formulation:
+        P_annual = sum(P_m,accum) for m in {1..12}
+
+    In accordance with non-negotiable scientific rules:
+    - Never treat missing months as zeros.
+    - Never silently interpolate production trends.
+    - If any calendar month is missing in a year, that year evaluates to NaN.
+    - If strict_12_months is True and no year has 12 complete months, raises ValueError.
+    """
+    if "time" not in monthly_accum_da.dims and "time" not in monthly_accum_da.coords:
+        raise ValueError("monthly_accum_da must contain a 'time' dimension or coordinate.")
+
+    valid_months = monthly_accum_da.notnull().groupby("time.year").sum(dim="time")
+    annual_sum = monthly_accum_da.groupby("time.year").sum(dim="time", skipna=False)
+
+    if strict_12_months:
+        annual_sum = annual_sum.where(valid_months == 12)
+
+        # Check if any complete year exists
+        complete_years_count = int((valid_months == 12).sum())
+        if complete_years_count == 0:
+            raise ValueError(
+                "No complete calendar years found: all years have fewer than 12 valid calendar months. "
+                "Partial years cannot enter trend inference."
+            )
+
+    annual_sum.name = monthly_accum_da.name or "precipitation_annual_total"
+    annual_sum.attrs = dict(monthly_accum_da.attrs)
+    annual_sum.attrs.update(
+        {
+            "temporal_aggregation": "annual_accumulation_sum",
+            "completeness_policy": "strict_12_of_12_months",
+            "units": "mm/year",
+        }
+    )
+    return annual_sum

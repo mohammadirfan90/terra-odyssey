@@ -1,0 +1,21 @@
+{
+  "dataset_id": "climate_mei",
+  "collection": "NOAA_MEI",
+  "version": "v2",
+  "source_type": "surface_observation_analysis",
+  "variable": "mei",
+  "units": "dimensionless",
+  "spatial_support": "global_index (tropical Pacific)",
+  "temporal_support": "bimonthly",
+  "coverage_start": "1979-01-01",
+  "coverage_end": null,
+  "quality_policy": {
+    "fill_values": ["none — single scalar per bimonth"],
+    "mask_description": "MEI v2 combines 5 variables (SLP, SST, surface zonal/meridional winds, OLR) via rotated EOF.",
+    "qa_fields": []
+  },
+  "provenance": {
+    "documentation_urls": ["https://psl.noaa.gov/enso/mei/"],
+    "provider": "NOAA Physical Sciences Laboratory"
+  }
+}

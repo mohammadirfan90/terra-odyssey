@@ -40,6 +40,8 @@ dependencies = [
     "pydantic>=2.0.0",
     # Loads backend/.env for local development; deployments can inject env directly.
     "python-dotenv>=1.0.0",
+    # Phase 6: NVIDIA NIM OpenAI-compatible API client for grounded trend summaries.
+    "openai>=1.0.0",
 ]
 
 [project.optional-dependencies]

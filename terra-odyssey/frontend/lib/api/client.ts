@@ -3,8 +3,10 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { emitError } from "@/lib/telemetry/error-events";
 import type {
   DatasetMetadata,
+  DatasetCapabilities,
   CapabilitiesResponse,
   InvestigationRequest,
   JobStatusResponse,
@@ -12,14 +14,26 @@ import type {
   TimeSeriesPayload,
   EvidencePayload,
   CandidatePreset,
+  UniversalQueryResponse,
 } from "./types";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api";
+export const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000/api";
+
+const DEFAULT_CAPABILITIES: DatasetCapabilities = {
+  discoverable: true,
+  previewable: true,
+  series_supported: true,
+  trend_supported: true,
+  contrast_supported: true,
+  badges: ["Browse", "View", "Analyze", "Compare"],
+  unsupported_reason: null,
+};
 
 // Offline developer sample fixtures
 export const FALLBACK_DATASETS: DatasetMetadata[] = [
   {
     dataset_id: "merra2_t2m",
+    capabilities: DEFAULT_CAPABILITIES,
     title: "MERRA-2 2-meter Air Temperature",
     collection: "M2TMNXSLV",
     version: "5.12.4",
@@ -45,6 +59,7 @@ export const FALLBACK_DATASETS: DatasetMetadata[] = [
   },
   {
     dataset_id: "gpm_imerg_precipitation",
+    capabilities: DEFAULT_CAPABILITIES,
     title: "GPM IMERG Final Monthly Precipitation",
     collection: "GPM_3IMERGM",
     version: "07",
@@ -65,6 +80,319 @@ export const FALLBACK_DATASETS: DatasetMetadata[] = [
         valid_min: 0.0,
         valid_max: 50000.0,
         description: "Monthly accumulation of precipitation calibrated with rain gauge networks",
+      },
+    },
+  },
+  {
+    dataset_id: "gistemp_v4",
+    capabilities: DEFAULT_CAPABILITIES,
+    title: "NASA GISS Surface Temperature Analysis (GISTEMP v4)",
+    collection: "GISTEMP_V4",
+    version: "4.0",
+    doi: "https://doi.org/10.2767/92882",
+    data_type: "surface_observation_analysis",
+    citation_statement: "GISTEMP Team (2024), GISS Surface Temperature Analysis (GISTEMP v4), NASA Goddard Institute for Space Studies.",
+    measurement_principle: "Centenary surface temperature anomalies over land and ocean with 250 km spatial smoothing",
+    spatial_resolution: { lat_deg: 2.0, lon_deg: 2.0 },
+    temporal_bounds: { start_year: 1880, end_year: 2024 },
+    primary_variable: "temperature_anomaly",
+    variables: {
+      temperature_anomaly: {
+        variable_name: "temperature_anomaly",
+        long_name: "Surface Temperature Anomaly (vs 1951–1980)",
+        standard_units: "degC",
+        canonical_unit: "degC",
+        fill_value: 9999.0,
+        valid_min: -25.0,
+        valid_max: 25.0,
+        description: "Monthly surface temperature anomalies relative to the 1951–1980 base period.",
+      },
+    },
+  },
+  {
+    dataset_id: "nsidc_sea_ice",
+    capabilities: DEFAULT_CAPABILITIES,
+    title: "NOAA/NSIDC Sea Ice Index (v4)",
+    collection: "G02135",
+    version: "4.0",
+    doi: "https://doi.org/10.7265/N5K072F8",
+    data_type: "satellite_retrieval",
+    citation_statement: "Fetterer et al. (2017), Sea Ice Index, Version 4, NSIDC / NOAA.",
+    measurement_principle: "Passive microwave brightness temperatures calibrated for sea ice extent (>=15% concentration threshold)",
+    spatial_resolution: { lat_deg: 0.25, lon_deg: 0.25 },
+    temporal_bounds: { start_year: 1978, end_year: 2024 },
+    primary_variable: "extent",
+    variables: {
+      extent: {
+        variable_name: "extent",
+        long_name: "Sea Ice Extent",
+        standard_units: "10^6 km^2",
+        canonical_unit: "10^6 km^2",
+        fill_value: -9999.0,
+        valid_min: 0.0,
+        valid_max: 30.0,
+        description: "Ocean area with at least 15% sea ice concentration.",
+      },
+      area: {
+        variable_name: "area",
+        long_name: "Sea Ice Area",
+        standard_units: "10^6 km^2",
+        canonical_unit: "10^6 km^2",
+        fill_value: -9999.0,
+        valid_min: 0.0,
+        valid_max: 30.0,
+        description: "Actual surface area of ice-covered water excluding open water within floes.",
+      },
+    },
+  },
+  /* ── NASA partner agencies ───────────────────────── */
+  {
+    dataset_id: "noaa_oisst",
+    capabilities: DEFAULT_CAPABILITIES,
+    title: "NOAA OISST v2.1 Sea Surface Temperature",
+    collection: "NOAA_OISST_V2_1",
+    version: "2.1",
+    doi: "https://doi.org/10.25923/R9PZ-WT56",
+    data_type: "satellite_retrieval",
+    citation_statement:
+      "Huang et al. (2021), NOAA OISST v2.1 daily SST, NOAA NCEI.",
+    measurement_principle:
+      "Satellite + in-situ blended sea-surface temperature analysis (partner agency)",
+    spatial_resolution: { lat_deg: 0.25, lon_deg: 0.25 },
+    temporal_bounds: { start_year: 1981, end_year: 2024 },
+    primary_variable: "sst",
+    variables: {
+      sst: {
+        variable_name: "sst",
+        long_name: "Sea Surface Temperature",
+        standard_units: "K",
+        canonical_unit: "degC",
+        fill_value: -999.0,
+        valid_min: -2.0,
+        valid_max: 45.0,
+        description:
+          "Daily mean sea-surface temperature, blended from satellites + ships + buoys.",
+      },
+      anom: {
+        variable_name: "anom",
+        long_name: "SST Anomaly (vs 1971–2000)",
+        standard_units: "K",
+        canonical_unit: "degC",
+        fill_value: -999.0,
+        valid_min: -10.0,
+        valid_max: 10.0,
+        description: "Departure from the 1971–2000 monthly climatology.",
+      },
+    },
+  },
+  {
+    dataset_id: "grace_tws",
+    capabilities: DEFAULT_CAPABILITIES,
+    title: "GRACE / GRACE-FO Terrestrial Water Storage Mascons",
+    collection: "TELLUS_GRAC_L3_JPL_RL06_v04",
+    version: "RL06.1",
+    doi: "https://doi.org/10.5067/TEMSC-3JC64",
+    data_type: "satellite_gravimetry",
+    citation_statement: "Watkins et al. (2015), JPL GRACE/GRACE-FO RL06M Mascon Solutions, PO.DAAC.",
+    measurement_principle: "Inter-satellite K-band and laser ranging measuring changes in Earth's gravitational field",
+    spatial_resolution: { lat_deg: 0.5, lon_deg: 0.5 },
+    temporal_bounds: { start_year: 2002, end_year: 2024 },
+    primary_variable: "lwe_thickness",
+    variables: {
+      lwe_thickness: {
+        variable_name: "lwe_thickness",
+        long_name: "Liquid Water Equivalent Thickness Anomaly",
+        standard_units: "cm",
+        canonical_unit: "cm",
+        fill_value: -9999.0,
+        valid_min: -1000.0,
+        valid_max: 1000.0,
+        description: "Equivalent water thickness anomaly relative to the 2004–2009 mean baseline (11-month mission transition gap uninterpolated).",
+      },
+    },
+  },
+  {
+    dataset_id: "ceres_ebaf",
+    capabilities: DEFAULT_CAPABILITIES,
+    title: "CERES EBAF Top-of-Atmosphere Radiative Flux (Ed4.2.1)",
+    collection: "CERES_EBAF_Ed4.2.1",
+    version: "Ed4.2.1",
+    doi: "https://doi.org/10.5067/TERRA+AQUA/CERES/EBAF_L3B004.2",
+    data_type: "satellite_retrieval",
+    citation_statement: "Loeb et al. (2018), CERES EBAF TOA Edition 4.0/4.2.1, NASA Langley ASDC.",
+    measurement_principle: "Broadband scanning radiometers measuring incoming solar, reflected shortwave, and emitted longwave radiation",
+    spatial_resolution: { lat_deg: 1.0, lon_deg: 1.0 },
+    temporal_bounds: { start_year: 2000, end_year: 2024 },
+    primary_variable: "toa_net",
+    variables: {
+      toa_net: {
+        variable_name: "toa_net",
+        long_name: "TOA Net Radiative Flux (Downward Positive)",
+        standard_units: "W/m^2",
+        canonical_unit: "W/m^2",
+        fill_value: -999.0,
+        valid_min: -50.0,
+        valid_max: 50.0,
+        description: "Net downward top-of-atmosphere radiative flux (Earth's energy imbalance).",
+      },
+      toa_sw: {
+        variable_name: "toa_sw",
+        long_name: "TOA Reflected Shortwave Flux",
+        standard_units: "W/m^2",
+        canonical_unit: "W/m^2",
+        fill_value: -999.0,
+        valid_min: 0.0,
+        valid_max: 450.0,
+        description: "Top-of-atmosphere reflected solar shortwave radiative flux.",
+      },
+      toa_lw: {
+        variable_name: "toa_lw",
+        long_name: "TOA Emitted Longwave Flux",
+        standard_units: "W/m^2",
+        canonical_unit: "W/m^2",
+        fill_value: -999.0,
+        valid_min: 50.0,
+        valid_max: 400.0,
+        description: "Top-of-atmosphere outgoing longwave thermal radiative flux.",
+      },
+    },
+  },
+  {
+    dataset_id: "esa_cci_landcover",
+    title: "ESA CCI Land Cover (Copernicus)",
+    collection: "ESA_CCI_LC",
+    version: "v2.1.1",
+    doi: "https://doi.org/10.5285/17f3246adbe44d3cb1a4b80a8c6912cb",
+    data_type: "satellite_retrieval",
+    citation_statement:
+      "ESA (2024), Climate Change Initiative Land Cover dataset, ESA CCI.",
+    measurement_principle:
+      "Multi-sensor MERIS / PROBA-V / Sentinel-3 classification (partner agency)",
+    spatial_resolution: { lat_deg: 0.00278, lon_deg: 0.00278 },
+    temporal_bounds: { start_year: 1992, end_year: 2023 },
+    primary_variable: "lccs_class",
+    variables: {
+      lccs_class: {
+        variable_name: "lccs_class",
+        long_name: "Land Cover Class",
+        standard_units: "1",
+        canonical_unit: "class",
+        fill_value: 0,
+        valid_min: 0,
+        valid_max: 220,
+        description:
+          "Discrete land-cover class label (e.g. cropland, forest, urban, water).",
+      },
+    },
+  },
+  /* ── Open-source / public-domain ─────────────────── */
+  {
+    dataset_id: "natural_earth_admin0",
+    title: "Natural Earth Admin-0 Countries",
+    collection: "NE_ADMIN_0",
+    version: "5.1.4",
+    doi: "https://www.naturalearthdata.com/",
+    data_type: "open_source",
+    citation_statement:
+      "Natural Earth (public domain) — admin-0 country boundaries (1:110m).",
+    measurement_principle:
+      "Open-source cartographic boundary dataset (NaturalEarthData.com)",
+    spatial_resolution: { lat_deg: 0.0, lon_deg: 0.0 },
+    temporal_bounds: { start_year: 2024, end_year: 2024 },
+    primary_variable: "geometry",
+    variables: {
+      geometry: {
+        variable_name: "geometry",
+        long_name: "Country Polygon",
+        standard_units: "1",
+        canonical_unit: "feature",
+        fill_value: 0,
+        valid_min: 0,
+        valid_max: 1,
+        description: "Public-domain country polygon geometry.",
+      },
+    },
+  },
+  {
+    dataset_id: "osm_waterways",
+    title: "OpenStreetMap Major Waterways",
+    collection: "OSM_WATERWAYS",
+    version: "2024-06",
+    doi: "https://www.openstreetmap.org/copyright",
+    data_type: "open_source",
+    citation_statement:
+      "© OpenStreetMap contributors (ODbL 1.0). Major rivers + lakes.",
+    measurement_principle:
+      "Volunteer-mapped global hydrology layer (open-source)",
+    spatial_resolution: { lat_deg: 0.0, lon_deg: 0.0 },
+    temporal_bounds: { start_year: 2024, end_year: 2024 },
+    primary_variable: "geometry",
+    variables: {
+      geometry: {
+        variable_name: "geometry",
+        long_name: "Waterway Geometry",
+        standard_units: "1",
+        canonical_unit: "feature",
+        fill_value: 0,
+        valid_min: 0,
+        valid_max: 1,
+        description: "OpenStreetMap river / lake geometries (lines + polygons).",
+      },
+    },
+  },
+  {
+    dataset_id: "copernicus_dem_30",
+    title: "Copernicus DEM (GLO-30) Elevation",
+    collection: "COP_DEM_GLO30",
+    version: "2024",
+    doi: "https://doi.org/10.5270/ESA-c5d3d65",
+    data_type: "satellite_retrieval",
+    citation_statement:
+      "ESA & Airbus (2024), Copernicus DEM GLO-30, ESA Earth Observation Portal.",
+    measurement_principle:
+      "Open-source 30 m global elevation model derived from SAR (partner agency)",
+    spatial_resolution: { lat_deg: 0.000277, lon_deg: 0.000277 },
+    temporal_bounds: { start_year: 2021, end_year: 2024 },
+    primary_variable: "elevation",
+    variables: {
+      elevation: {
+        variable_name: "elevation",
+        long_name: "Surface Elevation",
+        standard_units: "m",
+        canonical_unit: "m",
+        fill_value: -9999,
+        valid_min: -500,
+        valid_max: 9000,
+        description:
+          "30-metre global digital elevation model above mean sea level.",
+      },
+    },
+  },
+  {
+    dataset_id: "etopo1_bedrock",
+    title: "ETOPO1 Global Relief (NOAA)",
+    collection: "ETOPO1",
+    version: "1",
+    doi: "https://doi.org/10.25923/R4KK-DD27",
+    data_type: "open_source",
+    citation_statement:
+      "NOAA NCEI (2022), ETOPO1 1 arc-minute global relief model.",
+    measurement_principle:
+      "Open-source blended land topography + bathymetry (partner agency)",
+    spatial_resolution: { lat_deg: 0.0166, lon_deg: 0.0166 },
+    temporal_bounds: { start_year: 2022, end_year: 2022 },
+    primary_variable: "z",
+    variables: {
+      z: {
+        variable_name: "z",
+        long_name: "Elevation / Bathymetry",
+        standard_units: "m",
+        canonical_unit: "m",
+        fill_value: -9999,
+        valid_min: -11000,
+        valid_max: 9000,
+        description:
+          "Bedrock elevation / ocean depth in metres above sea level (negative = below).",
       },
     },
   },
@@ -173,17 +501,51 @@ export const DEFAULT_CONTRAST_STATS = {
 };
 
 async function fetchJson<T>(url: string, options?: RequestInit): Promise<T> {
-  const res = await fetch(url, options);
+  let res: Response;
+  try {
+    res = await fetch(url, options);
+  } catch (err: any) {
+    const message = `Unable to reach backend at ${url}: ${err?.message || "Connection failed"}.`;
+    emitError({
+      kind: "network",
+      message: "Backend unreachable",
+      detail: `${message} Please ensure the backend server is running.`,
+      retry: () => fetchJson<T>(url, options).then(() => undefined),
+    });
+    throw new Error(`${message} Please ensure the backend server is running.`);
+  }
   if (!res.ok) {
     let errorDetail = `HTTP ${res.status}: ${res.statusText}`;
+    let parsedDetail: unknown = null;
     try {
       const errJson = await res.json();
-      if (errJson.detail) errorDetail = typeof errJson.detail === "string" ? errJson.detail : JSON.stringify(errJson.detail);
-      else if (errJson.title) errorDetail = `${errJson.title}: ${errJson.detail || ""}`;
+      parsedDetail = errJson;
+      if (errJson.detail) {
+        errorDetail = typeof errJson.detail === "string" ? errJson.detail : JSON.stringify(errJson.detail);
+      } else if (errJson.title) {
+        errorDetail = `${errJson.title}: ${errJson.detail || ""}`;
+      }
     } catch {}
-    throw new Error(errorDetail);
+    const kind = res.status >= 500 ? "http_5xx" : "http_4xx";
+    emitError({
+      kind,
+      message: res.status >= 500 ? "Server error" : "Request rejected",
+      detail: `${errorDetail}\n\nURL: ${url}`,
+      retry: () => fetchJson<T>(url, options).then(() => undefined),
+    });
+    const err = new Error(errorDetail);
+    (err as any).detail = parsedDetail;
+    throw err;
   }
   return res.json();
+}
+
+export function askUniversalQuery(query: string): Promise<UniversalQueryResponse> {
+  return fetchJson<UniversalQueryResponse>(`${API_BASE}/query`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ query }),
+  });
 }
 
 export function useCatalog() {
@@ -213,6 +575,14 @@ export function useCatalog() {
               collection: remote.collection || fb.collection,
               version: remote.version || fb.version,
               doi: remote.provenance?.doi || fb.doi,
+              topic: remote.topic || "Atmosphere",
+              provider: remote.provider || "NASA Earth Science",
+              concept_id: remote.concept_id,
+              native_resolution: remote.native_resolution,
+              license: remote.license,
+              gibs_layer: remote.gibs_layer,
+              capabilities: remote.capabilities,
+              categories: remote.categories ?? fb.categories,
             };
           });
 
@@ -225,6 +595,14 @@ export function useCatalog() {
                 collection: item.collection || "UNKNOWN",
                 version: item.version || "1.0",
                 doi: item.provenance?.doi || "https://doi.org/10.5067",
+                topic: item.topic || "Atmosphere",
+                provider: item.provider || "NASA Earth Science",
+                concept_id: item.concept_id,
+                native_resolution: item.native_resolution,
+                license: item.license,
+                gibs_layer: item.gibs_layer,
+                capabilities: item.capabilities,
+                categories: item.categories ?? [],
                 data_type: item.source_type === "model_reanalysis" ? "reanalysis_model" : "satellite_retrieval",
                 citation_statement: item.provenance?.provider || "NASA Earth Observation System",
                 measurement_principle: item.spatial_support || "Satellite retrieval",
@@ -261,6 +639,15 @@ export function useCatalog() {
   });
 }
 
+export function useDatasetAvailability(datasetId?: string | null) {
+  return useQuery<import("./types").DatasetAvailabilityResponse>({
+    queryKey: ["dataset-availability", datasetId],
+    queryFn: () => fetchJson<import("./types").DatasetAvailabilityResponse>(`${API_BASE}/catalog/${datasetId}/availability`),
+    enabled: Boolean(datasetId),
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
 export function useCapabilities() {
   return useQuery<CapabilitiesResponse>({
     queryKey: ["capabilities"],
@@ -294,27 +681,27 @@ export function useInvestigationStatus(jobId: string | null) {
   });
 }
 
-export function useInvestigationMap(jobId: string | null, maxCells: number = 10000) {
+export function useInvestigationMap(jobId: string | null, maxCells: number = 10000, enabled: boolean = true) {
   return useQuery<StructuredGridMapResponse>({
     queryKey: ["investigation-map", jobId, maxCells],
     queryFn: () => fetchJson<StructuredGridMapResponse>(`${API_BASE}/investigations/${jobId}/map?max_cells=${maxCells}`),
-    enabled: !!jobId,
+    enabled: !!jobId && enabled,
   });
 }
 
-export function useInvestigationSeries(jobId: string | null) {
+export function useInvestigationSeries(jobId: string | null, enabled: boolean = true) {
   return useQuery<TimeSeriesPayload>({
     queryKey: ["investigation-series", jobId],
     queryFn: () => fetchJson<TimeSeriesPayload>(`${API_BASE}/investigations/${jobId}/series`),
-    enabled: !!jobId,
+    enabled: !!jobId && enabled,
   });
 }
 
-export function useInvestigationEvidence(jobId: string | null) {
+export function useInvestigationEvidence(jobId: string | null, enabled: boolean = true) {
   return useQuery<EvidencePayload>({
     queryKey: ["investigation-evidence", jobId],
     queryFn: () => fetchJson<EvidencePayload>(`${API_BASE}/investigations/${jobId}/evidence`),
-    enabled: !!jobId,
+    enabled: !!jobId && enabled,
   });
 }
 
@@ -333,3 +720,130 @@ export function useCreateInvestigation() {
     },
   });
 }
+
+// ── Persistent Study Plot Endpoints (SQLite backend) ──────────────────────
+
+export interface StudyPlotDto {
+  plot_id: string;
+  name: string;
+  is_active: boolean;
+  geometry_type: string;
+  coordinates: number[][][] | number[][];
+  bbox: [number, number, number, number];
+  measurements: {
+    areaKm2?: number;
+    areaHa?: number;
+    perimeterKm?: number;
+    centroid?: [number, number];
+    bounds?: {
+      minLat: number;
+      maxLat: number;
+      minLon: number;
+      maxLon: number;
+    };
+    vertexCount?: number;
+    [key: string]: unknown;
+  };
+  dataset_id?: string | null;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export async function fetchPlots(): Promise<StudyPlotDto[]> {
+  try {
+    return await fetchJson<StudyPlotDto[]>(`${API_BASE}/plots`);
+  } catch (err) {
+    console.warn("Could not fetch plots from SQLite backend:", err);
+    return [];
+  }
+}
+
+export async function fetchActivePlot(): Promise<StudyPlotDto | null> {
+  try {
+    return await fetchJson<StudyPlotDto | null>(`${API_BASE}/plots/active`);
+  } catch (err) {
+    console.warn("Could not fetch active plot from SQLite backend:", err);
+    return null;
+  }
+}
+
+export async function savePlotToBackend(
+  plot: Partial<StudyPlotDto> & {
+    name: string;
+    coordinates: number[][][] | number[][];
+    bbox: [number, number, number, number];
+  },
+): Promise<StudyPlotDto | null> {
+  try {
+    return await fetchJson<StudyPlotDto>(`${API_BASE}/plots`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(plot),
+    });
+  } catch (err) {
+    console.warn("Could not save plot to SQLite backend (local IndexedDB remains authoritative):", err);
+    return null;
+  }
+}
+
+export async function deletePlotFromBackend(plotId: string): Promise<void> {
+  try {
+    await fetchJson<void>(`${API_BASE}/plots/${plotId}`, {
+      method: "DELETE",
+    });
+  } catch (err) {
+    console.warn(`Could not delete plot ${plotId} from SQLite backend:`, err);
+  }
+}
+
+export async function clearPlotsFromBackend(): Promise<void> {
+  try {
+    await fetchJson<void>(`${API_BASE}/plots`, {
+      method: "DELETE",
+    });
+  } catch (err) {
+    console.warn("Could not clear plots from SQLite backend:", err);
+  }
+}
+
+// ── Phase 6: Grounded AI Narrative Hooks ──────────────────────────────────────
+
+export interface NarrativeResult {
+  summary_text: string | null;
+  model: string;
+  prompt_version: string;
+  evidence_payload?: any;
+  tokens_used: number | null;
+  latency_ms: number | null;
+  error: string | null;
+}
+
+export function useInvestigationNarrative(jobId: string | null | undefined, enabled = true) {
+  return useQuery({
+    queryKey: ["investigation-narrative", jobId],
+    queryFn: () => fetchJson<NarrativeResult>(`${API_BASE}/investigations/${jobId}/narrative`),
+    enabled: !!jobId && enabled,
+    retry: false,
+    staleTime: 60_000,
+  });
+}
+
+export function useGenerateNarrative() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ jobId, extraContext }: { jobId: string; extraContext?: string }) => {
+      let url = `${API_BASE}/investigations/${jobId}/narrative`;
+      if (extraContext) {
+        url += `?extra_context=${encodeURIComponent(extraContext)}`;
+      }
+      return fetchJson<NarrativeResult>(url, {
+        method: "POST",
+      });
+    },
+    onSuccess: (data, { jobId }) => {
+      queryClient.setQueryData(["investigation-narrative", jobId], data);
+    },
+  });
+}
+
+

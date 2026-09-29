@@ -25,13 +25,13 @@ export function RegionDrawControls({
   isExploratory,
 }: RegionDrawControlsProps) {
   return (
-    <div className="absolute bottom-4 left-4 z-30 flex flex-col space-y-2 bg-slate-900/90 border border-slate-800 p-2 rounded-lg shadow-xl backdrop-blur-md">
-      <div className="flex items-center justify-between gap-2 border-b border-slate-800 pb-1.5">
-        <span className="text-[10px] font-semibold tracking-wider uppercase text-slate-300">
+    <div className="absolute bottom-4 left-4 z-30 flex flex-col space-y-2 bg-white/95 border border-slate-200 p-2 rounded-xl shadow-xl backdrop-blur-md text-slate-800">
+      <div className="flex items-center justify-between gap-2 border-b border-slate-200 pb-1.5">
+        <span className="text-[10px] font-bold tracking-wider uppercase text-slate-600">
           Spatial Region Drawing
         </span>
         {isExploratory && (
-          <Badge variant="exploratory" className="text-[9px] py-0">
+          <Badge variant="exploratory" className="text-[9px] py-0 bg-purple-50 text-purple-700 border-purple-200">
             Exploratory Draw
           </Badge>
         )}
@@ -44,15 +44,15 @@ export function RegionDrawControls({
           onClick={() => onStartDrawing("A")}
           className={`h-7 px-2.5 text-xs gap-1.5 ${
             drawingTarget === "A"
-              ? "bg-amber-600 text-white"
+              ? "bg-amber-600 text-white shadow-sm"
               : hasRegionA
-              ? "border-amber-500/50 text-amber-300"
-              : "text-slate-300"
+              ? "border-amber-300 bg-amber-50 text-amber-800"
+              : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
           }`}
         >
           <Square className="w-3 h-3" />
           <span>Draw Region A</span>
-          {hasRegionA && <span className="ml-1 text-[9px] text-amber-400 font-mono font-bold">✓</span>}
+          {hasRegionA && <span className="ml-1 text-[9px] text-amber-700 font-mono font-bold">✓</span>}
         </Button>
 
         <Button
@@ -61,15 +61,15 @@ export function RegionDrawControls({
           onClick={() => onStartDrawing("B")}
           className={`h-7 px-2.5 text-xs gap-1.5 ${
             drawingTarget === "B"
-              ? "bg-cyan-600 text-white"
+              ? "bg-cyan-600 text-white shadow-sm"
               : hasRegionB
-              ? "border-cyan-500/50 text-cyan-300"
-              : "text-slate-300"
+              ? "border-cyan-300 bg-cyan-50 text-cyan-800"
+              : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
           }`}
         >
           <Square className="w-3 h-3" />
           <span>Draw Region B</span>
-          {hasRegionB && <span className="ml-1 text-[9px] text-cyan-400 font-mono font-bold">✓</span>}
+          {hasRegionB && <span className="ml-1 text-[9px] text-cyan-700 font-mono font-bold">✓</span>}
         </Button>
 
         {(hasRegionA || hasRegionB) && (
@@ -77,7 +77,7 @@ export function RegionDrawControls({
             variant="ghost"
             size="sm"
             onClick={onClear}
-            className="h-7 w-7 p-0 text-slate-400 hover:text-rose-400"
+            className="h-7 w-7 p-0 text-slate-500 hover:bg-rose-50 hover:text-rose-600"
             title="Clear Drawn Regions"
           >
             <Trash2 className="w-3.5 h-3.5" />
@@ -86,8 +86,8 @@ export function RegionDrawControls({
       </div>
 
       {isExploratory && (
-        <div className="flex items-start gap-1 text-[10px] text-purple-300/90 max-w-[280px] leading-tight pt-1">
-          <AlertCircle className="w-3 h-3 shrink-0 mt-0.5 text-purple-400" />
+        <div className="flex items-start gap-1 text-[10px] text-purple-700 max-w-[280px] leading-tight pt-1">
+          <AlertCircle className="w-3 h-3 shrink-0 mt-0.5 text-purple-600" />
           <span>
             Post-screening draw: paired contrast p-value will be reported without multiple-testing adjustment.
           </span>

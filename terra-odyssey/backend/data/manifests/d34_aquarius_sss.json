@@ -1,0 +1,22 @@
+{
+  "dataset_id": "aquarius_sss",
+  "collection": "Aquarius_L3_SSS",
+  "version": "5.0",
+  "source_type": "satellite_radiometry",
+  "variable": "sss",
+  "units": "PSU",
+  "spatial_support": "global ocean (60°N–60°S)",
+  "temporal_support": "monthly",
+  "coverage_start": "2011-08-25",
+  "coverage_end": "2015-06-07",
+  "quality_policy": {
+    "fill_values": ["-9999 sentinel"],
+    "mask_description": "Mask land, sea ice, and Q/A flag != 0 pixels.",
+    "qa_fields": ["Q_A"]
+  },
+  "provenance": {
+    "documentation_urls": ["https://doi.org/10.5067/AQR50-3SQCS"],
+    "doi": "10.5067/AQR50-3SQCS",
+    "provider": "NASA GSFC / CONAE"
+  }
+}

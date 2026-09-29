@@ -1,0 +1,22 @@
+{
+  "dataset_id": "omps_ozone",
+  "collection": "OMPS_NPP_LP_L3_O3",
+  "version": "2",
+  "source_type": "satellite_retrieval",
+  "variable": "O3",
+  "units": "ppmv",
+  "spatial_support": "global stratospheric profiles",
+  "temporal_support": "daily",
+  "coverage_start": "2011-10-01",
+  "coverage_end": null,
+  "quality_policy": {
+    "fill_values": ["preserve source fill"],
+    "mask_description": "Profile accuracy flagged via L3 quality; do not interpolate swath gaps.",
+    "qa_fields": ["O3Quality"]
+  },
+  "provenance": {
+    "documentation_urls": ["https://doi.org/10.5067/8KB4NAMVSH3N"],
+    "doi": "10.5067/8KB4NAMVSH3N",
+    "provider": "NASA GSFC"
+  }
+}

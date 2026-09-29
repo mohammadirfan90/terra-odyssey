@@ -1,0 +1,21 @@
+{
+  "dataset_id": "climate_pdo",
+  "collection": "NCEI_PDO",
+  "version": "monthly",
+  "source_type": "surface_observation_analysis",
+  "variable": "pdo",
+  "units": "dimensionless",
+  "spatial_support": "global_index (North Pacific 20°N–70°N)",
+  "temporal_support": "monthly",
+  "coverage_start": "1900-01-01",
+  "coverage_end": null,
+  "quality_policy": {
+    "fill_values": ["none — single scalar per month"],
+    "mask_description": "EOF-based index; leading pattern of North Pacific monthly SST anomalies.",
+    "qa_fields": []
+  },
+  "provenance": {
+    "documentation_urls": ["https://www.ncei.noaa.gov/access/monitoring/climate-at-a-glance/global/time-series/pdo/"],
+    "provider": "NOAA NCEI"
+  }
+}

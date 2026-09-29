@@ -155,10 +155,81 @@ async def get_investigation_evidence(job_id: str) -> Dict[str, Any]:
     with open(res_file, "r", encoding="utf-8") as f:
         results = json.load(f)
 
+    contrast_summary = None
+    headline_text = None
+
+    for res in results:
+        unc = res.get("uncertainty", {})
+        method = res.get("method", {})
+        diag = method.get("diagnostics", {})
+        effect = res.get("effect", {})
+        interp = res.get("interpretation", {})
+
+        # Ensure normalized uncertainty fields conform to frontend contract
+        if "lower" in unc and "upper" in unc and "ci_95" not in unc:
+            unc["ci_95"] = [float(unc["lower"]), float(unc["upper"])]
+        p_val = method.get("decision_p_value") if method.get("decision_p_value") is not None else method.get("p_value")
+        if p_val is not None and "p_value" not in unc:
+            unc["p_value"] = float(p_val)
+        if "slope_se_per_decade" in diag and "se" not in unc:
+            unc["se"] = float(diag["slope_se_per_decade"])
+
+        if res.get("estimand", {}).get("spatial_aggregation") == "paired_regional_contrast":
+            contrast_summary = {
+                "contrast_slope": float(effect.get("estimate", 0.0)),
+                "contrast_ci_95": [float(unc.get("lower", 0.0)), float(unc.get("upper", 0.0))],
+                "contrast_p_value": float(method.get("decision_p_value") if method.get("decision_p_value") is not None else (method.get("p_value") or 1.0)),
+                "contrast_status": str(diag.get("contrast_sub_status", res.get("status", "inconclusive"))),
+                "region_a_slope": float(effect.get("region_a_estimate")) if effect.get("region_a_estimate") is not None else None,
+                "region_b_slope": float(effect.get("region_b_estimate")) if effect.get("region_b_estimate") is not None else None,
+                "units": str(effect.get("unit_per_decade", "")),
+                "evidence_text": str(interp.get("text", "")),
+            }
+            headline_text = interp.get("text", "")
+            break
+        elif headline_text is None and "interpretation" in res:
+            headline_text = res["interpretation"].get("text", "")
+
+    # Empirical summary statistics from real time series artifact
+    summary_stats = None
+    csv_file = art_dir / "region_time_series.csv"
+    if csv_file.is_file():
+        try:
+            import pandas as pd
+            df = pd.read_csv(csv_file)
+            if "region_a_value" in df.columns and len(df) > 0:
+                val_a = df["region_a_value"].dropna()
+                if len(val_a) > 0:
+                    idx_max = val_a.idxmax()
+                    idx_min = val_a.idxmin()
+                    df_sorted = df.sort_values("year")
+                    n_yrs = len(df_sorted)
+                    k = min(10, max(1, n_yrs // 2))
+                    base_mean = float(df_sorted.iloc[:k]["region_a_value"].mean())
+                    recent_mean = float(df_sorted.iloc[-k:]["region_a_value"].mean())
+                    summary_stats = {
+                        "max_year": int(df.at[idx_max, "year"]),  # type: ignore[arg-type]
+                        "max_value": float(df.at[idx_max, "region_a_value"]),  # type: ignore[arg-type]
+                        "min_year": int(df.at[idx_min, "year"]),  # type: ignore[arg-type]
+                        "min_value": float(df.at[idx_min, "region_a_value"]),  # type: ignore[arg-type]
+                        "mean_value": float(val_a.mean()),
+                        "std_value": float(val_a.std()) if len(val_a) > 1 else 0.0,
+                        "baseline_mean": base_mean,
+                        "baseline_years": f"{int(df_sorted.iloc[0]['year'])}-{int(df_sorted.iloc[k-1]['year'])}",
+                        "recent_mean": recent_mean,
+                        "recent_years": f"{int(df_sorted.iloc[-k]['year'])}-{int(df_sorted.iloc[-1]['year'])}",
+                        "decadal_shift": float(recent_mean - base_mean),
+                    }
+        except Exception:
+            pass
+
     return {
         "job_id": job_id,
         "result_status": job.get("result_status"),
         "results": results,
+        "contrast": contrast_summary,
+        "headline_text": headline_text,
+        "summary_stats": summary_stats,
     }
 
 
@@ -244,6 +315,7 @@ async def get_investigation_map(
         "bands": filtered_bands,
         "legend": grid_data["legend"],
         "provenance": grid_data["provenance"],
+        "fdr_summary": grid_data.get("fdr_summary"),
     }
 
     accept_encoding = request.headers.get("accept-encoding", "").lower()
@@ -302,4 +374,86 @@ async def get_investigation_export(
             media_type="application/zip",
             headers={"Content-Disposition": f"attachment; filename=terra-odyssey-investigation-{job_id}.zip"},
         )
+
+
+# ── Phase 6: AI Narrative Endpoint ──────────────────────────────────────────
+
+
+@router.post("/{job_id}/narrative", status_code=status.HTTP_200_OK)
+async def generate_narrative(
+    job_id: str,
+    extra_context: Optional[str] = Query(None, description="Optional extra context for the summary"),
+) -> JSONResponse:
+    """Generate a grounded AI narrative summary via NVIDIA NIM Nemotron.
+
+    Requires the NVIDIA_API_KEY environment variable to be set.
+    The summary is grounded in verified statistical evidence only — the LLM
+    never receives raw data arrays or unverified intermediate results.
+    """
+    from backend.ai_narrator import NvidiaAINarrator
+
+    store = JobStore()
+    job = store.get_job(job_id)
+    if not job:
+        raise InvestigationNotFoundError(f"Investigation job '{job_id}' not found.")
+    if job["job_status"] != "succeeded":
+        raise InvestigationConflictError(
+            f"Investigation '{job_id}' is not yet complete (status={job['job_status']})."
+        )
+
+    narrator = NvidiaAINarrator()
+    if not narrator.is_available():
+        return JSONResponse(
+            status_code=503,
+            content={
+                "error": "AI narrative generation is unavailable: NVIDIA_API_KEY is not configured.",
+                "hint": "Set the NVIDIA_API_KEY environment variable with your NGC API key.",
+                "model": narrator.model,
+            },
+        )
+
+    art_dir = Path(job["artifacts_dir"])
+    rec_file = art_dir / "investigation_record.json"
+    if not rec_file.is_file():
+        raise InvestigationNotFoundError("Investigation record artifact not found.")
+
+    with open(rec_file, "r", encoding="utf-8") as f:
+        investigation_record = json.load(f)
+
+    result = narrator.generate_summary(investigation_record, extra_context=extra_context)
+
+    # Cache the narrative in the artifacts directory for the GET endpoint
+    if result["summary_text"]:
+        narrative_path = art_dir / "ai_narrative.json"
+        with open(narrative_path, "w", encoding="utf-8") as f:
+            json.dump(result, f, indent=2, default=str)
+
+    return JSONResponse(content=result)
+
+
+@router.get("/{job_id}/narrative", status_code=status.HTTP_200_OK)
+async def get_narrative(job_id: str) -> JSONResponse:
+    """Return the cached AI narrative summary for a completed investigation.
+
+    Returns 404 if no narrative has been generated yet (call POST first).
+    """
+    store = JobStore()
+    job = store.get_job(job_id)
+    if not job:
+        raise InvestigationNotFoundError(f"Investigation job '{job_id}' not found.")
+
+    art_dir = Path(job.get("artifacts_dir", ""))
+    narrative_path = art_dir / "ai_narrative.json"
+    if not narrative_path.is_file():
+        return JSONResponse(
+            status_code=404,
+            content={
+                "error": "No narrative generated yet. Call POST /investigations/{job_id}/narrative first.",
+                "job_id": job_id,
+            },
+        )
+
+    with open(narrative_path, "r", encoding="utf-8") as f:
+        return JSONResponse(content=json.load(f))
+
 

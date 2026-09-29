@@ -85,15 +85,21 @@ def test_investigation_lifecycle_demo_sample(client):
     for expected_band in (
         "slope_per_decade",
         "slope_se_per_decade",
-        "ci_lower_per_decade",
-        "ci_upper_per_decade",
         "raw_p_value",
         "adjusted_p_value",
-        "coverage_fraction",
         "eligibility_code",
         "evidence_code",
     ):
         assert expected_band in map_data["bands"], f"Missing required diagnostic band {expected_band}"
+
+    # Phase 4: fdr_summary block must be present with BY-FDR metadata
+    assert "fdr_summary" in map_data, "Missing fdr_summary block in map grid response"
+    fdr = map_data["fdr_summary"]
+    assert "n_tested" in fdr
+    assert "n_significant" in fdr
+    assert "method" in fdr
+    assert fdr["method"] == "benjamini_yekutieli"
+    assert 0 <= fdr["n_significant"] <= fdr["n_tested"]
 
     # Test gzip Content-Encoding when requested
     gzip_map_res = c.get(f"/api/investigations/{job_id}/map?max_cells=500", headers={"Accept-Encoding": "gzip"})

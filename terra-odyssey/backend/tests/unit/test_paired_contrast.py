@@ -181,3 +181,44 @@ def test_linearity_equivalence():
     b_est = res["effect"]["region_b_estimate"]
 
     assert pytest.approx(a_est - b_est, rel=1e-10) == diff_est
+
+
+def test_paired_contrast_precipitation_numerical_reference(analysis_result_schema):
+    """Numerical reference test asserting exact contrast slope and uncertainty for precipitation."""
+    years = np.arange(2000, 2025)  # 25 consecutive complete years
+    t = years - 2000
+
+    # Region A: +25.0 mm/year/decade (+2.5 mm/year/yr) with baseline 800 mm/year
+    # Region B: -15.0 mm/year/decade (-1.5 mm/year/yr) with baseline 1200 mm/year
+    # Theoretical difference slope: +40.0 mm/year/decade (+4.0 mm/year/yr)
+    val_a = 800.0 + 2.5 * t
+    val_b = 1200.0 - 1.5 * t
+
+    geom_a = {"type": "Polygon", "coordinates": [[[0, 0], [2, 0], [2, 2], [0, 2], [0, 0]]]}
+    geom_b = {"type": "Polygon", "coordinates": [[[5, 5], [7, 5], [7, 7], [5, 7], [5, 5]]]}
+
+    res = estimate_paired_contrast(
+        years_a=years,
+        values_a=val_a,
+        years_b=years,
+        values_b=val_b,
+        dataset_id="gpm_imerg_precipitation",
+        variable="precipitationCal",
+        units="mm/year",
+        unit_per_decade="mm/year/decade",
+        geometry_a=geom_a,
+        geometry_b=geom_b,
+    )
+
+    assert res["status"] == "supported"
+    assert res["method"]["diagnostics"]["contrast_sub_status"] == "opposite_trend_pair"
+    assert res["effect"]["contrast_orientation"] == "region_a_minus_region_b"
+    assert pytest.approx(40.0, rel=1e-6) == res["effect"]["estimate"]
+    assert pytest.approx(25.0, rel=1e-6) == res["effect"]["region_a_estimate"]
+    assert pytest.approx(-15.0, rel=1e-6) == res["effect"]["region_b_estimate"]
+    assert res["uncertainty"]["lower"] <= 40.0 <= res["uncertainty"]["upper"]
+    assert res["method"]["raw_p_value"] < 1e-10
+
+    # Validate against AnalysisResult schema
+    jsonschema.validate(instance=res, schema=analysis_result_schema)
+

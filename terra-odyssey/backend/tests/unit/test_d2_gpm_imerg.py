@@ -143,3 +143,77 @@ def test_manifest_conformance(adapter):
     assert citation["version"] == manifest["version"]
     assert citation["doi"] == manifest["provenance"]["doi"]
     assert citation["source_type"] == manifest["source_type"]
+
+
+def test_cube_accumulation_leap_years(adapter):
+    """Test multi-month cube rate-to-accumulation conversion accounting for leap years."""
+    import pandas as pd
+    times = pd.date_range("2020-01-01", periods=24, freq="MS")  # 2020 (leap) and 2021 (non-leap)
+    rates = xr.DataArray(
+        np.ones((24, 2, 2), dtype=np.float32),
+        coords={"time": times, "lat": [0.0, 1.0], "lon": [0.0, 1.0]},
+        dims=["time", "lat", "lon"],
+        attrs={"units": "mm/hr"},
+    )
+
+    accum = adapter.calculate_cube_accumulation(rates)
+    assert accum.attrs["units"] == "mm/month"
+
+    # February 2020 (29 days = 696 hrs)
+    feb_2020 = accum.sel(time="2020-02-01").values[0, 0]
+    assert np.isclose(feb_2020, 696.0)
+
+    # February 2021 (28 days = 672 hrs)
+    feb_2021 = accum.sel(time="2021-02-01").values[0, 0]
+    assert np.isclose(feb_2021, 672.0)
+
+
+def test_aggregate_annual_precipitation_complete_years(adapter):
+    """Test annual accumulation summing complete 12-month calendar years."""
+    import pandas as pd
+    from data.adapters.d2_gpm_imerg import aggregate_annual_precipitation
+
+    times = pd.date_range("2020-01-01", periods=24, freq="MS")
+    rates = xr.DataArray(
+        np.ones(24, dtype=np.float64),
+        coords={"time": times},
+        dims=["time"],
+        attrs={"units": "mm/hr"},
+    )
+    monthly_accum = adapter.calculate_cube_accumulation(rates)
+    annual = aggregate_annual_precipitation(monthly_accum, strict_12_months=True)
+
+    assert annual.attrs["units"] == "mm/year"
+    assert annual.attrs["completeness_policy"] == "strict_12_of_12_months"
+    assert set(annual["year"].values) == {2020, 2021}
+    # 2020 leap year has 8784 hours, 2021 non-leap year has 8760 hours
+    assert np.isclose(annual.sel(year=2020).values, 8784.0)
+    assert np.isclose(annual.sel(year=2021).values, 8760.0)
+
+
+def test_aggregate_annual_precipitation_rejects_missing_months(adapter):
+    """Test that years with missing months are masked to NaN and not zeroed."""
+    import pandas as pd
+    from data.adapters.d2_gpm_imerg import aggregate_annual_precipitation
+
+    # 2020 has 12 months, 2021 has only 11 months (December missing)
+    times = list(pd.date_range("2020-01-01", periods=12, freq="MS")) + list(
+        pd.date_range("2021-01-01", periods=11, freq="MS")
+    )
+    rates = xr.DataArray(
+        np.ones(len(times), dtype=np.float64),
+        coords={"time": pd.to_datetime(times)},
+        dims=["time"],
+        attrs={"units": "mm/hr"},
+    )
+    monthly_accum = adapter.calculate_cube_accumulation(rates)
+    annual = aggregate_annual_precipitation(monthly_accum, strict_12_months=True)
+
+    # 2020 is complete, 2021 must be NaN (never zeroed or partial!)
+    assert not np.isnan(annual.sel(year=2020).values)
+    assert np.isnan(annual.sel(year=2021).values)
+
+    # If all years are incomplete, strictly raises ValueError
+    incomplete_only = monthly_accum.sel(time=slice("2021-01-01", "2021-11-01"))
+    with pytest.raises(ValueError, match="No complete calendar years found"):
+        aggregate_annual_precipitation(incomplete_only, strict_12_months=True)

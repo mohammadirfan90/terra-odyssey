@@ -37,91 +37,14 @@ def load_manifest(filename: str) -> Optional[dict]:
     return None
 
 
+from data.registry import build_catalog_items, get_dataset_availability
+from backend.schemas import DatasetAvailabilityResponse
+
+
 @router.get("/catalog", response_model=CatalogResponse)
 async def get_catalog() -> CatalogResponse:
-    """Return reviewed NASA Earth observation datasets, quality policies, and limits."""
-    datasets: Dict[str, DatasetCatalogItem] = {}
-
-    d1_data = load_manifest("d1_merra2.json") or {}
-    datasets["merra2_t2m"] = DatasetCatalogItem(
-        dataset_id="merra2_t2m",
-        name="MERRA-2 2-Meter Air Temperature (T2M)",
-        collection=d1_data.get("collection", "M2TMNXSLV"),
-        version=d1_data.get("version", "5.12.4"),
-        source_type=d1_data.get("source_type", "model_reanalysis"),
-        variable=d1_data.get("variable", "T2M"),
-        units="degC",
-        spatial_support=d1_data.get("spatial_support", "global 0.5° latitude × 0.625° longitude grid"),
-        temporal_support=d1_data.get("temporal_support", "monthly mean"),
-        coverage_start=d1_data.get("coverage_start", "1980-01-01"),
-        coverage_end=d1_data.get("coverage_end"),
-        quality_policy=d1_data.get("quality_policy", {
-            "fill_values": ["preserve source fill value"],
-            "mask_description": "Validate source fill and coordinate metadata; model reanalysis without retrieval QA.",
-            "qa_fields": []
-        }),
-        provenance=d1_data.get("provenance", {
-            "documentation_urls": ["https://doi.org/10.5067/AP1B0BA5PD2K"],
-            "doi": "10.5067/AP1B0BA5PD2K",
-            "provider": "NASA GMAO / GES DISC"
-        }),
-        supported_aggregations=["annual_mean", "seasonal"],
-        supported_spatial_aggregations=["area_weighted"],
-    )
-
-    d2_data = load_manifest("d2_gpm_imerg.json") or {}
-    datasets["gpm_imerg_precipitation"] = DatasetCatalogItem(
-        dataset_id="gpm_imerg_precipitation",
-        name="GPM IMERG Final Precipitation Rate",
-        collection=d2_data.get("collection", "GPM_3IMERGM"),
-        version=d2_data.get("version", "07"),
-        source_type=d2_data.get("source_type", "mission_product"),
-        variable=d2_data.get("variable", "precipitationCal"),
-        units="mm/year",
-        spatial_support=d2_data.get("spatial_support", "global 0.1° geographic grid"),
-        temporal_support=d2_data.get("temporal_support", "monthly mean rate; convert with exact calendar-month hours"),
-        coverage_start=d2_data.get("coverage_start", "2000-06-01"),
-        coverage_end=d2_data.get("coverage_end"),
-        quality_policy=d2_data.get("quality_policy", {
-            "fill_values": ["preserve source fill value"],
-            "mask_description": "Use valid source values and preserve release-specific uncertainty fields.",
-            "qa_fields": ["release-specific quality/uncertainty fields"]
-        }),
-        provenance=d2_data.get("provenance", {
-            "documentation_urls": ["https://doi.org/10.5067/GPM/IMERG/3B-MONTH/07"],
-            "doi": "10.5067/GPM/IMERG/3B-MONTH/07",
-            "provider": "NASA GPM / GES DISC"
-        }),
-        supported_aggregations=["annual_total", "seasonal"],
-        supported_spatial_aggregations=["area_weighted"],
-    )
-
-    d4_data = load_manifest("d4_modis_vegetation.json") or {}
-    datasets["d4_modis_ndvi"] = DatasetCatalogItem(
-        dataset_id="d4_modis_ndvi",
-        name="MODIS Vegetation Indices Monthly NDVI (MOD13A3)",
-        collection=d4_data.get("collection", "MOD13A3"),
-        version=d4_data.get("version", "061"),
-        source_type=d4_data.get("source_type", "mission_product"),
-        variable=d4_data.get("variable", "NDVI"),
-        units="dimensionless",
-        spatial_support=d4_data.get("spatial_support", "nominal 1 km MODIS sinusoidal tiles"),
-        temporal_support=d4_data.get("temporal_support", "monthly composite"),
-        coverage_start=d4_data.get("coverage_start", "2000-02-01"),
-        coverage_end=d4_data.get("coverage_end"),
-        quality_policy=d4_data.get("quality_policy", {
-            "fill_values": ["-3000"],
-            "mask_description": "Decode MODLAND quality, aerosol, cloud, and reliability fields before aggregation.",
-            "qa_fields": ["pixel_reliability", "VI_Quality"]
-        }),
-        provenance=d4_data.get("provenance", {
-            "documentation_urls": ["https://doi.org/10.5067/MODIS/MOD13A3.061"],
-            "doi": "10.5067/MODIS/MOD13A3.061",
-            "provider": "NASA LP DAAC"
-        }),
-        supported_aggregations=["annual_mean", "seasonal"],
-        supported_spatial_aggregations=["area_weighted"],
-    )
+    """Return reviewed NASA Earth observation datasets, quality policies, capabilities, and limits."""
+    datasets = build_catalog_items()
 
     defaults = {
         "dataset_id": "merra2_t2m",
@@ -142,6 +65,12 @@ async def get_catalog() -> CatalogResponse:
         supported_estimators=["ols_hac"],
         supported_aggregations=["annual_mean", "annual_total", "seasonal"],
     )
+
+
+@router.get("/catalog/{dataset_id}/availability", response_model=DatasetAvailabilityResponse)
+async def get_availability(dataset_id: str) -> DatasetAvailabilityResponse:
+    """Return archive availability timeline, completeness metrics, and statistical eligibility spans."""
+    return get_dataset_availability(dataset_id)
 
 
 @router.get("/capabilities", response_model=CapabilitiesResponse)

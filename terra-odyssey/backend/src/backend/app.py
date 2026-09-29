@@ -12,12 +12,15 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from backend.api.catalog import router as catalog_router
 from backend.api.investigations import router as investigations_router
+from backend.api.plots import router as plots_router
+from backend.api.query import router as query_router
+from backend.api.search import router as search_router
 from backend.errors import register_error_handlers
 from backend.paths import ENV_FILE
 from backend.store import JobStore
 from backend.worker import start_worker_task, stop_worker_task
 
-load_dotenv(ENV_FILE, override=False)
+load_dotenv(ENV_FILE, override=True)
 
 logger = logging.getLogger("terra_odyssey.backend.app")
 
@@ -70,6 +73,9 @@ def create_app() -> FastAPI:
     # Mount API routes
     app.include_router(catalog_router, prefix="/api")
     app.include_router(investigations_router, prefix="/api")
+    app.include_router(plots_router, prefix="/api")
+    app.include_router(query_router, prefix="/api")
+    app.include_router(search_router, prefix="/api")
 
     @app.get("/api/health", tags=["Health"])
     async def health_check() -> dict:

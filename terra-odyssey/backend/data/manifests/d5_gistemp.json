@@ -1,0 +1,34 @@
+{
+  "dataset_id": "gistemp_v4",
+  "alias_id": "D5",
+  "collection": "GISTEMP_V4",
+  "version": "4.0",
+  "source_type": "surface_observation_analysis",
+  "variable": "temperature_anomaly",
+  "units": "degC anomaly",
+  "spatial_support": "global 2.0° latitude × 2.0° longitude grid",
+  "temporal_support": "monthly anomaly (1951-1980 baseline)",
+  "coverage_start": "1880-01-01",
+  "coverage_end": "2024-12-31",
+  "quality_policy": {
+    "fill_values": ["9999.0", "-9999.0", "NaN"],
+    "mask_description": "Validate 1951-1980 climatology baseline; mask unphysical anomalies outside [-25, 25] degC.",
+    "qa_fields": []
+  },
+  "retrieval": {
+    "provider": "NASA Goddard Institute for Space Studies (GISS)",
+    "access_url": "https://data.giss.nasa.gov/gistemp/grids/",
+    "retrieved_at": "REPLACE_AT_INGEST",
+    "granules": 0,
+    "checksums": []
+  },
+  "provenance": {
+    "documentation_urls": [
+      "https://doi.org/10.2767/92882",
+      "https://data.giss.nasa.gov/gistemp/"
+    ],
+    "doi": "10.2767/92882",
+    "software_version": "4.0",
+    "manifest_hash": null
+  }
+}

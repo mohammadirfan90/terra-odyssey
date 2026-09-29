@@ -1,0 +1,21 @@
+{
+  "dataset_id": "climate_nao",
+  "collection": "NOAA_CPC_NAO",
+  "version": "monthly",
+  "source_type": "surface_observation_analysis",
+  "variable": "nao",
+  "units": "dimensionless",
+  "spatial_support": "global_index (North Atlantic sector EOF)",
+  "temporal_support": "monthly",
+  "coverage_start": "1950-01-01",
+  "coverage_end": null,
+  "quality_policy": {
+    "fill_values": ["none — single scalar per month"],
+    "mask_description": "EOF-based index; computed from station pressure differences (Lisbon vs Reykjavik).",
+    "qa_fields": []
+  },
+  "provenance": {
+    "documentation_urls": ["https://www.cpc.ncep.noaa.gov/products/precip/CWlink/pna/nao.shtml"],
+    "provider": "NOAA Climate Prediction Center"
+  }
+}

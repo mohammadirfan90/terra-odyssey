@@ -65,6 +65,28 @@ class JobStore:
             conn.execute(
                 "CREATE INDEX IF NOT EXISTS idx_jobs_status ON investigation_jobs (job_status);"
             )
+            conn.execute(
+                """
+                CREATE TABLE IF NOT EXISTS study_plots (
+                    plot_id TEXT PRIMARY KEY,
+                    name TEXT NOT NULL,
+                    is_active INTEGER NOT NULL DEFAULT 1,
+                    geometry_type TEXT NOT NULL DEFAULT 'Polygon',
+                    coordinates_json TEXT NOT NULL,
+                    bbox_json TEXT NOT NULL,
+                    measurements_json TEXT NOT NULL,
+                    dataset_id TEXT,
+                    created_at TEXT NOT NULL,
+                    updated_at TEXT NOT NULL
+                );
+                """
+            )
+            conn.execute(
+                "CREATE INDEX IF NOT EXISTS idx_study_plots_active ON study_plots (is_active);"
+            )
+            conn.execute(
+                "CREATE INDEX IF NOT EXISTS idx_study_plots_updated_at ON study_plots (updated_at);"
+            )
             conn.commit()
 
     def _row_to_dict(self, row: sqlite3.Row) -> Dict[str, Any]:
@@ -297,3 +319,125 @@ class JobStore:
                 (limit, offset),
             )
             return [self._row_to_dict(r) for r in cursor.fetchall()]
+
+    def _plot_row_to_dict(self, row: sqlite3.Row) -> Dict[str, Any]:
+        """Convert SQLite study_plots row into clean Python dictionary."""
+        data = dict(row)
+        data["is_active"] = bool(data.get("is_active", 0))
+        for json_col, target in (
+            ("coordinates_json", "coordinates"),
+            ("bbox_json", "bbox"),
+            ("measurements_json", "measurements"),
+        ):
+            val = data.get(json_col)
+            if val is not None:
+                try:
+                    data[target] = json.loads(val)
+                except Exception:
+                    data[target] = []
+            else:
+                data[target] = []
+            data.pop(json_col, None)
+        return data
+
+    def upsert_study_plot(self, plot_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Upsert a study plot in SQLite. Marks it as active and deactivates others if active."""
+        plot_id = plot_data.get("plot_id") or f"plot-{uuid.uuid4().hex[:12]}"
+        name = plot_data.get("name") or "Custom Study Region"
+        is_active = 1 if plot_data.get("is_active", True) else 0
+        geometry_type = plot_data.get("geometry_type") or "Polygon"
+        coordinates_json = json.dumps(plot_data.get("coordinates", []))
+        bbox_json = json.dumps(plot_data.get("bbox", []))
+        measurements_json = json.dumps(plot_data.get("measurements", {}))
+        dataset_id = plot_data.get("dataset_id")
+        now = datetime.now(timezone.utc).isoformat()
+
+        with self._get_connection() as conn:
+            # If activating this plot, mark all others inactive
+            if is_active:
+                conn.execute("UPDATE study_plots SET is_active = 0 WHERE is_active = 1")
+
+            cursor = conn.execute(
+                "SELECT created_at FROM study_plots WHERE plot_id = ?",
+                (plot_id,),
+            )
+            existing = cursor.fetchone()
+            created_at = existing["created_at"] if existing else now
+
+            conn.execute(
+                """
+                INSERT OR REPLACE INTO study_plots (
+                    plot_id, name, is_active, geometry_type,
+                    coordinates_json, bbox_json, measurements_json,
+                    dataset_id, created_at, updated_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    plot_id,
+                    name,
+                    is_active,
+                    geometry_type,
+                    coordinates_json,
+                    bbox_json,
+                    measurements_json,
+                    dataset_id,
+                    created_at,
+                    now,
+                ),
+            )
+            conn.commit()
+
+        result = self.get_study_plot(plot_id)
+        if not result:
+            raise RuntimeError(f"Failed to retrieve upserted plot {plot_id}")
+        return result
+
+    def get_study_plot(self, plot_id: str) -> Optional[Dict[str, Any]]:
+        """Retrieve a specific study plot from SQLite by ID."""
+        with self._get_connection() as conn:
+            cursor = conn.execute(
+                "SELECT * FROM study_plots WHERE plot_id = ?",
+                (plot_id,),
+            )
+            row = cursor.fetchone()
+            if not row:
+                return None
+            return self._plot_row_to_dict(row)
+
+    def get_active_study_plot(self) -> Optional[Dict[str, Any]]:
+        """Retrieve the currently active study plot from SQLite."""
+        with self._get_connection() as conn:
+            cursor = conn.execute(
+                "SELECT * FROM study_plots WHERE is_active = 1 ORDER BY updated_at DESC LIMIT 1"
+            )
+            row = cursor.fetchone()
+            if not row:
+                return None
+            return self._plot_row_to_dict(row)
+
+    def list_study_plots(self, limit: int = 50) -> List[Dict[str, Any]]:
+        """List all study plots from SQLite ordered newest first."""
+        with self._get_connection() as conn:
+            cursor = conn.execute(
+                "SELECT * FROM study_plots ORDER BY updated_at DESC LIMIT ?",
+                (limit,),
+            )
+            return [self._plot_row_to_dict(r) for r in cursor.fetchall()]
+
+    def delete_study_plot(self, plot_id: str) -> bool:
+        """Delete a study plot from SQLite by ID."""
+        with self._get_connection() as conn:
+            cursor = conn.execute(
+                "DELETE FROM study_plots WHERE plot_id = ?",
+                (plot_id,),
+            )
+            conn.commit()
+            return cursor.rowcount > 0
+
+    def clear_study_plots(self) -> int:
+        """Clear all study plots from SQLite."""
+        with self._get_connection() as conn:
+            cursor = conn.execute("DELETE FROM study_plots")
+            conn.commit()
+            return cursor.rowcount
+

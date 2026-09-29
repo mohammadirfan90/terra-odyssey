@@ -53,6 +53,21 @@ wheels/
 *.db-wal
 *.sqlite
 *.sqlite3
+*.log
+*.log.*
+*_log.txt
+pytest_out.txt
+tsc_log.txt
+.gibs_cache.json
+*.cache.json
+universal-query-desktop.png
+build-zip.ps1
+compare.ps1
+debug.ps1
+
+# Runtime test & investigation outputs (preserve fixture)
+terra-odyssey/backend/data/investigations/*
+!terra-odyssey/backend/data/investigations/inv-b7b17ea47850/
 
 # OS and Editor files
 .DS_Store
